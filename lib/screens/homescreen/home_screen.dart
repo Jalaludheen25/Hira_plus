@@ -42,10 +42,11 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
       ),
       ...List.generate(
         DateTime(selectedDate.year, selectedDate.month + 2, 0).day,
-        (index) => DateTime(selectedDate.year, selectedDate.month + 1, index + 1),
+        (index) =>
+            DateTime(selectedDate.year, selectedDate.month + 1, index + 1),
       ),
     ];
-    
+
     // Initialize preferences for all days
     for (var date in daysInMonth) {
       final dateKey = '${date.year}-${date.month}-${date.day}';
@@ -67,14 +68,15 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
 
   void _scrollToCurrentWeek() {
     final now = DateTime.now();
-    final currentDayIndex = daysInMonth.indexWhere((date) => 
-      date.day == now.day && date.month == now.month && date.year == now.year
-    );
-    
+    final currentDayIndex = daysInMonth.indexWhere((date) =>
+        date.day == now.day &&
+        date.month == now.month &&
+        date.year == now.year);
+
     if (currentDayIndex != -1) {
       final screenHeight = MediaQuery.of(context).size.height;
       final scrollPosition = (currentDayIndex * 110.0) - (screenHeight / 3);
-      
+
       _scrollController.animateTo(
         scrollPosition,
         duration: const Duration(milliseconds: 500),
@@ -125,7 +127,6 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
       ),
       body: Column(
         children: [
-         
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
@@ -142,13 +143,15 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                   flex: 3,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: ['B', 'L', 'D'].map((label) => Text(
-                      label,
-                      style: TextStyleClass.poppinsMedium(
-                        fontSize: 14,
-                        color: ColorClass.primaryBase,
-                      ),
-                    )).toList(),
+                    children: ['B', 'L', 'D']
+                        .map((label) => Text(
+                              label,
+                              style: TextStyleClass.poppinsMedium(
+                                fontSize: 14,
+                                color: ColorClass.primaryBase,
+                              ),
+                            ))
+                        .toList(),
                   ),
                 ),
               ],
@@ -185,7 +188,8 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                   children: [
                     isFirstDayOfMonth ? monthHeader : Container(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         border: Border(
                           bottom: BorderSide(
@@ -246,7 +250,8 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                                   value: mealPreferences[dateKey]!['Breakfast'],
                                   onChanged: (value) {
                                     setState(() {
-                                      mealPreferences[dateKey]!['Breakfast'] = value!;
+                                      mealPreferences[dateKey]!['Breakfast'] =
+                                          value!;
                                     });
                                   },
                                   activeColor: ColorClass.primaryBase,
@@ -255,7 +260,8 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                                   value: mealPreferences[dateKey]!['Lunch'],
                                   onChanged: (value) {
                                     setState(() {
-                                      mealPreferences[dateKey]!['Lunch'] = value!;
+                                      mealPreferences[dateKey]!['Lunch'] =
+                                          value!;
                                     });
                                   },
                                   activeColor: ColorClass.primaryBase,
@@ -264,7 +270,8 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                                   value: mealPreferences[dateKey]!['Dinner'],
                                   onChanged: (value) {
                                     setState(() {
-                                      mealPreferences[dateKey]!['Dinner'] = value!;
+                                      mealPreferences[dateKey]!['Dinner'] =
+                                          value!;
                                     });
                                   },
                                   activeColor: ColorClass.primaryBase,
@@ -291,7 +298,6 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
             color: ColorClass.white,
           ),
         ),
-       
         backgroundColor: ColorClass.primaryBase,
       ),
     );
@@ -299,8 +305,18 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
 
   String _getMonthName(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
     return months[month - 1];
   }

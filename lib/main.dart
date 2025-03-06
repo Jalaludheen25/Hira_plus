@@ -1,6 +1,6 @@
 import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/screens/homescreen/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:canteen_app/screens/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,13 +16,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Canteen App',
       theme: ThemeData(
-     
         colorScheme: ColorScheme.fromSeed(seedColor: ColorClass.primaryBase),
         useMaterial3: true,
       ),
-      home:   CanteenHomePage(),
+      home: const SplashScreen(),
     );
   }
 }
-
-
