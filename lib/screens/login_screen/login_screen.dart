@@ -1,7 +1,11 @@
+import 'package:canteen_app/routes/app_routes.dart';
+import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:canteen_app/screens/homescreen/home_screen.dart';
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pinput/pinput.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,11 +16,39 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _phoneController = TextEditingController();
+  bool _showOTPField = false;
+  String _otp = "";
 
   @override
   void dispose() {
     _phoneController.dispose();
     super.dispose();
+  }
+
+  // Helper method to build the OTP Field using pinput
+  Widget _buildOTPField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        const Text(
+          'Enter OTP',
+          style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: ColorClass.white),
+        ),
+        const SizedBox(height: 8),
+        Pinput(
+          length: 6,
+          onChanged: (value) {
+            setState(() {
+              _otp = value;
+            });
+          },
+        ),
+      ],
+    );
   }
 
   bool isValidPhoneNumber(String? value) {
@@ -93,97 +125,97 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 48),
 
-                // Phone Number Input
-                Container(
-                  decoration: BoxDecoration(
-                    color: ColorClass.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: ColorClass.neutral300.withOpacity(0.1),
-                        spreadRadius: 2,
-                        blurRadius: 15,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(10),
-                    ],
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: ColorClass.neutral800,
-                      letterSpacing: 1.2,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: 'Phone Number',
-                      labelStyle: TextStyle(
-                        color:
-                            ColorClass.primaryBase, // Changed from neutral500
-                        fontSize: 14,
-                      ),
-                      errorStyle: TextStyle(
-                        color: ColorClass.redBase,
-                        fontSize: 12,
-                      ),
-                      prefixIcon: Icon(
-                        Icons.phone_android,
-                        color: ColorClass.primaryBase,
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: ColorClass.neutral200,
+                // Conditionally render the phone number input
+                if (!_showOTPField)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: ColorClass.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: ColorClass.neutral300.withOpacity(0.1),
+                          spreadRadius: 2,
+                          blurRadius: 15,
+                          offset: const Offset(0, 4),
                         ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(10),
+                      ],
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: ColorClass.neutral800,
+                        letterSpacing: 1.2,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
+                      decoration: InputDecoration(
+                        labelText: 'Phone Number',
+                        labelStyle: TextStyle(
                           color: ColorClass.primaryBase,
-                          width: 2,
+                          fontSize: 14,
                         ),
-                      ),
-                      errorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
+                        errorStyle: TextStyle(
                           color: ColorClass.redBase,
-                          width: 1,
+                          fontSize: 12,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.phone_android,
+                          color: ColorClass.primaryBase,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: ColorClass.neutral200,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: ColorClass.primaryBase,
+                            width: 2,
+                          ),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: ColorClass.redBase,
+                            width: 1,
+                          ),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide(
+                            color: ColorClass.redBase,
+                            width: 2,
+                          ),
+                        ),
+                        filled: true,
+                        fillColor: ColorClass.white,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
                         ),
                       ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(
-                          color: ColorClass.redBase,
-                          width: 2,
-                        ),
-                      ),
-                      filled: true,
-                      fillColor: ColorClass.white,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 16,
-                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter phone number';
+                        }
+                        if (!isValidPhoneNumber(value)) {
+                          return 'Please enter valid 10-digit number';
+                        }
+                        return null;
+                      },
+                      onChanged: (value) {
+                        setState(() {});
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter phone number';
-                      }
-                      if (!isValidPhoneNumber(value)) {
-                        return 'Please enter valid 10-digit number';
-                      }
-                      return null;
-                    },
-                    onChanged: (value) {
-                      setState(() {
-                        // Trigger validation on change
-                      });
-                    },
                   ),
-                ),
+                // Conditionally show OTP Field when mobile is entered
+                if (_showOTPField) _buildOTPField(),
                 const SizedBox(height: 32),
                 // Login Button with Gradient
                 Container(
@@ -210,12 +242,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CanteenHomePage(),
-                        ),
-                      );
+                      if (!_showOTPField) {
+                        if (!isValidPhoneNumber(_phoneController.text)) {
+                          Fluttertoast.showToast(
+                            msg: "Please enter a valid phone number",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                          );
+                          return;
+                        } else {
+                          Fluttertoast.showToast(
+                            msg: "OTP Sent",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                          );
+                          setState(() {
+                            _showOTPField = true;
+                          });
+                          return;
+                        }
+                      } else {
+                        if (_otp.length != 6) {
+                          Fluttertoast.showToast(
+                            msg: "Please enter a valid 6-digit OTP",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                          );
+                          return;
+                        }
+                        navigateTo(context: context, route: Routes.home);
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
@@ -224,10 +280,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Log In',
-                      style: TextStyle(
-                        color: ColorClass.primaryBase, // Changed from white
+                    child: Text(
+                      _showOTPField ? 'Validate' : 'Send OTP',
+                      style: const TextStyle(
+                        color: ColorClass.primaryBase,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1,
@@ -259,7 +315,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Need help? Contact mess administrator',
+                          'Need help? Contact Hira Manager',
                           style: TextStyle(
                             color: ColorClass.white
                                 .withOpacity(0.8), // Changed from neutral500
