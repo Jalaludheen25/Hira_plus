@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/routes/app_pages.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:canteen_app/constants/color_class.dart';
+import 'package:canteen_app/constants/ui_styles.dart';
 
 class BottomNavigationBarScreen extends StatefulWidget {
   const BottomNavigationBarScreen({super.key});
@@ -40,19 +43,22 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     return Scaffold(
       body: _buildNavigator(),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: ColorClass.white,
+        selectedItemColor: ColorClass.primaryBase,
+        unselectedItemColor: ColorClass.neutral400,
         currentIndex: _selectedIndex,
         onTap: (int index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: FaIcon(FontAwesomeIcons.home),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+            icon: FaIcon(FontAwesomeIcons.user),
             label: 'Profile',
           ),
         ],
