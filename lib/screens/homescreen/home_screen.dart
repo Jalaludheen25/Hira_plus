@@ -215,7 +215,7 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      '${date.day.toString().padLeft(2, '0')}',
+                                      date.day.toString().padLeft(2, '0'),
                                       style: TextStyleClass.poppinsMedium(
                                         fontSize: 16,
                                         color: Colors.white,
@@ -224,7 +224,7 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                                   )
                                 else
                                   Text(
-                                    '${date.day.toString().padLeft(2, '0')}',
+                                    date.day.toString().padLeft(2, '0'),
                                     style: TextStyleClass.poppinsMedium(
                                       fontSize: 16,
                                       color: ColorClass.textMain900,

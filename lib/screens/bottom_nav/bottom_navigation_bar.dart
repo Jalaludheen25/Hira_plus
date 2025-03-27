@@ -3,7 +3,6 @@ import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/routes/app_pages.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/ui_styles.dart';
 
 class BottomNavigationBarScreen extends StatefulWidget {
   const BottomNavigationBarScreen({super.key});
@@ -54,7 +53,7 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
         },
         items: [
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.home),
+            icon: FaIcon(FontAwesomeIcons.house),
             label: 'Home',
           ),
           BottomNavigationBarItem(

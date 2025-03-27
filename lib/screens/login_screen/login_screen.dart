@@ -1,7 +1,6 @@
 import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:canteen_app/screens/homescreen/home_screen.dart';
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
