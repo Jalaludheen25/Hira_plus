@@ -1,6 +1,6 @@
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:flutter/material.dart';
-import 'package:canteen_app/screens/splash_screen.dart';
+import 'package:canteen_app/screens/splash_screen/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());

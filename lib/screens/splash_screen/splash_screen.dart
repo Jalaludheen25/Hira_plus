@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/screens/login_screen.dart';
+import 'package:canteen_app/screens/login_screens/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
