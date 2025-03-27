@@ -67,7 +67,7 @@ class ColorClass {
   static const Color boxShadow = Color(0x1B1C1D0F);
 
   // Primary Colo Token
-  static Color primaryDarker = primaryDarker;
+
   static const Color primaryDark = blueDark;
   static const Color primaryBase = blueBase;
   static const Color primaryLight = blueLight;
@@ -106,8 +106,33 @@ class ColorClass {
   static const Color iconDisabled300 = neutral300;
   static const Color iconWhite0 = white;
 
+  // Additional Text Color Tokens
+  static const Color textPrimary = textMain900;
+  static const Color textSecondary = textSub500;
+  static const Color textTertiary = textSoft400;
+  static const Color textDisabled = textDisabled300;
 
-  static List<Color>baseList=[
+  // Border Color Tokens
+  static const Color borderPrimary = strokeStrong900;
+  static const Color borderSecondary = strokeSub300;
+  static const Color borderSoft = strokeSoft200;
+  static const Color borderDisabled = strokeDisabled100;
+  static const Color borderWhite = strokeWhite0;
+
+  // Dark Theme Text Color Tokens
+  static const Color darkTextPrimary = textWhite0;
+  static const Color darkTextSecondary = neutral200;
+  static const Color darkTextTertiary = neutral300;
+  static const Color darkTextDisabled = neutral400;
+
+  // Dark Theme Border Color Tokens
+  static const Color darkBorderPrimary = strokeWhite0;
+  static const Color darkBorderSecondary = neutral100;
+  static const Color darkBorderSoft = neutral200;
+  static const Color darkBorderDisabled = neutral300;
+  static const Color darkBorderWhite = white;
+
+  static List<Color> baseList = [
     greenBase,
     blueBase,
     yellowBase,
@@ -117,9 +142,9 @@ class ColorClass {
     orangeBase,
     tealBase,
   ];
-  static Color baseColors(int index)=>baseList[index%baseList.length];
-  
-  static List<Color>lighterList=[
+  static Color baseColors(int index) => baseList[index % baseList.length];
+
+  static List<Color> lighterList = [
     greenLighter,
     blueLighter,
     yellowLighter,
@@ -129,9 +154,10 @@ class ColorClass {
     orangeLighter,
     tealLighter,
   ];
-  static Color lighterColors(int index)=>lighterList[index%lighterList.length];
+  static Color lighterColors(int index) =>
+      lighterList[index % lighterList.length];
 
-  static List<Color>lightList=[
+  static List<Color> lightList = [
     greenLight,
     blueLight,
     yellowLight,
@@ -141,9 +167,9 @@ class ColorClass {
     orangeLight,
     tealLight,
   ];
-  static Color lightColors(int index)=>lightList[index%lightList.length];
+  static Color lightColors(int index) => lightList[index % lightList.length];
 
-  static List<Color>darkerList=[
+  static List<Color> darkerList = [
     greenDarker,
     blueDarker,
     yellowDarker,
@@ -153,9 +179,9 @@ class ColorClass {
     orangeDarker,
     tealDarker,
   ];
-  static Color darkerColors(int index)=>darkerList[index%darkerList.length];
+  static Color darkerColors(int index) => darkerList[index % darkerList.length];
 
-  static List<Color>darkList=[
+  static List<Color> darkList = [
     greenDark,
     blueDark,
     yellowDark,
@@ -165,5 +191,11 @@ class ColorClass {
     orangeDark,
     tealDark,
   ];
-  static Color darkColors(int index)=>darkList[index%darkList.length];
+  static Color darkColors(int index) => darkList[index % darkList.length];
+
+  static Color dynamicTextColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? darkTextPrimary
+        : textPrimary;
+  }
 }
