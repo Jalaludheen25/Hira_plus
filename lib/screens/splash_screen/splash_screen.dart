@@ -1,3 +1,5 @@
+import 'package:canteen_app/routes/app_routes.dart';
+import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/screens/login_screens/login_screen.dart';
@@ -43,10 +45,7 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.forward();
 
     Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+      navigateTo(context: context, route: Routes.login);
     });
   }
 

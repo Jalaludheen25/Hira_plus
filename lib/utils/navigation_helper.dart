@@ -1,5 +1,6 @@
 // navigation_helper.dart
 import 'package:flutter/material.dart';
+import 'dart:developer' as dev;
 
 // Global navigator key for use in navigation and notification handling
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -9,6 +10,7 @@ void navigateTo({
   required String route,
   Object? arguments,
 }) {
+  dev.log('Navigating to route: $route', name: 'NavigationHelper');
   Navigator.of(context).pushNamed(route, arguments: arguments);
 }
 
@@ -17,6 +19,8 @@ void navigateReplaceTo({
   required String route,
   Object? arguments,
 }) {
+  dev.log('Navigating and replacing with route: $route',
+      name: 'NavigationHelper');
   Navigator.of(context).pushReplacementNamed(route, arguments: arguments);
 }
 
@@ -25,6 +29,8 @@ void navigatePRTo({
   required String route,
   Object? arguments,
 }) {
+  dev.log('Navigating and removing until route: $route',
+      name: 'NavigationHelper');
   Navigator.of(context).pushNamedAndRemoveUntil(
     route,
     (route) => false,
@@ -33,17 +39,22 @@ void navigatePRTo({
 }
 
 void navigateBack(BuildContext context) {
+  dev.log('Navigating back', name: 'NavigationHelper');
   Navigator.of(context).pop();
 }
 
 bool canNavigateBack(BuildContext context) {
-  return Navigator.of(context).canPop();
+  final canPop = Navigator.of(context).canPop();
+  dev.log('Can navigate back: $canPop', name: 'NavigationHelper');
+  return canPop;
 }
 
 void navigateToWidget({
   required BuildContext context,
   required Widget route,
 }) {
+  dev.log('Navigating to widget: ${route.runtimeType}',
+      name: 'NavigationHelper');
   Navigator.of(context).push(MaterialPageRoute(builder: (context) => route));
 }
 
@@ -51,6 +62,8 @@ void navigatePRToWidget({
   required BuildContext context,
   required Widget route,
 }) {
+  dev.log('Navigating and removing until widget: ${route.runtimeType}',
+      name: 'NavigationHelper');
   Navigator.of(context).pushAndRemoveUntil(
     MaterialPageRoute(builder: (context) => route),
     (route) => false,
@@ -61,6 +74,8 @@ void navigateWithLeftToRightAnimation({
   required BuildContext context,
   required Widget page,
 }) {
+  dev.log('Navigating with animation to widget: ${page.runtimeType}',
+      name: 'NavigationHelper');
   Navigator.of(context).push(PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => page,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
