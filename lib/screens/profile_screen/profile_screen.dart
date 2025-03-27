@@ -66,7 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildLogoutButton() {
     return ElevatedButton(
       onPressed: () {
-        navigateTo(context: context, route: Routes.login);
+        navigateTo(context: navigatorKey.currentContext!, route: Routes.login);
       },
       child: const Text('Logout'),
     );

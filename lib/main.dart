@@ -2,6 +2,7 @@ import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/providers/multi_provider.dart';
 import 'package:canteen_app/routes/app_pages.dart';
 import 'package:canteen_app/routes/app_routes.dart';
+import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -19,6 +20,7 @@ class MyApp extends StatelessWidget {
       providers: getProviders(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         title: 'Canteen App',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: ColorClass.primaryBase),
