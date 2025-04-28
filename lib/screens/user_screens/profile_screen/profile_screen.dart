@@ -2,7 +2,7 @@ import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:toastification/toastification.dart';
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/constants/ui_styles.dart';
 
@@ -137,10 +137,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
-                      Fluttertoast.showToast(
-                        msg: "Logged out successfully",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
+                      toastification.show(
+                        context: context,
+                        title: Text('Logged out successfully'),
+                        type: ToastificationType.success,
+                        autoCloseDuration: const Duration(seconds: 2),
                       );
                       Future.delayed(const Duration(milliseconds: 500), () {
                         navigateTo(

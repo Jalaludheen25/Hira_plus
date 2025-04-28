@@ -3,7 +3,7 @@ import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:toastification/toastification.dart';
 import 'package:pinput/pinput.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -243,17 +243,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       if (!_showOTPField) {
                         if (!isValidPhoneNumber(_phoneController.text)) {
-                          Fluttertoast.showToast(
-                            msg: "Please enter a valid phone number",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
+                          toastification.show(
+                            context: context,
+                            title: Text('Please enter a valid phone number'),
+                            type: ToastificationType.error,
+                            autoCloseDuration: const Duration(seconds: 2),
                           );
                           return;
                         } else {
-                          Fluttertoast.showToast(
-                            msg: "OTP Sent",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
+                          toastification.show(
+                            context: context,
+                            title: Text('OTP Sent'),
+                            type: ToastificationType.success,
+                            autoCloseDuration: const Duration(seconds: 2),
                           );
                           setState(() {
                             _showOTPField = true;
@@ -262,10 +264,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                       } else {
                         if (_otp.length != 6) {
-                          Fluttertoast.showToast(
-                            msg: "Please enter a valid 6-digit OTP",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
+                          toastification.show(
+                            context: context,
+                            title: Text('Please enter a valid 6-digit OTP'),
+                            type: ToastificationType.error,
+                            autoCloseDuration: const Duration(seconds: 2),
                           );
                           return;
                         }
