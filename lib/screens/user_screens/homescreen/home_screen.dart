@@ -1,6 +1,9 @@
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/constants/textstyle_class.dart';
+import 'package:canteen_app/providers/date_provider.dart';
+import 'package:canteen_app/screens/user_screens/homescreen/month_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CanteenHomePage extends StatefulWidget {
   const CanteenHomePage({super.key});
@@ -12,7 +15,6 @@ class CanteenHomePage extends StatefulWidget {
 class _CanteenHomePageState extends State<CanteenHomePage> {
   late DateTime selectedDate;
   List<DateTime> allDays = [];
-  final Map<String, Map<String, bool>> mealPreferences = {};
   final ScrollController _scrollController = ScrollController();
   int currentYear = DateTime.now().year;
   bool isLoadingNextYear = false;
@@ -61,14 +63,11 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
       currentDate = currentDate.add(const Duration(days: 1));
     }
 
-    // Initialize preferences for new days
+    // Initialize preferences for new days using DateProvider
+    final dateProvider = Provider.of<DateProvider>(context, listen: false);
     for (var date in newDays) {
       final dateKey = '${date.year}-${date.month}-${date.day}';
-      mealPreferences[dateKey] ??= {
-        'Breakfast': false,
-        'Lunch': false,
-        'Dinner': false,
-      };
+      dateProvider.initializeDate(dateKey);
     }
 
     setState(() {
@@ -92,14 +91,11 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
       currentDate = currentDate.add(const Duration(days: 1));
     }
 
-    // Initialize preferences for all days
+    // Initialize preferences for all days using DateProvider
+    final dateProvider = Provider.of<DateProvider>(context, listen: false);
     for (var date in allDays) {
       final dateKey = '${date.year}-${date.month}-${date.day}';
-      mealPreferences[dateKey] ??= {
-        'Breakfast': false,
-        'Lunch': false,
-        'Dinner': false,
-      };
+      dateProvider.initializeDate(dateKey);
     }
   }
 
@@ -162,23 +158,62 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
         actions: [
           TextButton.icon(
             onPressed: () async {
-              final DateTime? picked = await showDatePicker(
-                context: context,
-                initialDate: selectedDate,
-                firstDate: DateTime(2024),
-                lastDate: DateTime(2025),
-                initialDatePickerMode: DatePickerMode.day,
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MonthScreen(selectedDate: selectedDate),
+                ),
               );
-              if (picked != null) {
+              
+              if (result != null) {
                 setState(() {
-                  selectedDate = picked;
-                  _scrollToCurrentDay();
+                  selectedDate = result;
+                  
+                  // Simple date comparison
+                  final dateIndex = allDays.indexWhere((date) {
+                    return date.year == result.year && 
+                           date.month == result.month && 
+                           date.day == result.day;
+                  });
+                  
+                  if (dateIndex != -1) {
+                    // Scroll to the date with some padding
+                    final itemHeight = 80.0;
+                    final scrollPosition = dateIndex * itemHeight;
+                    
+                    _scrollController.animateTo(
+                      scrollPosition,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeInOut,
+                    );
+                  } else {
+                    // If date not found, update the list and try again
+                    _updateAllDays();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      final newDateIndex = allDays.indexWhere((date) {
+                        return date.year == result.year && 
+                               date.month == result.month && 
+                               date.day == result.day;
+                      });
+                      
+                      if (newDateIndex != -1) {
+                        final itemHeight = 80.0;
+                        final scrollPosition = newDateIndex * itemHeight;
+                        
+                        _scrollController.animateTo(
+                          scrollPosition,
+                          duration: const Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                        );
+                      }
+                    });
+                  }
                 });
               }
             },
             icon: const Icon(Icons.calendar_month, color: Colors.white),
             label: Text(
-              '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}',
+              '${_getMonthName(selectedDate.month)} ${selectedDate.year}',
               style: TextStyleClass.poppinsRegular(
                 fontSize: 16,
                 color: Colors.white,
@@ -331,32 +366,38 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Checkbox(
-                                  value: mealPreferences[dateKey]!['Breakfast'],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      mealPreferences[dateKey]!['Breakfast'] = value!;
-                                    });
+                                Consumer<DateProvider>(
+                                  builder: (context, dateProvider, child) {
+                                    return Checkbox(
+                                      value: dateProvider.isMealSelected(dateKey, 'Breakfast'),
+                                      onChanged: (value) {
+                                        dateProvider.toggleMeal(dateKey, 'Breakfast');
+                                      },
+                                      activeColor: ColorClass.primaryBase,
+                                    );
                                   },
-                                  activeColor: ColorClass.primaryBase,
                                 ),
-                                Checkbox(
-                                  value: mealPreferences[dateKey]!['Lunch'],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      mealPreferences[dateKey]!['Lunch'] = value!;
-                                    });
+                                Consumer<DateProvider>(
+                                  builder: (context, dateProvider, child) {
+                                    return Checkbox(
+                                      value: dateProvider.isMealSelected(dateKey, 'Lunch'),
+                                      onChanged: (value) {
+                                        dateProvider.toggleMeal(dateKey, 'Lunch');
+                                      },
+                                      activeColor: ColorClass.primaryBase,
+                                    );
                                   },
-                                  activeColor: ColorClass.primaryBase,
                                 ),
-                                Checkbox(
-                                  value: mealPreferences[dateKey]!['Dinner'],
-                                  onChanged: (value) {
-                                    setState(() {
-                                      mealPreferences[dateKey]!['Dinner'] = value!;
-                                    });
+                                Consumer<DateProvider>(
+                                  builder: (context, dateProvider, child) {
+                                    return Checkbox(
+                                      value: dateProvider.isMealSelected(dateKey, 'Dinner'),
+                                      onChanged: (value) {
+                                        dateProvider.toggleMeal(dateKey, 'Dinner');
+                                      },
+                                      activeColor: ColorClass.primaryBase,
+                                    );
                                   },
-                                  activeColor: ColorClass.primaryBase,
                                 ),
                               ],
                             ),
