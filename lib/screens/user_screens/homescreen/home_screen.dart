@@ -8,6 +8,7 @@ import 'package:canteen_app/providers/canteen_home_page_provider.dart';
 import 'widgets/month_calendar_view.dart';
 import 'widgets/home_list_view.dart';
 import 'widgets/today_fab.dart';
+import 'widgets/custom_drawer.dart';
 
 class CanteenHomePage extends StatefulWidget {
   const CanteenHomePage({super.key});
@@ -115,8 +116,21 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
     final canteenProvider = Provider.of<CanteenHomePageProvider>(context);
     final viewModeProvider = Provider.of<HomeViewModeProvider>(context);
     return Scaffold(
+      drawer: CustomDrawer(
+        userName: 'John Doe',
+        appVersion: '1.0.0',
+        onHome: () => Navigator.of(context).pop(),
+        onProfile: () {},
+        onFeedback: () {},
+        onPrivacy: () {},
+        onContact: () {},
+        onAbout: () {},
+        onRaiseBug: () {},
+        onLogout: () {},
+      ),
       appBar: AppBar(
         backgroundColor: ColorClass.brandDarkGreen,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           'Canteen App',
           style: TextStyleClass.poppinsSemiBold(
@@ -149,6 +163,18 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
           : MonthCalendarView(
               selectedDate: canteenProvider.selectedDate,
               getMonthName: _getMonthName,
+              onMonthChanged: (int delta) {
+                final currentYear = DateTime.now().year;
+                final currentMonth = canteenProvider.selectedDate.month;
+                final newMonth = currentMonth + delta;
+                final newYear = canteenProvider.selectedDate.year + ((newMonth - 1) ~/ 12);
+                final normalizedMonth = ((newMonth - 1) % 12) + 1;
+                // Only allow months within the current year
+                if (newYear == currentYear && normalizedMonth >= 1 && normalizedMonth <= 12) {
+                  final newDate = DateTime(newYear, normalizedMonth, 1);
+                  canteenProvider.setSelectedDate(newDate, context);
+                }
+              },
             ),
       floatingActionButton: viewModeProvider.mode == HomeViewMode.list
           ? TodayFAB(

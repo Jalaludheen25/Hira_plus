@@ -7,7 +7,8 @@ import 'package:canteen_app/providers/date_provider.dart';
 class MonthCalendarView extends StatelessWidget {
   final DateTime selectedDate;
   final String Function(int) getMonthName;
-  const MonthCalendarView({required this.selectedDate, required this.getMonthName, Key? key}) : super(key: key);
+  final void Function(int) onMonthChanged;
+  const MonthCalendarView({required this.selectedDate, required this.getMonthName, Key? key, required this.onMonthChanged}) : super(key: key);
 
   String _getDateKey(DateTime date) {
     return '${date.year}-${date.month}-${date.day}';
@@ -23,6 +24,28 @@ class MonthCalendarView extends StatelessWidget {
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_left, size: 28),
+                color: ColorClass.brandDarkGreen,
+                onPressed: selectedDate.month == 1 ? null : () => onMonthChanged(-1),
+              ),
+              Text(
+                '${getMonthName(selectedDate.month)} ${selectedDate.year}',
+                style: TextStyleClass.poppinsMedium(fontSize: 18, color: ColorClass.brandDarkGreen),
+              ),
+              IconButton(
+                icon: const Icon(Icons.arrow_right, size: 28),
+                color: ColorClass.brandDarkGreen,
+                onPressed: selectedDate.month == 12 ? null : () => onMonthChanged(1),
+              ),
+            ],
+          ),
+        ),
         Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
@@ -202,6 +225,29 @@ class MonthCalendarView extends StatelessWidget {
                     );
                   }).toList(),
                   const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ColorClass.brandDarkGreen,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        'Save',
+                        style: TextStyle(
+                          color: ColorClass.brandWhite,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );

@@ -1,3 +1,4 @@
+import 'package:canteen_app/constants/textstyle_class.dart';
 import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        title:  Text('Profile',style: TextStyleClass.primaryFont500(20, ColorClass.white)),
         backgroundColor: ColorClass.brandDarkGreen,
       ),
       body: Center(
