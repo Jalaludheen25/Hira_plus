@@ -11,14 +11,13 @@ class CanteenHomePageProvider extends ChangeNotifier {
     _updateAllDays(context);
   }
 
-
   void _updateAllDays(BuildContext? context) {
     final now = DateTime.now();
-    final startDate = DateTime(now.year, 1, 1);
-    final endDate = DateTime(now.year + 2, 1, 0);
+    final prevMonth = DateTime(now.year, now.month - 1, 1);
+    final nextMonth = DateTime(now.year, now.month + 2, 0); // Last day of next month
     allDays = [];
-    DateTime currentDate = startDate;
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
+    DateTime currentDate = prevMonth;
+    while (currentDate.isBefore(nextMonth) || currentDate.isAtSameMomentAs(nextMonth)) {
       allDays.add(currentDate);
       currentDate = currentDate.add(const Duration(days: 1));
     }
@@ -39,5 +38,11 @@ class CanteenHomePageProvider extends ChangeNotifier {
     selectedDate = DateTime.now();
     _updateAllDays(context);
     notifyListeners();
+  }
+
+  int getTodayIndex() {
+    final now = DateTime.now();
+    return allDays.indexWhere((date) =>
+      date.day == now.day && date.month == now.month && date.year == now.year);
   }
 } 

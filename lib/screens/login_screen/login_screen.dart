@@ -5,6 +5,7 @@ import 'package:canteen_app/constants/color_class.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 import 'package:pinput/pinput.dart';
+import 'package:canteen_app/constants/icons_class.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,8 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          ColorClass.primaryBase, // Changed from backgroundColor to primaryBase
+      backgroundColor: ColorClass.brandDarkGreen,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -76,15 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: ColorClass.white.withOpacity(
-                          0.1), // Changed from primaryBase to white
+                      color: ColorClass.brandLightGreen.withOpacity(0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      Icons.restaurant_menu,
-                      size: 48,
-                      color:
-                          ColorClass.white, // Changed from primaryBase to white
+                    child: Image.asset(
+                      IconClass.HiraPlus,
+                      width: 48,
+                      height: 48,
                     ),
                   ),
                 ),
@@ -94,9 +92,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ShaderMask(
                     shaderCallback: (bounds) => LinearGradient(
                       colors: [
-                        ColorClass.white, // Changed from primaryBase to white
-                        ColorClass.white.withOpacity(
-                            0.8), // Changed from primaryBase to white
+                        ColorClass.brandLightGreen,
+                        ColorClass.brandLightGreen.withOpacity(0.8),
                       ],
                     ).createShader(bounds),
                     child: const Text(
@@ -116,8 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     'Your Digital Mess Companion',
                     style: TextStyle(
                       fontSize: 16,
-                      color: ColorClass.white
-                          .withOpacity(0.8), // Changed from neutral500
+                      color: ColorClass.brandLightGreen.withOpacity(0.8),
                       letterSpacing: 0.5,
                     ),
                   ),

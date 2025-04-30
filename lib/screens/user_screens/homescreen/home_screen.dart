@@ -1,9 +1,13 @@
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/constants/textstyle_class.dart';
 import 'package:canteen_app/providers/date_provider.dart';
-import 'package:canteen_app/screens/user_screens/homescreen/month_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:canteen_app/providers/home_view_mode_provider.dart';
+import 'package:canteen_app/providers/canteen_home_page_provider.dart';
+import 'widgets/month_calendar_view.dart';
+import 'widgets/home_list_view.dart';
+import 'widgets/today_fab.dart';
 
 class CanteenHomePage extends StatefulWidget {
   const CanteenHomePage({super.key});
@@ -13,116 +17,47 @@ class CanteenHomePage extends StatefulWidget {
 }
 
 class _CanteenHomePageState extends State<CanteenHomePage> {
-  late DateTime selectedDate;
-  List<DateTime> allDays = [];
   final ScrollController _scrollController = ScrollController();
-  int currentYear = DateTime.now().year;
-  bool isLoadingNextYear = false;
+  HomeViewModeProvider? _viewModeProvider;
+  VoidCallback? _viewModeListener;
 
   @override
   void initState() {
     super.initState();
-    selectedDate = DateTime.now();
-    _updateAllDays();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToCurrentDay();
+      final canteenProvider = Provider.of<CanteenHomePageProvider>(context, listen: false);
+      _scrollToToday(canteenProvider);
+      _setupViewModeListener();
     });
-    _scrollController.addListener(_onScroll);
+  }
+
+  void _setupViewModeListener() {
+    _viewModeProvider = Provider.of<HomeViewModeProvider>(context, listen: false);
+    _viewModeListener = () {
+      if (_viewModeProvider!.mode == HomeViewMode.list) {
+        final canteenProvider = Provider.of<CanteenHomePageProvider>(context, listen: false);
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToToday(canteenProvider);
+        });
+      }
+    };
+    _viewModeProvider?.addListener(_viewModeListener!);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
+    _viewModeProvider?.removeListener(_viewModeListener!);
     _scrollController.dispose();
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.8 && 
-        !isLoadingNextYear) {
-      _loadNextYear();
-    }
-  }
-
-  void _loadNextYear() {
-    if (isLoadingNextYear) return;
-    
-    setState(() {
-      isLoadingNextYear = true;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final canteenProvider = Provider.of<CanteenHomePageProvider>(context, listen: false);
+      _scrollToToday(canteenProvider);
     });
-
-    final nextYear = currentYear + 1;
-    final startDate = DateTime(nextYear, 1, 1);
-    final endDate = DateTime(nextYear + 1, 1, 0); // Last day of December next year
-    
-    final newDays = <DateTime>[];
-    DateTime currentDate = startDate;
-    
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
-      newDays.add(currentDate);
-      currentDate = currentDate.add(const Duration(days: 1));
-    }
-
-    // Initialize preferences for new days using DateProvider
-    final dateProvider = Provider.of<DateProvider>(context, listen: false);
-    for (var date in newDays) {
-      final dateKey = '${date.year}-${date.month}-${date.day}';
-      dateProvider.initializeDate(dateKey);
-    }
-
-    setState(() {
-      allDays.addAll(newDays);
-      currentYear = nextYear;
-      isLoadingNextYear = false;
-    });
-  }
-
-  void _updateAllDays() {
-    // Generate days for the current year and next year
-    final now = DateTime.now();
-    final startDate = DateTime(now.year, 1, 1); // Start from January 1st
-    final endDate = DateTime(now.year + 2, 1, 0); // Last day of next year
-    
-    allDays = [];
-    DateTime currentDate = startDate;
-    
-    while (currentDate.isBefore(endDate) || currentDate.isAtSameMomentAs(endDate)) {
-      allDays.add(currentDate);
-      currentDate = currentDate.add(const Duration(days: 1));
-    }
-
-    // Initialize preferences for all days using DateProvider
-    final dateProvider = Provider.of<DateProvider>(context, listen: false);
-    for (var date in allDays) {
-      final dateKey = '${date.year}-${date.month}-${date.day}';
-      dateProvider.initializeDate(dateKey);
-    }
-  }
-
-  void _scrollToCurrentDay() {
-    final now = DateTime.now();
-    final currentDayIndex = allDays.indexWhere((date) =>
-        date.day == now.day &&
-        date.month == now.month &&
-        date.year == now.year);
-
-    if (currentDayIndex != -1) {
-      // Scroll to the top of the current day
-      final itemHeight = 80.0; // Approximate height of each date item
-      final scrollPosition = currentDayIndex * itemHeight;
-
-      _scrollController.animateTo(
-        scrollPosition,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      // If today's date is not in the list, update the list to include it
-      _updateAllDays();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToCurrentDay();
-      });
-    }
   }
 
   String _getMonthName(int month) {
@@ -141,297 +76,6 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
       'December'
     ];
     return months[month - 1];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: ColorClass.primaryBase,
-        title: Text(
-          'Canteen App',
-          style: TextStyleClass.poppinsSemiBold(
-            fontSize: 20,
-            color: ColorClass.white,
-          ),
-        ),
-        actions: [
-          TextButton.icon(
-            onPressed: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MonthScreen(selectedDate: selectedDate),
-                ),
-              );
-              
-              if (result != null) {
-                setState(() {
-                  selectedDate = result;
-                  
-                  // Simple date comparison
-                  final dateIndex = allDays.indexWhere((date) {
-                    return date.year == result.year && 
-                           date.month == result.month && 
-                           date.day == result.day;
-                  });
-                  
-                  if (dateIndex != -1) {
-                    // Scroll to the date with some padding
-                    final itemHeight = 80.0;
-                    final scrollPosition = dateIndex * itemHeight;
-                    
-                    _scrollController.animateTo(
-                      scrollPosition,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeInOut,
-                    );
-                  } else {
-                    // If date not found, update the list and try again
-                    _updateAllDays();
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      final newDateIndex = allDays.indexWhere((date) {
-                        return date.year == result.year && 
-                               date.month == result.month && 
-                               date.day == result.day;
-                      });
-                      
-                      if (newDateIndex != -1) {
-                        final itemHeight = 80.0;
-                        final scrollPosition = newDateIndex * itemHeight;
-                        
-                        _scrollController.animateTo(
-                          scrollPosition,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    });
-                  }
-                });
-              }
-            },
-            icon: const Icon(Icons.calendar_month, color: Colors.white),
-            label: Text(
-              '${_getMonthName(selectedDate.month)} ${selectedDate.year}',
-              style: TextStyleClass.poppinsRegular(
-                fontSize: 16,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: ColorClass.primaryBase.withOpacity(0.1),
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                const Expanded(flex: 2, child: SizedBox()),
-                Expanded(
-                  flex: 3,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: ['B', 'L', 'D']
-                        .map((label) => Text(
-                              label,
-                              style: TextStyleClass.poppinsMedium(
-                                fontSize: 14,
-                                color: ColorClass.primaryBase,
-                              ),
-                            ))
-                        .toList(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: allDays.length,
-              itemBuilder: (context, index) {
-                final date = allDays[index];
-                final dateKey = '${date.year}-${date.month}-${date.day}';
-                final isToday = date.day == DateTime.now().day &&
-                    date.month == DateTime.now().month &&
-                    date.year == DateTime.now().year;
-
-                // Check if this is the first day of the month
-                final bool isFirstDayOfMonth = date.day == 1;
-
-                return Column(
-                  children: [
-                    if (isFirstDayOfMonth)
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        color: ColorClass.primaryBase.withOpacity(0.05),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 12),
-                              child: Text(
-                                '${_getMonthName(date.month)} ${date.year}',
-                                style: TextStyleClass.poppinsMedium(
-                                  fontSize: 16,
-                                  color: ColorClass.primaryBase,
-                                ),
-                              ),
-                            ),
-                            if (isToday)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: ColorClass.primaryBase,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'Today',
-                                  style: TextStyleClass.poppinsMedium(
-                                    fontSize: 14,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: ColorClass.primaryBase.withOpacity(0.1),
-                          ),
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          // Date and day section
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                              children: [
-                                if (isToday)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 2,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: ColorClass.primaryBase,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      date.day.toString().padLeft(2, '0'),
-                                      style: TextStyleClass.poppinsMedium(
-                                        fontSize: 26,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                else
-                                  Text(
-                                    date.day.toString().padLeft(2, '0'),
-                                    style: TextStyleClass.poppinsMedium(
-                                      fontSize: 26,
-                                      color: ColorClass.textMain900,
-                                    ),
-                                  ),
-                                Text(
-                                  ' ${_getDayName(date.weekday)}',
-                                  style: TextStyleClass.poppinsMedium(
-                                    fontSize: 14,
-                                    color: ColorClass.neutral400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Checkboxes section
-                          Expanded(
-                            flex: 3,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Consumer<DateProvider>(
-                                  builder: (context, dateProvider, child) {
-                                    return Checkbox(
-                                      value: dateProvider.isMealSelected(dateKey, 'Breakfast'),
-                                      onChanged: (value) {
-                                        dateProvider.toggleMeal(dateKey, 'Breakfast');
-                                      },
-                                      activeColor: ColorClass.primaryBase,
-                                    );
-                                  },
-                                ),
-                                Consumer<DateProvider>(
-                                  builder: (context, dateProvider, child) {
-                                    return Checkbox(
-                                      value: dateProvider.isMealSelected(dateKey, 'Lunch'),
-                                      onChanged: (value) {
-                                        dateProvider.toggleMeal(dateKey, 'Lunch');
-                                      },
-                                      activeColor: ColorClass.primaryBase,
-                                    );
-                                  },
-                                ),
-                                Consumer<DateProvider>(
-                                  builder: (context, dateProvider, child) {
-                                    return Checkbox(
-                                      value: dateProvider.isMealSelected(dateKey, 'Dinner'),
-                                      onChanged: (value) {
-                                        dateProvider.toggleMeal(dateKey, 'Dinner');
-                                      },
-                                      activeColor: ColorClass.primaryBase,
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          setState(() {
-            selectedDate = DateTime.now();
-            _updateAllDays();
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _scrollToCurrentDay();
-            });
-          });
-        },
-        label: Text(
-          'Today',
-          style: TextStyleClass.poppinsRegular(
-            fontSize: 14,
-            color: ColorClass.white,
-          ),
-        ),
-        backgroundColor: ColorClass.primaryBase,
-      ),
-    );
   }
 
   String _getDayName(int weekday) {
@@ -453,5 +97,230 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
       default:
         return '';
     }
+  }
+
+  void _scrollToToday(CanteenHomePageProvider canteenProvider) {
+    final todayIndex = canteenProvider.getTodayIndex();
+    if (todayIndex != -1) {
+      _scrollController.animateTo(
+        todayIndex * 80.0, // Approximate item height
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canteenProvider = Provider.of<CanteenHomePageProvider>(context);
+    final viewModeProvider = Provider.of<HomeViewModeProvider>(context);
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: ColorClass.primaryBase,
+        title: Text(
+          'Canteen App',
+          style: TextStyleClass.poppinsSemiBold(
+            fontSize: 20,
+            color: ColorClass.white,
+          ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              viewModeProvider.toggleMode();
+            },
+            icon: const Icon(Icons.calendar_month, color: Colors.white),
+            label: Text(
+              '${_getMonthName(canteenProvider.selectedDate.month)} ${canteenProvider.selectedDate.year}',
+              style: TextStyleClass.poppinsRegular(
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: viewModeProvider.mode == HomeViewMode.list
+          ? HomeListView(
+              scrollController: _scrollController,
+              getMonthName: _getMonthName,
+              getDayName: _getDayName,
+            )
+          : MonthCalendarView(
+              selectedDate: canteenProvider.selectedDate,
+              getMonthName: _getMonthName,
+            ),
+      floatingActionButton: viewModeProvider.mode == HomeViewMode.list
+          ? TodayFAB(
+              onPressed: () {
+                canteenProvider.goToToday(context);
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToToday(canteenProvider);
+                });
+              },
+            )
+          : null,
+    );
+  }
+}
+
+// Month view widget (inline, adapted from MonthScreen)
+class _MonthViewWidget extends StatelessWidget {
+  final DateTime selectedDate;
+  final String Function(int) getMonthName;
+  const _MonthViewWidget({required this.selectedDate, required this.getMonthName});
+
+  String _getDateKey(DateTime date) {
+    return '${date.year}-${date.month}-${date.day}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
+    final lastDayOfMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0);
+    final firstWeekday = firstDayOfMonth.weekday % 7;
+    final totalDays = lastDayOfMonth.day;
+    final totalWeeks = ((firstWeekday + totalDays) / 7).ceil();
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: ColorClass.primaryBase.withOpacity(0.1),
+              ),
+            ),
+          ),
+          child: Row(
+            children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                .map((day) => Expanded(
+                      child: Center(
+                        child: Text(
+                          day,
+                          style: TextStyleClass.poppinsMedium(
+                            fontSize: 16,
+                            color: ColorClass.neutral400,
+                          ),
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.all(8),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              childAspectRatio: 0.7,
+              mainAxisSpacing: 4,
+              crossAxisSpacing: 4,
+            ),
+            itemCount: totalWeeks * 7,
+            itemBuilder: (context, index) {
+              final dayOffset = index - firstWeekday;
+              final currentDate = firstDayOfMonth.add(Duration(days: dayOffset));
+              final isCurrentMonth = currentDate.month == selectedDate.month;
+              final isToday = currentDate.day == DateTime.now().day &&
+                  currentDate.month == DateTime.now().month &&
+                  currentDate.year == DateTime.now().year;
+              if (!isCurrentMonth) {
+                return const SizedBox();
+              }
+              final dateKey = _getDateKey(currentDate);
+              Provider.of<DateProvider>(context, listen: false).initializeDate(dateKey);
+              return Container(
+                margin: const EdgeInsets.all(2),
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: isToday ? ColorClass.primaryBase : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isToday ? ColorClass.primaryBase : ColorClass.neutral200,
+                    width: 1.5,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        currentDate.day.toString(),
+                        style: TextStyleClass.poppinsMedium(
+                          fontSize: 16,
+                          color: isToday
+                              ? Colors.white
+                              : currentDate.weekday == DateTime.sunday
+                                  ? Colors.red
+                                  : ColorClass.textMain900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Consumer<DateProvider>(
+                        builder: (context, dateProvider, child) {
+                          return FittedBox(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildMealIndicator('B', dateProvider.isMealSelected(dateKey, 'Breakfast'), isToday),
+                                _buildMealIndicator('L', dateProvider.isMealSelected(dateKey, 'Lunch'), isToday),
+                                _buildMealIndicator('D', dateProvider.isMealSelected(dateKey, 'Dinner'), isToday),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
+    final bool isTodayAndSelected = isToday && isSelected;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: 30,
+      height: 30,
+      decoration: BoxDecoration(
+        color: isTodayAndSelected
+            ? Colors.white
+            : isSelected
+                ? ColorClass.primaryBase
+                : Colors.transparent,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isTodayAndSelected
+              ? ColorClass.primaryBase
+              : isSelected
+                  ? ColorClass.primaryBase
+                  : ColorClass.neutral300,
+          width: 1,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyleClass.poppinsBold(
+            fontSize: 16,
+            color: isTodayAndSelected
+                ? ColorClass.primaryBase
+                : isSelected
+                    ? Colors.white
+                    : ColorClass.neutral400,
+          ),
+        ),
+      ),
+    );
   }
 }

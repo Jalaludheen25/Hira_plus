@@ -198,4 +198,9 @@ class ColorClass {
         ? darkTextPrimary
         : textPrimary;
   }
+
+  // Brand Colors (extracted from HiraPlus icon)
+  static const Color brandDarkGreen = Color(0xFF1B3932); // background
+  static const Color brandLightGreen = Color(0xFFC6E3B2); // band
+  static const Color brandWhite = Color(0xFFFFFFFF); // H and background
 }

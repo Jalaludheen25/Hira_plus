@@ -2,6 +2,7 @@ import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:canteen_app/constants/color_class.dart';
+import 'package:canteen_app/constants/icons_class.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -57,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorClass.white,
+      backgroundColor: ColorClass.brandDarkGreen,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -69,10 +70,10 @@ class _SplashScreenState extends State<SplashScreen>
                   scale: _scaleAnimation.value,
                   child: Transform.rotate(
                     angle: _rotateAnimation.value * 2 * 3.14159,
-                    child: const Icon(
-                      Icons.restaurant_menu,
-                      size: 200,
-                      color: ColorClass.primaryBase,
+                    child: Image.asset(
+                      IconClass.HiraPlus,
+                      width: 180,
+                      height: 180,
                     ),
                   ),
                 );
