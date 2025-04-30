@@ -37,7 +37,7 @@ class HomeListView extends StatelessWidget {
                             label,
                             style: TextStyleClass.poppinsMedium(
                               fontSize: 14,
-                              color: ColorClass.primaryBase,
+                              color: ColorClass.brandDarkGreen,
                             ),
                           ))
                       .toList(),
@@ -62,7 +62,7 @@ class HomeListView extends StatelessWidget {
                   if (isFirstDayOfMonth)
                     Container(
                       padding: const EdgeInsets.all(8),
-                      color: ColorClass.primaryBase.withOpacity(0.05),
+                      color: ColorClass.brandLightGreen,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -72,7 +72,7 @@ class HomeListView extends StatelessWidget {
                               '${getMonthName(date.month)} ${date.year}',
                               style: TextStyleClass.poppinsMedium(
                                 fontSize: 16,
-                                color: ColorClass.primaryBase,
+                                color: ColorClass.brandDarkGreen,
                               ),
                             ),
                           ),
@@ -83,14 +83,14 @@ class HomeListView extends StatelessWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: ColorClass.primaryBase,
+                                color: ColorClass.brandLightGreen,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 'Today',
                                 style: TextStyleClass.poppinsMedium(
                                   fontSize: 14,
-                                  color: Colors.white,
+                                  color: ColorClass.brandDarkGreen,
                                 ),
                               ),
                             ),
@@ -119,14 +119,14 @@ class HomeListView extends StatelessWidget {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: ColorClass.primaryBase,
+                                    color: ColorClass.brandLightGreen,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
                                     date.day.toString().padLeft(2, '0'),
                                     style: TextStyleClass.poppinsMedium(
                                       fontSize: 26,
-                                      color: Colors.white,
+                                      color: ColorClass.brandDarkGreen,
                                     ),
                                   ),
                                 )
@@ -160,7 +160,8 @@ class HomeListView extends StatelessWidget {
                                     onChanged: (value) {
                                       dateProvider.toggleMeal(dateKey, 'Breakfast');
                                     },
-                                    activeColor: ColorClass.primaryBase,
+                                    activeColor: ColorClass.brandLightGreen,
+                                    checkColor: ColorClass.brandDarkGreen,
                                   );
                                 },
                               ),
@@ -171,7 +172,8 @@ class HomeListView extends StatelessWidget {
                                     onChanged: (value) {
                                       dateProvider.toggleMeal(dateKey, 'Lunch');
                                     },
-                                    activeColor: ColorClass.primaryBase,
+                                    activeColor: ColorClass.brandLightGreen,
+                                    checkColor: ColorClass.brandDarkGreen,
                                   );
                                 },
                               ),
@@ -182,7 +184,8 @@ class HomeListView extends StatelessWidget {
                                     onChanged: (value) {
                                       dateProvider.toggleMeal(dateKey, 'Dinner');
                                     },
-                                    activeColor: ColorClass.primaryBase,
+                                    activeColor: ColorClass.brandLightGreen,
+                                    checkColor: ColorClass.brandDarkGreen,
                                   );
                                 },
                               ),

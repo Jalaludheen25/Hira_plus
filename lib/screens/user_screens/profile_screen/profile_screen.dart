@@ -19,7 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: ColorClass.primaryBase,
+        backgroundColor: ColorClass.brandDarkGreen,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -41,7 +41,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfilePicture() {
     return CircleAvatar(
       radius: 50,
-      backgroundColor: ColorClass.primaryBase,
+      backgroundColor: ColorClass.brandDarkGreen,
       child: FaIcon(FontAwesomeIcons.user, size: 50, color: ColorClass.white),
     );
   }

@@ -42,9 +42,9 @@ class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
     return Scaffold(
       body: _buildNavigator(),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: ColorClass.white,
-        selectedItemColor: ColorClass.primaryBase,
-        unselectedItemColor: ColorClass.neutral400,
+        backgroundColor: ColorClass.brandWhite,
+        selectedItemColor: ColorClass.brandDarkGreen,
+        unselectedItemColor: ColorClass.brandLightGreen,
         currentIndex: _selectedIndex,
         onTap: (int index) {
           setState(() {

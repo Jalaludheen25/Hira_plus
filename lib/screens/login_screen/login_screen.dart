@@ -124,11 +124,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (!_showOTPField)
                   Container(
                     decoration: BoxDecoration(
-                      color: ColorClass.white,
+                      color: ColorClass.brandWhite,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: ColorClass.neutral300.withOpacity(0.1),
+                          color: ColorClass.brandLightGreen.withOpacity(0.1),
                           spreadRadius: 2,
                           blurRadius: 15,
                           offset: const Offset(0, 4),
@@ -144,52 +144,59 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                       style: TextStyle(
                         fontSize: 16,
-                        color: ColorClass.neutral800,
+                        color: ColorClass.brandDarkGreen,
                         letterSpacing: 1.2,
                       ),
                       decoration: InputDecoration(
                         labelText: 'Phone Number',
                         labelStyle: TextStyle(
-                          color: ColorClass.primaryBase,
-                          fontSize: 14,
+                          color: ColorClass.brandDarkGreen,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        floatingLabelStyle: TextStyle(
+                          color: ColorClass.brandDarkGreen,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                          letterSpacing: 0.5,
                         ),
                         errorStyle: TextStyle(
-                          color: ColorClass.redBase,
+                          color: ColorClass.brandLightGreen,
                           fontSize: 12,
                         ),
                         prefixIcon: Icon(
                           Icons.phone_android,
-                          color: ColorClass.primaryBase,
+                          color: ColorClass.brandDarkGreen,
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(
-                            color: ColorClass.neutral200,
+                            color: ColorClass.brandLightGreen,
                           ),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(
-                            color: ColorClass.primaryBase,
+                            color: ColorClass.brandLightGreen,
                             width: 2,
                           ),
                         ),
                         errorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(
-                            color: ColorClass.redBase,
+                            color: ColorClass.brandLightGreen,
                             width: 1,
                           ),
                         ),
                         focusedErrorBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: BorderSide(
-                            color: ColorClass.redBase,
+                            color: ColorClass.brandLightGreen,
                             width: 2,
                           ),
                         ),
                         filled: true,
-                        fillColor: ColorClass.white,
+                        fillColor: ColorClass.brandWhite,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 16,
@@ -220,15 +227,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     borderRadius: BorderRadius.circular(16),
                     gradient: LinearGradient(
                       colors: [
-                        ColorClass.white, // Changed from primaryBase to white
-                        ColorClass.white.withOpacity(
-                            0.8), // Changed from primaryBase to white
+                        ColorClass.brandLightGreen,
+                        ColorClass.brandLightGreen.withOpacity(0.8),
                       ],
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: ColorClass.white.withOpacity(
-                            0.3), // Changed from primaryBase to white
+                        color: ColorClass.brandLightGreen.withOpacity(0.3),
                         spreadRadius: 0,
                         blurRadius: 12,
                         offset: const Offset(0, 4),
@@ -281,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Text(
                       _showOTPField ? 'Validate' : 'Send OTP',
                       style: const TextStyle(
-                        color: ColorClass.primaryBase,
+                        color: ColorClass.brandDarkGreen,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 1,
@@ -298,8 +303,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: ColorClass.white
-                          .withOpacity(0.1), // Changed from neutral100
+                      color: ColorClass.brandLightGreen.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -308,15 +312,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         Icon(
                           Icons.info_outline,
                           size: 16,
-                          color: ColorClass.white
-                              .withOpacity(0.8), // Changed from neutral500
+                          color: ColorClass.brandLightGreen.withOpacity(0.8),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Need help? Contact Hira Manager',
                           style: TextStyle(
-                            color: ColorClass.white
-                                .withOpacity(0.8), // Changed from neutral500
+                            color: ColorClass.brandLightGreen.withOpacity(0.8),
                             fontSize: 12,
                           ),
                         ),

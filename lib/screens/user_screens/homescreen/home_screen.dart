@@ -116,7 +116,7 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
     final viewModeProvider = Provider.of<HomeViewModeProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: ColorClass.primaryBase,
+        backgroundColor: ColorClass.brandDarkGreen,
         title: Text(
           'Canteen App',
           style: TextStyleClass.poppinsSemiBold(

@@ -14,10 +14,10 @@ class TodayFAB extends StatelessWidget {
         'Today',
         style: TextStyleClass.poppinsRegular(
           fontSize: 14,
-          color: ColorClass.white,
+          color: ColorClass.brandDarkGreen,
         ),
       ),
-      backgroundColor: ColorClass.primaryBase,
+      backgroundColor: ColorClass.brandLightGreen,
     );
   }
 } 

@@ -77,10 +77,10 @@ class MonthCalendarView extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: isToday ? ColorClass.primaryBase : Colors.transparent,
+                    color: isToday ? ColorClass.brandLightGreen : Colors.transparent,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: isToday ? ColorClass.primaryBase : ColorClass.neutral200,
+                      color: isToday ? ColorClass.brandLightGreen : ColorClass.neutral200,
                       width: 1.5,
                     ),
                   ),
@@ -94,7 +94,7 @@ class MonthCalendarView extends StatelessWidget {
                           style: TextStyleClass.poppinsMedium(
                             fontSize: 16,
                             color: isToday
-                                ? Colors.white
+                                ? ColorClass.brandDarkGreen
                                 : currentDate.weekday == DateTime.sunday
                                     ? Colors.red
                                     : ColorClass.textMain900,
@@ -131,6 +131,7 @@ class MonthCalendarView extends StatelessWidget {
   void _showMealBottomSheet(BuildContext context, String dateKey, DateTime date) {
     showModalBottomSheet(
       context: context,
+      backgroundColor: ColorClass.brandWhite,
       builder: (context) {
         return Consumer<DateProvider>(
           builder: (context, dateProvider, child) {
@@ -139,6 +140,15 @@ class MonthCalendarView extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: ColorClass.brandDarkGreen,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
                   Text(
                     'Mark Meals for ${date.day}-${date.month}-${date.year}',
                     style: TextStyleClass.poppinsMedium(fontSize: 18),
@@ -161,7 +171,7 @@ class MonthCalendarView extends StatelessWidget {
                         mealIcon = Icons.fastfood;
                     }
                     return ListTile(
-                      leading: Icon(mealIcon, color: ColorClass.primaryBase),
+                      leading: Icon(mealIcon, color: ColorClass.brandDarkGreen),
                       title: Text(meal),
                       trailing: Container(
                         width: 24,
@@ -169,10 +179,10 @@ class MonthCalendarView extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isSelected
-                              ? ColorClass.primaryBase
+                              ? ColorClass.brandDarkGreen
                               : Colors.white,
                           border: Border.all(
-                            color: ColorClass.primaryBase,
+                            color: ColorClass.brandDarkGreen,
                             width: 2,
                           ),
                         ),
@@ -181,7 +191,7 @@ class MonthCalendarView extends StatelessWidget {
                                 child: Icon(
                                   Icons.check,
                                   size: 16,
-                                  color: Colors.white,
+                                  color: ColorClass.brandLightGreen,
                                 ),
                               )
                             : null,
@@ -211,30 +221,36 @@ class MonthCalendarView extends StatelessWidget {
         color: isTodayAndSelected
             ? Colors.white
             : isSelected
-                ? ColorClass.primaryBase
+                ? ColorClass.brandLightGreen
                 : Colors.transparent,
         shape: BoxShape.circle,
         border: Border.all(
           color: isTodayAndSelected
-              ? ColorClass.primaryBase
+              ? ColorClass.brandDarkGreen
               : isSelected
-                  ? ColorClass.primaryBase
+                  ? ColorClass.brandLightGreen
                   : ColorClass.neutral300,
           width: 1,
         ),
       ),
       child: Center(
-        child: Text(
-          label,
-          style: TextStyleClass.poppinsBold(
-            fontSize: 16,
-            color: isTodayAndSelected
-                ? ColorClass.primaryBase
-                : isSelected
-                    ? Colors.white
-                    : ColorClass.neutral400,
-          ),
-        ),
+        child: isSelected
+            ? Icon(
+                Icons.check,
+                size: 18,
+                color: ColorClass.brandLightGreen,
+              )
+            : Text(
+                label,
+                style: TextStyleClass.poppinsBold(
+                  fontSize: 16,
+                  color: isTodayAndSelected
+                      ? ColorClass.brandDarkGreen
+                      : isSelected
+                          ? ColorClass.brandLightGreen
+                          : ColorClass.neutral400,
+                ),
+              ),
       ),
     );
   }
