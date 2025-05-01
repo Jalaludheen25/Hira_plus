@@ -1,4 +1,4 @@
-package com.example.canteen_app
+package com.d4dx.hiraplus
 
 import io.flutter.embedding.android.FlutterActivity
 

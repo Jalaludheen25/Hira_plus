@@ -19,8 +19,7 @@ void navigateReplaceTo({
   required String route,
   Object? arguments,
 }) {
-  dev.log('Navigating and replacing with route: $route',
-      name: 'NavigationHelper');
+  dev.log('Navigating and replacing with route: $route', name: 'NavigationHelper');
   Navigator.of(context).pushReplacementNamed(route, arguments: arguments);
 }
 

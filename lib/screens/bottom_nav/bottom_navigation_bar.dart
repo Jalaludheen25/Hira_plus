@@ -3,55 +3,42 @@ import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/routes/app_pages.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:canteen_app/constants/color_class.dart';
+import 'package:provider/provider.dart';
+import 'package:canteen_app/providers/bottom_nav_provider.dart';
 
-class BottomNavigationBarScreen extends StatefulWidget {
+class BottomNavigationBarScreen extends StatelessWidget {
   const BottomNavigationBarScreen({super.key});
 
   @override
-  State<BottomNavigationBarScreen> createState() =>
-      _BottomNavigationBarScreenState();
-}
-
-class _BottomNavigationBarScreenState extends State<BottomNavigationBarScreen> {
-  int _selectedIndex = 0; // Track selected tab
-
-  // List of page route names for bottom navigation
-  final List<String> _pageRoutes = [
-    Routes.home,
-    Routes.profile,
-  ];
-
-  // Build a nested Navigator using the app routes
-  Widget _buildNavigator() {
-    final routes = getRoutes();
-    final routeName = _pageRoutes[_selectedIndex];
-    final builder = routes[routeName]!;
-    return Navigator(
-      key: ValueKey(_selectedIndex), // forces rebuild when index changes
-      onGenerateRoute: (RouteSettings settings) {
-        return MaterialPageRoute(
-          builder: builder,
-          settings: settings,
-        );
-      },
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final bottomNavProvider = Provider.of<BottomNavProvider>(context);
+    final int selectedIndex = bottomNavProvider.selectedIndex;
+    final List<String> pageRoutes = [
+      Routes.home,
+      Routes.profile,
+    ];
+    final routes = getRoutes();
+    final routeName = pageRoutes[selectedIndex];
+    final builder = routes[routeName]!;
     return Scaffold(
-      body: _buildNavigator(),
+      body: Navigator(
+        key: ValueKey(selectedIndex),
+        onGenerateRoute: (RouteSettings settings) {
+          return MaterialPageRoute(
+            builder: builder,
+            settings: settings,
+          );
+        },
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: ColorClass.brandWhite,
         selectedItemColor: ColorClass.brandDarkGreen,
         unselectedItemColor: ColorClass.brandLightGreen,
-        currentIndex: _selectedIndex,
+        currentIndex: selectedIndex,
         onTap: (int index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+          bottomNavProvider.setIndex(index);
         },
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: FaIcon(FontAwesomeIcons.house),
             label: 'Home',
