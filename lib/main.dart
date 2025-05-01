@@ -5,8 +5,23 @@ import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shake_flutter/shake_flutter.dart';
+import 'dart:io';
+import 'package:canteen_app/constants/global_variables.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Shake.start(
+      Platform.isAndroid
+          ? GlobalVariables.androidShakeKey
+          : GlobalVariables.iosShakeKey,
+    );
+    debugPrint('📱 Shake detection initialized');
+  } catch (e, stackTrace) {
+    debugPrint('⚠️ Failed to initialize shake detection: $e');
+    debugPrint('StackTrace: $stackTrace');
+  }
   runApp(const MyApp());
 }
 

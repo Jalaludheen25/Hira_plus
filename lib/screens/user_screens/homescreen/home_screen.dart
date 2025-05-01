@@ -18,6 +18,8 @@ import 'package:canteen_app/providers/auth_provider.dart';
 import 'package:canteen_app/providers/profile_screen_provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:canteen_app/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:shake_flutter/shake_flutter.dart';
+import 'package:shake_flutter/enums/shake_screen.dart';
 
 class CanteenHomePage extends StatefulWidget {
   const CanteenHomePage({super.key});
@@ -167,7 +169,8 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
           navigatorKey.currentState!.pushNamed(Routes.contactUs);
         },
         onRaiseBug: () {
-          // You can implement bug reporting logic here
+          Navigator.of(context).pop();
+          Shake.show(ShakeScreen.home);
         },
         onLogout: () {
           showModalBottomSheet(

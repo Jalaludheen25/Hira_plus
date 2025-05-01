@@ -472,6 +472,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  shake_flutter:
+    dependency: "direct main"
+    description:
+      name: shake_flutter
+      sha256: "6ae0ef5da429c5973e6d2b270a112f62d501174dac19b50fc32eed4d50c16b28"
+      url: "https://pub.dev"
+    source: hosted
+    version: "17.1.0"
   shared_preferences:
     dependency: "direct main"
     description:

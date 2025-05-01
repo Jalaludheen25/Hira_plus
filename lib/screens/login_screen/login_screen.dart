@@ -273,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                           return;
                         }
-                        navigateTo(context: context, route: Routes.bottomNav);
+                        navigatePRTo(context: context, route: Routes.bottomNav);
                       }
                     },
                     style: ElevatedButton.styleFrom(

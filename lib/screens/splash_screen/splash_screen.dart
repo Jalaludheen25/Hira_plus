@@ -45,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.forward();
 
     Future.delayed(const Duration(seconds: 3), () {
-      navigateReplaceTo(context: context, route: Routes.login);
+      navigatePRTo(context: context, route: Routes.login);
     });
   }
 

@@ -10,6 +10,11 @@ import 'package:provider/provider.dart';
 import 'package:canteen_app/providers/profile_screen_provider.dart';
 import 'widgets/logout_confirmation_bottom_sheet.dart';
 import 'package:canteen_app/providers/bottom_nav_provider.dart';
+import 'package:canteen_app/screens/user_screens/homescreen/widgets/custom_drawer.dart';
+import 'package:canteen_app/constants/global_variables.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:shake_flutter/shake_flutter.dart';
+import 'package:shake_flutter/enums/shake_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -22,9 +27,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: CustomDrawer(
+        userName: Provider.of<ProfileScreenProvider>(context).userName,
+        appVersion: GlobalVariables.appVersion,
+        onHome: () {
+          Provider.of<BottomNavProvider>(context, listen: false).setIndex(0);
+          Navigator.of(context).pop();
+        },
+        onProfile: () {
+          Provider.of<BottomNavProvider>(context, listen: false).setIndex(1);
+          Navigator.of(context).pop();
+        },
+        onFeedback: () async {
+          final Uri emailLaunchUri = Uri(
+            scheme: 'mailto',
+            path: 'mail@d4dx.co',
+          );
+          await launchUrl(emailLaunchUri);
+        },
+        onPrivacy: () async {
+          final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+          await launchUrl(url, mode: LaunchMode.externalApplication);
+        },
+        onAbout: () {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('About Us'),
+              content: const Text('This is dummy content for About Us.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
+                ),
+              ],
+            ),
+          );
+        },
+        onContact: () {
+          Navigator.of(context).pop();
+          navigatorKey.currentState!.pushNamed(Routes.contactUs);
+        },
+        onRaiseBug: () {
+          Navigator.of(context).pop();
+          Shake.show(ShakeScreen.home);
+        },
+        onLogout: _showLogoutConfirmationBottomSheet,
+      ),
       appBar: AppBar(
         title:  Text('Profile',style: TextStyleClass.primaryFont500(20, ColorClass.white)),
         backgroundColor: ColorClass.brandDarkGreen,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Center(
         child: SingleChildScrollView(
