@@ -40,11 +40,13 @@ class BottomNavigationBarScreen extends StatelessWidget {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.house),
+            icon: Icon(Icons.home_outlined, size: 34),
+            activeIcon: Icon(Icons.home, size: 34),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: FaIcon(FontAwesomeIcons.user),
+            icon: Icon(Icons.person_outline, size: 34),
+            activeIcon: Icon(Icons.person, size: 34),
             label: 'Profile',
           ),
         ],

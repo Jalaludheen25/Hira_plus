@@ -114,11 +114,18 @@ class _CanteenHomePageState extends State<CanteenHomePage> {
   void _scrollToToday(CanteenHomePageProvider canteenProvider) {
     final todayIndex = canteenProvider.getTodayIndex();
     if (todayIndex != -1) {
-      _scrollController.animateTo(
-        todayIndex * 80.0, // Approximate item height
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          todayIndex * 80.0, // Approximate item height
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        // Try again after a short delay if not attached yet
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _scrollToToday(canteenProvider);
+        });
+      }
     }
   }
 

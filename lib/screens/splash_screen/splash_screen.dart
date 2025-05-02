@@ -3,6 +3,7 @@ import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/constants/icons_class.dart';
+import 'package:canteen_app/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -59,11 +60,12 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ColorClass.brandDarkGreen,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedBuilder(
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Spacer(),
+          Center(
+            child: AnimatedBuilder(
               animation: _animationController,
               builder: (context, child) {
                 return Transform.scale(
@@ -79,8 +81,10 @@ class _SplashScreenState extends State<SplashScreen>
                 );
               },
             ),
-          ],
-        ),
+          ),
+          const Spacer(),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }

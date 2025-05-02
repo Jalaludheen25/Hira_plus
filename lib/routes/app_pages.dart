@@ -5,6 +5,7 @@ import 'package:canteen_app/screens/user_screens/profile_screen/profile_screen.d
 import 'package:canteen_app/screens/splash_screen/splash_screen.dart';
 import 'package:canteen_app/screens/user_screens/homescreen/home_screen.dart';
 import 'package:canteen_app/screens/user_screens/contact_us/contact_us_screen.dart';
+import 'package:canteen_app/screens/user_screens/meal_count/meal_count_page.dart';
 import 'package:flutter/material.dart';
 
 Map<String, WidgetBuilder> getRoutes() {
@@ -15,5 +16,6 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.profile: (context) => const ProfileScreen(),
     Routes.home: (context) => const CanteenHomePage(),
     Routes.contactUs: (context) => const ContactUsScreen(),
+    Routes.mealCount: (context) => const MealCountScreen(),
   };
 }

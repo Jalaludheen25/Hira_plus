@@ -9,9 +9,14 @@ void navigateTo({
   required BuildContext context,
   required String route,
   Object? arguments,
+  bool useRootNavigator = false,
 }) {
   dev.log('Navigating to route: $route', name: 'NavigationHelper');
-  Navigator.of(context).pushNamed(route, arguments: arguments);
+  if (useRootNavigator) {
+    Navigator.of(context, rootNavigator: true).pushNamed(route, arguments: arguments);
+  } else {
+    Navigator.of(context).pushNamed(route, arguments: arguments);
+  }
 }
 
 void navigateReplaceTo({
