@@ -283,12 +283,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           onPressed: () {
-                            if (authProvider.selectedRole == 'User') {
+                            if (authProvider.selectedRole == 'User' || authProvider.selectedRole == 'Mess Staff') {
                               if (!isValidPhoneNumber(_phoneController.text)) {
                                 toastification.show(
                                   context: context,
                                   title: const Text('Please enter a valid 10-digit phone number'),
                                   type: ToastificationType.error,
+                                  autoCloseDuration: const Duration(seconds: 2),
                                 );
                                 return;
                               }
@@ -323,10 +324,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                 context: context,
                                 title: const Text('Please enter a valid 6-digit OTP'),
                                 type: ToastificationType.error,
+                                autoCloseDuration: const Duration(seconds: 2),
                               );
                               return;
                             }
-                            navigatePRTo(context: context, route: Routes.bottomNav);
+                            if (authProvider.selectedRole == 'Mess Staff') {
+                              navigatePRToGlobal(route: Routes.messStaff);
+                            } else {
+                              navigatePRToGlobal(route: Routes.bottomNav);
+                            }
                             authProvider.reset();
                           },
                           child: const Text('Validate', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

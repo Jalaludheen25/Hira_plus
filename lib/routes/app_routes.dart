@@ -9,4 +9,5 @@ class Routes {
   static const privacy = '/privacy';
   static const feedback = '/feedback';
   static const mealCount = '/meal_count';
+  static const String messStaff = '/messStaff';
 }

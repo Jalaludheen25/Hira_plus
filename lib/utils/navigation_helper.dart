@@ -97,3 +97,15 @@ void navigateWithLeftToRightAnimation({
     },
   ));
 }
+
+void navigatePRToGlobal({
+  required String route,
+  Object? arguments,
+}) {
+  dev.log('Navigating and removing until route (global): $route', name: 'NavigationHelper');
+  navigatorKey.currentState?.pushNamedAndRemoveUntil(
+    route,
+    (route) => false,
+    arguments: arguments,
+  );
+}
