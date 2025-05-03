@@ -3,7 +3,7 @@ import 'package:canteen_app/screens/bottom_nav/bottom_navigation_bar.dart';
 import 'package:canteen_app/screens/login_screen/login_screen.dart';
 import 'package:canteen_app/screens/user_screens/profile_screen/profile_screen.dart';
 import 'package:canteen_app/screens/splash_screen/splash_screen.dart';
-import 'package:canteen_app/screens/user_screens/homescreen/home_screen.dart';
+import 'package:canteen_app/screens/user_screens/user_home_screen/user_home_screen.dart';
 import 'package:canteen_app/screens/user_screens/contact_us/contact_us_screen.dart';
 import 'package:canteen_app/screens/user_screens/meal_count/meal_count_page.dart';
 import 'package:flutter/material.dart';
