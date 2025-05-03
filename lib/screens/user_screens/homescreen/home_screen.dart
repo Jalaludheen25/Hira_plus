@@ -1,34 +1,33 @@
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/constants/textstyle_class.dart';
 import 'package:canteen_app/providers/date_provider.dart';
+import 'package:canteen_app/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:canteen_app/screens/user_screens/user_home_screen/widgets/home_list_view.dart';
+import 'package:canteen_app/screens/user_screens/user_home_screen/widgets/month_calendar_view.dart';
+import 'package:canteen_app/screens/user_screens/user_home_screen/widgets/today_fab.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:canteen_app/providers/home_view_mode_provider.dart';
 import 'package:canteen_app/providers/canteen_home_page_provider.dart';
-import 'widgets/month_calendar_view.dart';
-import 'widgets/home_list_view.dart';
-import 'widgets/today_fab.dart';
-import 'widgets/custom_drawer.dart';
 import 'package:canteen_app/providers/bottom_nav_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:canteen_app/utils/navigation_helper.dart';
 import 'package:canteen_app/routes/app_routes.dart';
 import 'package:canteen_app/constants/global_variables.dart';
-import 'package:canteen_app/providers/auth_provider.dart';
 import 'package:canteen_app/providers/profile_screen_provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:canteen_app/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 
-class CanteenHomePage extends StatefulWidget {
-  const CanteenHomePage({super.key});
+class UserHomeScreen extends StatefulWidget {
+  const UserHomeScreen({super.key});
 
   @override
-  State<CanteenHomePage> createState() => _CanteenHomePageState();
+  State<UserHomeScreen> createState() => _UserHomeScreenState();
 }
 
-class _CanteenHomePageState extends State<CanteenHomePage> {
+class _UserHomeScreenState extends State<UserHomeScreen> {
   final ScrollController _scrollController = ScrollController();
   HomeViewModeProvider? _viewModeProvider;
   VoidCallback? _viewModeListener;

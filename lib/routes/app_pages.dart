@@ -14,7 +14,7 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.login: (context) => const LoginScreen(),
     Routes.bottomNav: (context) => const BottomNavigationBarScreen(),
     Routes.profile: (context) => const ProfileScreen(),
-    Routes.home: (context) => const CanteenHomePage(),
+    Routes.home: (context) => const UserHomeScreen(),
     Routes.contactUs: (context) => const ContactUsScreen(),
     Routes.mealCount: (context) => const MealCountScreen(),
   };
