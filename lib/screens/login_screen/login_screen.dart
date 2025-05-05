@@ -283,7 +283,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           onPressed: () {
-                            if (authProvider.selectedRole == 'User' || authProvider.selectedRole == 'Mess Staff') {
+                            if (authProvider.selectedRole == 'User' || authProvider.selectedRole == 'Mess Staff' || authProvider.selectedRole == 'Manager') {
                               if (!isValidPhoneNumber(_phoneController.text)) {
                                 toastification.show(
                                   context: context,
@@ -294,12 +294,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return;
                               }
                               authProvider.setShowOTPField(true);
-                            } else {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => DummyRoleScreen(role: authProvider.selectedRole),
-                                ),
-                              );
                             }
                           },
                           child: const Text('Continue', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -330,6 +324,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
                             if (authProvider.selectedRole == 'Mess Staff') {
                               navigatePRToGlobal(route: Routes.messStaff);
+                            } else if (authProvider.selectedRole == 'Manager') {
+                              navigatePRToGlobal(route: Routes.manager);
                             } else {
                               navigatePRToGlobal(route: Routes.bottomNav);
                             }
@@ -391,29 +387,6 @@ class _LoginScreenState extends State<LoginScreen> {
       default:
         return const Icon(LucideIcons.user, color: ColorClass.brandDarkGreen, size: 22);
     }
-  }
-}
-
-// DummyRoleScreen widget
-class DummyRoleScreen extends StatelessWidget {
-  final String role;
-  const DummyRoleScreen({required this.role, Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('$role Dashboard',),
-        backgroundColor: ColorClass.brandDarkGreen,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Center(
-        child: Text(
-          '$role features coming soon!',
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
   }
 }
 

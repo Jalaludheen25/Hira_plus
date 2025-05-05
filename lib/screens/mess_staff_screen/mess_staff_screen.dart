@@ -172,140 +172,137 @@ class MessStaffScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => MessStaffMealProvider(),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: ColorClass.brandDarkGreen,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            'Home',
-            style: TextStyleClass.poppinsSemiBold(
-              fontSize: 20,
-              color: ColorClass.white,
-            ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: ColorClass.brandDarkGreen,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          'Home',
+          style: TextStyleClass.poppinsSemiBold(
+            fontSize: 20,
+            color: ColorClass.white,
           ),
-          centerTitle: false,
-          elevation: 0,
-          actions: [
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              onSelected: (value) {
-                if (value == 'logout') {
-                  showModalBottomSheet(
-                    context: context,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    builder: (BuildContext context) {
-                      return LogoutConfirmationBottomSheet(
-                        onLogout: () {
-                          Provider.of<BottomNavProvider>(context, listen: false).setIndex(0);
-                          toastification.show(
-                            context: context,
-                            title: Text('Logged out successfully'),
-                            type: ToastificationType.success,
-                            autoCloseDuration: const Duration(seconds: 2),
-                          );
-                          Future.delayed(const Duration(milliseconds: 500), () {
-                            navigatePRToGlobal(
-                              route: Routes.login,
-                            );
-                          });
-                        },
-                      );
-                    },
-                  );
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem<String>(
-                  value: 'logout',
-                  child: Text('Logout'),
-                ),
-              ],
-            ),
-          ],
         ),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Meal Summary', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                const SizedBox(height: 12),
-                Consumer<MessStaffMealProvider>(
-                  builder: (context, mealProvider, _) => Wrap(
-                    spacing: 12.0,
-                    runSpacing: 12.0,
-                    children: List.generate(mealSummary.length, (index) => GestureDetector(
-                      onTap: () {
-                        mealProvider.selectMeal(index);
-                      },
-                      child: MealSummaryWidget(
-                        icon: mealSummary[index]['icon'] as IconData,
-                        label: mealSummary[index]['label'] as String,
-                        count: mealSummary[index]['count'] as int,
-                        isSelected: mealProvider.selectedMeal == index,
-                      ),
-                    )),
+        centerTitle: false,
+        elevation: 0,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onSelected: (value) {
+              if (value == 'logout') {
+                showModalBottomSheet(
+                  context: context,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                const SizedBox(height: 24),
-                Text('Detailed List', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                const SizedBox(height: 8),
-                Consumer<MessStaffMealProvider>(
-                  builder: (context, mealProvider, _) {
-                    final details = detailedLists[mealProvider.selectedMeal];
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              'Total: ${details.length}',
-                              style: TextStyleClass.poppinsBold(fontSize: 18, color: ColorClass.brandDarkGreen),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        DetailedList(details: details),
-                      ],
+                  builder: (BuildContext context) {
+                    return LogoutConfirmationBottomSheet(
+                      onLogout: () {
+                        Provider.of<BottomNavProvider>(context, listen: false).setIndex(0);
+                        toastification.show(
+                          context: context,
+                          title: Text('Logged out successfully'),
+                          type: ToastificationType.success,
+                          autoCloseDuration: const Duration(seconds: 2),
+                        );
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          navigatePRToGlobal(
+                            route: Routes.login,
+                          );
+                        });
+                      },
                     );
                   },
+                );
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem<String>(
+                value: 'logout',
+                child: Text('Logout'),
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Meal Summary', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+              const SizedBox(height: 12),
+              Consumer<MessStaffMealProvider>(
+                builder: (context, mealProvider, _) => Wrap(
+                  spacing: 12.0,
+                  runSpacing: 12.0,
+                  children: List.generate(mealSummary.length, (index) => GestureDetector(
+                    onTap: () {
+                      mealProvider.selectMeal(index);
+                    },
+                    child: MealSummaryWidget(
+                      icon: mealSummary[index]['icon'] as IconData,
+                      label: mealSummary[index]['label'] as String,
+                      count: mealSummary[index]['count'] as int,
+                      isSelected: mealProvider.selectedMeal == index,
+                    ),
+                  )),
                 ),
-                const Spacer(),
-                Consumer<MessStaffMealProvider>(
-                  builder: (context, mealProvider, _) => Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              ),
+              const SizedBox(height: 24),
+              Text('Detailed List', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+              const SizedBox(height: 8),
+              Consumer<MessStaffMealProvider>(
+                builder: (context, mealProvider, _) {
+                  final details = detailedLists[mealProvider.selectedMeal];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      BottomButton(
-                        label: 'Share',
-                        onTap: () {
-                          final selectedIndex = mealProvider.selectedMeal;
-                          final mealLabel = mealSummary[selectedIndex]['label'] as String;
-                          final details = detailedLists[selectedIndex];
-                          generateAndSharePdf(context, mealLabel, details, shareInsteadOfOpen: true);
-                        },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Total: ${details.length}',
+                            style: TextStyleClass.poppinsBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+                          ),
+                        ],
                       ),
-                      BottomButton(
-                        label: 'Print',
-                        onTap: () {
-                          final selectedIndex = mealProvider.selectedMeal;
-                          final mealLabel = mealSummary[selectedIndex]['label'] as String;
-                          final details = detailedLists[selectedIndex];
-                          generateAndSharePdf(context, mealLabel, details, shareInsteadOfOpen: false);
-                        },
-                      ),
+                      const SizedBox(height: 4),
+                      DetailedList(details: details),
                     ],
-                  ),
+                  );
+                },
+              ),
+              const Spacer(),
+              Consumer<MessStaffMealProvider>(
+                builder: (context, mealProvider, _) => Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    BottomButton(
+                      label: 'Share',
+                      onTap: () {
+                        final selectedIndex = mealProvider.selectedMeal;
+                        final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                        final details = detailedLists[selectedIndex];
+                        generateAndSharePdf(context, mealLabel, details, shareInsteadOfOpen: true);
+                      },
+                    ),
+                    BottomButton(
+                      label: 'Print',
+                      onTap: () {
+                        final selectedIndex = mealProvider.selectedMeal;
+                        final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                        final details = detailedLists[selectedIndex];
+                        generateAndSharePdf(context, mealLabel, details, shareInsteadOfOpen: false);
+                      },
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+            ],
           ),
         ),
       ),

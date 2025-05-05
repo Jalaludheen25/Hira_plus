@@ -10,4 +10,7 @@ class Routes {
   static const feedback = '/feedback';
   static const mealCount = '/meal_count';
   static const String messStaff = '/messStaff';
+  static const String manager = '/manager';
+  static const String markingList = '/manager/marking_list';
+  static const String usersList = '/manager/users_list';
 }

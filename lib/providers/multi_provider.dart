@@ -4,6 +4,8 @@ import 'package:canteen_app/providers/date_provider.dart';
 import 'package:canteen_app/providers/home_view_mode_provider.dart';
 import 'package:canteen_app/providers/bottom_nav_provider.dart';
 import 'package:canteen_app/providers/profile_screen_provider.dart';
+import 'package:canteen_app/providers/users_provider.dart';
+import 'package:canteen_app/providers/mess_staff_meal_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
@@ -15,5 +17,7 @@ List<SingleChildWidget> getProviders() {
     ChangeNotifierProvider(create: (context) => HomeViewModeProvider()),
     ChangeNotifierProvider(create: (context) => BottomNavProvider()),
     ChangeNotifierProvider(create: (context) => ProfileScreenProvider()),
+    ChangeNotifierProvider(create: (context) => UsersProvider()),
+    ChangeNotifierProvider(create: (context) => MessStaffMealProvider()),
   ];
 }
