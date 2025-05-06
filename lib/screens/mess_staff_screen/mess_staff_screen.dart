@@ -1,7 +1,12 @@
+import 'package:canteen_app/providers/profile_screen_provider.dart';
+import 'package:canteen_app/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:canteen_app/constants/color_class.dart';
 import 'package:canteen_app/constants/textstyle_class.dart';
+import 'package:shake_flutter/enums/shake_screen.dart';
+import 'package:shake_flutter/shake_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'widgets/meal_summary_widget.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:canteen_app/providers/mess_staff_meal_provider.dart';
@@ -187,44 +192,156 @@ class MessStaffScreen extends StatelessWidget {
         centerTitle: false,
         elevation: 0,
         actions: [
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            onSelected: (value) {
-              if (value == 'logout') {
-                showModalBottomSheet(
-                  context: context,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  builder: (BuildContext context) {
-                    return LogoutConfirmationBottomSheet(
-                      onLogout: () {
-                        Provider.of<BottomNavProvider>(context, listen: false).setIndex(0);
-                        toastification.show(
-                          context: context,
-                          title: Text('Logged out successfully'),
-                          type: ToastificationType.success,
-                          autoCloseDuration: const Duration(seconds: 2),
+          Builder(
+            builder: (context) => IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
+              onPressed: () {
+                Scaffold.of(context).openEndDrawer();
+              },
+            ),
+          ),
+        ],
+      ),
+      endDrawer: Drawer(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // User Name Section
+              Container(
+                width: double.infinity,
+                color: ColorClass.brandLightGreen,
+                padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: ColorClass.brandDarkGreen,
+                      child: Icon(LucideIcons.user, color: ColorClass.brandLightGreen, size: 32),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        Provider.of<ProfileScreenProvider>(context).userName,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: ColorClass.brandDarkGreen,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    // Home and Profile options removed for MessStaffScreen
+                    
+                    CustomDrawerItem(
+                      title: 'Feedback',
+                      icon: LucideIcons.messageCircle,
+                      onTap: () async {
+                        final Uri emailLaunchUri = Uri(
+                          scheme: 'mailto',
+                          path: 'mail@d4dx.co',
                         );
-                        Future.delayed(const Duration(milliseconds: 500), () {
-                          navigatePRToGlobal(
-                            route: Routes.login,
-                          );
-                        });
+                        await launchUrl(emailLaunchUri);
                       },
-                    );
-                  },
-                );
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem<String>(
-                value: 'logout',
-                child: Text('Logout'),
+                    ),
+                    CustomDrawerItem(
+                      title: 'Privacy Policy',
+                      icon: LucideIcons.shieldCheck,
+                      onTap: () async {
+                        final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                      },
+                    ),
+                    CustomDrawerItem(
+                      title: 'Contact Us',
+                      icon: LucideIcons.phone,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        navigatorKey.currentState!.pushNamed(Routes.contactUs);
+                      },
+                    ),
+                    CustomDrawerItem(
+                      title: 'About Us',
+                      icon: LucideIcons.info,
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('About Us'),
+                            content: const Text('This is dummy content for About Us.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    CustomDrawerItem(
+                      title: 'Raise a bug',
+                      icon: LucideIcons.bug,
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Shake.show(ShakeScreen.home);
+                      },
+                    ),
+                    const Divider(),
+                    CustomDrawerItem(
+                      title: 'Logout',
+                      icon: LucideIcons.logOut,
+                      isDestructive: true,
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          builder: (BuildContext context) {
+                            return LogoutConfirmationBottomSheet(
+                              onLogout: () {
+                                Provider.of<BottomNavProvider>(navigatorKey.currentContext!, listen: false).setIndex(0);
+                                toastification.show(
+                                  context: context,
+                                  title: Text('Logged out successfully'),
+                                  type: ToastificationType.success,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                );
+                                Future.delayed(const Duration(milliseconds: 500), () {
+                                  navigatePRTo(
+                                    context: navigatorKey.currentContext!,
+                                    route: Routes.login,
+                                  );
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              // App Version at the bottom
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: CustomDrawerItem(
+                  title: 'App version ${GlobalVariables.appVersion}',
+                  icon: LucideIcons.terminal,
+                  isDisabled: true,
+                  onTap: null,
+                ),
               ),
             ],
           ),
-        ],
+        ),
       ),
       body: SafeArea(
         child: Padding(
@@ -308,4 +425,4 @@ class MessStaffScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

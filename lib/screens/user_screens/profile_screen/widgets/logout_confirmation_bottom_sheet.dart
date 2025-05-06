@@ -48,7 +48,7 @@ class LogoutConfirmationBottomSheet extends StatelessWidget {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorClass.redBase,
+                  backgroundColor: ColorClass.neutral300,
                   shape: RoundedRectangleBorder(
                     borderRadius: UiStyles.borderRadius12,
                   ),
@@ -57,7 +57,7 @@ class LogoutConfirmationBottomSheet extends StatelessWidget {
                   Navigator.of(context).pop();
                   onLogout();
                 },
-                child: const Text('Logout'),
+                child: const Text('Logout', style: TextStyle(color: ColorClass.redBase),),
               ),
             ],
           ),
