@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/textstyle_class.dart';
-import 'package:canteen_app/providers/date_provider.dart';
+import 'package:Hira_Plus/constants/color_class.dart';  
+import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:Hira_Plus/providers/date_provider.dart';
 
 class MarkingListScreen extends StatelessWidget {
   static const String routeName = '/manager/marking_list';
@@ -32,6 +32,7 @@ class MarkingListScreen extends StatelessWidget {
     return ChangeNotifierProvider<DateProvider>(
       create: (_) => DateProvider(),
       child: Scaffold(
+        backgroundColor: ColorClass.brandWhite,
         appBar: showAppBar
             ? AppBar(
                 backgroundColor: ColorClass.brandDarkGreen,
@@ -52,7 +53,7 @@ class MarkingListScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
-                    color: ColorClass.primaryBase.withOpacity(0.1),
+                    color: ColorClass.greenBase.withOpacity(0.1),
                   ),
                 ),
               ),
@@ -88,7 +89,7 @@ class MarkingListScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
-                          color: ColorClass.primaryBase.withOpacity(0.1),
+                          color: ColorClass.greenBase.withOpacity(0.1),
                         ),
                       ),
                     ),

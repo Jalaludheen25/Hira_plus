@@ -1,4 +1,4 @@
-import 'package:canteen_app/constants/color_class.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:flutter/material.dart';
 
 class UiStyles {

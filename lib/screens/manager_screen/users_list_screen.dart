@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/textstyle_class.dart';
-import 'package:canteen_app/routes/app_routes.dart';
-import 'package:canteen_app/utils/navigation_helper.dart';
+import 'package:Hira_Plus/constants/color_class.dart';  
+import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:Hira_Plus/utils/navigation_helper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:canteen_app/providers/users_provider.dart';
-import 'package:canteen_app/screens/manager_screen/widgets/user_edit_bottom_sheet.dart';
-import 'package:canteen_app/screens/manager_screen/widgets/user_action_button.dart';
-import 'package:canteen_app/screens/manager_screen/widgets/delete_confirm_dialog.dart';
+import 'package:Hira_Plus/providers/users_provider.dart';
+import 'package:Hira_Plus/screens/manager_screen/widgets/user_edit_bottom_sheet.dart';
+import 'package:Hira_Plus/screens/manager_screen/widgets/user_action_button.dart';
+import 'package:Hira_Plus/screens/manager_screen/widgets/delete_confirm_dialog.dart';
 
 class UsersListScreen extends StatelessWidget {
   static const String routeName = '/manager/users_list';

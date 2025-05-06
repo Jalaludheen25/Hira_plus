@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/textstyle_class.dart';
-import 'package:canteen_app/providers/date_provider.dart';
+import 'package:Hira_Plus/constants/color_class.dart';  
+import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:Hira_Plus/providers/date_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MealCountScreen extends StatelessWidget {

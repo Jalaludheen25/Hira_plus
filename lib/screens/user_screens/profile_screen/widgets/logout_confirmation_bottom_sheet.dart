@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/textstyle_class.dart';
-import 'package:canteen_app/constants/ui_styles.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:Hira_Plus/constants/ui_styles.dart';
 
 class LogoutConfirmationBottomSheet extends StatelessWidget {
   final VoidCallback onLogout;

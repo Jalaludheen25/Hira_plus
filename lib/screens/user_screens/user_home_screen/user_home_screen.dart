@@ -1,22 +1,22 @@
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/textstyle_class.dart';
-import 'package:canteen_app/providers/date_provider.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:Hira_Plus/providers/date_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:canteen_app/providers/home_view_mode_provider.dart';
-import 'package:canteen_app/providers/canteen_home_page_provider.dart';
+import 'package:Hira_Plus/providers/home_view_mode_provider.dart';
+import 'package:Hira_Plus/providers/canteen_home_page_provider.dart';
 import 'widgets/month_calendar_view.dart';
 import 'widgets/home_list_view.dart';
 import 'widgets/today_fab.dart';
 import 'widgets/custom_drawer.dart';
-import 'package:canteen_app/providers/bottom_nav_provider.dart';
+import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:canteen_app/utils/navigation_helper.dart';
-import 'package:canteen_app/routes/app_routes.dart';
-import 'package:canteen_app/constants/global_variables.dart';
-import 'package:canteen_app/providers/profile_screen_provider.dart';
+import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:Hira_Plus/constants/global_variables.dart';
+import 'package:Hira_Plus/providers/profile_screen_provider.dart';
 import 'package:toastification/toastification.dart';
-import 'package:canteen_app/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 
@@ -133,79 +133,79 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final canteenProvider = Provider.of<CanteenHomePageProvider>(context);
     final viewModeProvider = Provider.of<HomeViewModeProvider>(context);
     return Scaffold(
-      drawer: CustomDrawer(
-        userName: Provider.of<ProfileScreenProvider>(context).userName,
-        appVersion: GlobalVariables.appVersion,
-        onHome: () {
-          Provider.of<BottomNavProvider>(context, listen: false).setIndex(0);
-          Navigator.of(context).pop();
-        },
-        onProfile: () {
-          Provider.of<BottomNavProvider>(context, listen: false).setIndex(1);
-          Navigator.of(context).pop();
-        },
-        onFeedback: () async {
-          final Uri emailLaunchUri = Uri(
-            scheme: 'mailto',
-            path: 'mail@d4dx.co',
-          );
-          await launchUrl(emailLaunchUri);
-        },
-        onPrivacy: () async {
-          final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        },
-        onAbout: () {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('About Us'),
-              content: const Text('This is dummy content for About Us.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Close'),
-                ),
-              ],
-            ),
-          );
-        },
-        onContact: () {
-          Navigator.of(context).pop();
-          navigatorKey.currentState!.pushNamed(Routes.contactUs);
-        },
-        onRaiseBug: () {
-          Navigator.of(context).pop();
-          Shake.show(ShakeScreen.home);
-        },
-        onLogout: () {
-          showModalBottomSheet(
-            context: context,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            builder: (BuildContext context) {
-              return LogoutConfirmationBottomSheet(
-                onLogout: () {
-                  Provider.of<BottomNavProvider>(navigatorKey.currentContext!, listen: false).setIndex(0);
-                  toastification.show(
-                    context: context,
-                    title: Text('Logged out successfully'),
-                    type: ToastificationType.success,
-                    autoCloseDuration: const Duration(seconds: 2),
-                  );
-                  Future.delayed(const Duration(milliseconds: 500), () {
-                    navigatePRTo(
-                      context: navigatorKey.currentContext!,
-                      route: Routes.login,
-                    );
-                  });
-                },
-              );
-            },
-          );
-        },
-      ),
+      // drawer: CustomDrawer(
+      //   userName: Provider.of<ProfileScreenProvider>(context).userName,
+      //   appVersion: GlobalVariables.appVersion,
+      //   onHome: () {
+      //     Provider.of<BottomNavProvider>(context, listen: false).setIndex(0);
+      //     Navigator.of(context).pop();
+      //   },
+      //   onProfile: () {
+      //     Provider.of<BottomNavProvider>(context, listen: false).setIndex(1);
+      //     Navigator.of(context).pop();
+      //   },
+      //   onFeedback: () async {
+      //     final Uri emailLaunchUri = Uri(
+      //       scheme: 'mailto',
+      //       path: 'mail@d4dx.co',
+      //     );
+      //     await launchUrl(emailLaunchUri);
+      //   },
+      //   onPrivacy: () async {
+      //     final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+      //     await launchUrl(url, mode: LaunchMode.externalApplication);
+      //   },
+      //   onAbout: () {
+      //     showDialog(
+      //       context: context,
+      //       builder: (context) => AlertDialog(
+      //         title: const Text('About Us'),
+      //         content: const Text('This is dummy content for About Us.'),
+      //         actions: [
+      //           TextButton(
+      //             onPressed: () => Navigator.of(context).pop(),
+      //             child: const Text('Close'),
+      //           ),
+      //         ],
+      //       ),
+      //     );
+      //   },
+      //   onContact: () {
+      //     Navigator.of(context).pop();
+      //     navigatorKey.currentState!.pushNamed(Routes.contactUs);
+      //   },
+      //   onRaiseBug: () {
+      //     Navigator.of(context).pop();
+      //     Shake.show(ShakeScreen.home);
+      //   },
+      //   onLogout: () {
+      //     showModalBottomSheet(
+      //       context: context,
+      //       shape: RoundedRectangleBorder(
+      //         borderRadius: BorderRadius.circular(12),
+      //       ),
+      //       builder: (BuildContext context) {
+      //         return LogoutConfirmationBottomSheet(
+      //           onLogout: () {
+      //             Provider.of<BottomNavProvider>(navigatorKey.currentContext!, listen: false).setIndex(0);
+      //             toastification.show(
+      //               context: context,
+      //               title: Text('Logged out successfully'),
+      //               type: ToastificationType.success,
+      //               autoCloseDuration: const Duration(seconds: 2),
+      //             );
+      //             Future.delayed(const Duration(milliseconds: 500), () {
+      //               navigatePRTo(
+      //                 context: navigatorKey.currentContext!,
+      //                 route: Routes.login,
+      //               );
+      //             });
+      //           },
+      //         );
+      //       },
+      //     );
+      //   },
+      // ),
       appBar: AppBar(
         backgroundColor: ColorClass.brandDarkGreen,
         iconTheme: const IconThemeData(color: Colors.white),
@@ -400,14 +400,14 @@ class _MonthViewWidget extends StatelessWidget {
         color: isTodayAndSelected
             ? Colors.white
             : isSelected
-                ? ColorClass.primaryBase
+                ? ColorClass.greenBase
                 : Colors.transparent,
         shape: BoxShape.circle,
         border: Border.all(
           color: isTodayAndSelected
-              ? ColorClass.primaryBase
+              ? ColorClass.greenBase
               : isSelected
-                  ? ColorClass.primaryBase
+                  ? ColorClass.greenBase
                   : ColorClass.neutral300,
           width: 1,
         ),

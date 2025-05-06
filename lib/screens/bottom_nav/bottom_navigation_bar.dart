@@ -1,10 +1,10 @@
+import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:Hira_Plus/routes/app_pages.dart';
 import 'package:flutter/material.dart';
-import 'package:canteen_app/routes/app_routes.dart';
-import 'package:canteen_app/routes/app_pages.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:canteen_app/constants/color_class.dart';
+import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:provider/provider.dart';
-import 'package:canteen_app/providers/bottom_nav_provider.dart';
+import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
 
 class BottomNavigationBarScreen extends StatelessWidget {
   const BottomNavigationBarScreen({super.key});
@@ -33,19 +33,23 @@ class BottomNavigationBarScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: ColorClass.brandWhite,
         selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor: ColorClass.brandLightGreen,
+        unselectedItemColor:  Color.fromARGB(255, 63, 94, 43),
+        unselectedFontSize: 14,
+        selectedFontSize: 14,
+        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 14, ),
+
         currentIndex: selectedIndex,
         onTap: (int index) {
           bottomNavProvider.setIndex(index);
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, size: 34),
+            icon: Icon(Icons.home_outlined, size: 28),
             activeIcon: Icon(Icons.home, size: 34),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline, size: 34),
+            icon: Icon(Icons.person_outline, size: 28),
             activeIcon: Icon(Icons.person, size: 34),
             label: 'Profile',
           ),

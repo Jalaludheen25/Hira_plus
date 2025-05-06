@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:canteen_app/constants/textstyle_class.dart';
+import 'package:Hira_Plus/constants/textstyle_class.dart';
 
 class BottomButton extends StatelessWidget {
   final String label;

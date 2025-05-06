@@ -1,22 +1,20 @@
+import 'package:Hira_Plus/screens/mess_staff_screen/widgets/detailed_list.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:canteen_app/providers/bottom_nav_provider.dart';
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/textstyle_class.dart';
+import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:Hira_Plus/constants/textstyle_class.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:canteen_app/screens/mess_staff_screen/widgets/meal_summary_widget.dart';
-import 'package:canteen_app/screens/mess_staff_screen/widgets/detailed_list.dart';
-import 'package:canteen_app/screens/mess_staff_screen/widgets/bottom_button.dart';
-import 'package:canteen_app/screens/manager_screen/marking_list_screen.dart';
-import 'package:canteen_app/screens/manager_screen/users_list_screen.dart';
-import 'package:canteen_app/screens/user_screens/profile_screen/profile_screen.dart';
-import 'package:canteen_app/providers/profile_screen_provider.dart';
-import 'package:canteen_app/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
-import 'package:canteen_app/screens/user_screens/profile_screen/widgets/profile_card.dart';
-import 'package:canteen_app/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
-import 'package:canteen_app/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
-import 'package:canteen_app/utils/navigation_helper.dart';
-import 'package:canteen_app/routes/app_routes.dart';
+import 'package:Hira_Plus/screens/mess_staff_screen/widgets/meal_summary_widget.dart';
+import 'package:Hira_Plus/screens/manager_screen/marking_list_screen.dart';
+import 'package:Hira_Plus/screens/manager_screen/users_list_screen.dart';
+import 'package:Hira_Plus/providers/profile_screen_provider.dart';
+import 'package:Hira_Plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/profile_card.dart';
+import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:Hira_Plus/routes/app_routes.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:toastification/toastification.dart';
@@ -46,9 +44,12 @@ class ManagerScreen extends StatelessWidget {
     ],
   ];
 
-  static List<Widget> _pages(BuildContext context) => [
-    // Dashboard tab
-    SafeArea(
+  Widget _buildDashboardTab(BuildContext context) {
+    // Use a manager meal provider similar to the MessStaffMealProvider
+    // For this example, we'll use a ValueNotifier
+    final selectedMealNotifier = ValueNotifier<int>(0);
+    
+    return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         child: Column(
@@ -56,36 +57,63 @@ class ManagerScreen extends StatelessWidget {
           children: [
             Text('Meal Summary', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 12.0,
-              runSpacing: 12.0,
-              children: [
-                MealSummaryWidget(
-                  icon: LucideIcons.sunMedium,
-                  label: 'Breakfast',
-                  count: 45,
-                  isSelected: false,
-                ),
-                MealSummaryWidget(
-                  icon: LucideIcons.sun,
-                  label: 'Lunch',
-                  count: 60,
-                  isSelected: false,
-                ),
-                MealSummaryWidget(
-                  icon: LucideIcons.moon,
-                  label: 'Dinner',
-                  count: 50,
-                  isSelected: false,
-                ),
-              ],
+            ValueListenableBuilder<int>(
+              valueListenable: selectedMealNotifier,
+              builder: (context, selectedMeal, _) => Wrap(
+                spacing: 12.0,
+                runSpacing: 12.0,
+                children: List.generate(mealSummary.length, (index) => GestureDetector(
+                  onTap: () {
+                    selectedMealNotifier.value = index;
+                  },
+                  child: MealSummaryWidget(
+                    icon: mealSummary[index]['icon'] as IconData,
+                    label: mealSummary[index]['label'] as String,
+                    count: mealSummary[index]['count'] as int,
+                    isSelected: selectedMeal == index,
+                  ),
+                )),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ValueListenableBuilder<int>(
+              valueListenable: selectedMealNotifier,
+              builder: (context, selectedMeal, _) {
+                final details = detailedLists[selectedMeal];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Detailed List', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Total: ${details.length}',
+                          style: TextStyleClass.poppinsBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    DetailedList(details: details),
+                  ],
+                );
+              },
             ),
           ],
         ),
       ),
-    ),
+    );
+  }
+
+  static List<Widget> _pages(BuildContext context) => [
+    // Dashboard tab with selectable meals
+    Builder(builder: (context) => ((ManagerScreen()._buildDashboardTab(context)))),
     // Markings tab
-    MarkingListScreen(showAppBar: false),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      child: MarkingListScreen(showAppBar: false),
+    ),
     // Users tab
     UsersListScreen(),
     // Settings tab
@@ -120,22 +148,29 @@ class ManagerScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         backgroundColor: ColorClass.brandWhite,
         selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor: ColorClass.brandLightGreen,
+        unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
+        unselectedFontSize: 14,
+        selectedFontSize: 14,
+        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 14),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.layoutDashboard),
+            icon: Icon(LucideIcons.layoutDashboard, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.layoutDashboard, size: 32),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.clipboardList),
+            icon: Icon(LucideIcons.clipboardList, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.clipboardList, size: 32),
             label: 'Markings',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.users),
+            icon: Icon(LucideIcons.users, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.users, size: 32),
             label: 'Users',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.settings),
+            icon: Icon(LucideIcons.settings, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.settings, size: 32),
             label: 'Settings',
           ),
         ],
@@ -164,7 +199,6 @@ class SettingsScreen extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             children: [
-              
               CustomDrawerItem(
                 title: 'Feedback',
                 icon: LucideIcons.messageCircle,
@@ -188,7 +222,10 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Contact Us',
                 icon: LucideIcons.phone,
                 onTap: () {
-                  navigatorKey.currentState!.pushNamed(Routes.contactUs);
+                  navigateTo(
+                    context: context,
+                    route: Routes.contactUs,
+                  );
                 },
               ),
               CustomDrawerItem(
@@ -202,7 +239,7 @@ class SettingsScreen extends StatelessWidget {
                       content: const Text('This is dummy content for About Us.'),
                       actions: [
                         TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: () => navigateBack(context),
                           child: const Text('Close'),
                         ),
                       ],
@@ -259,4 +296,4 @@ class SettingsScreen extends StatelessWidget {
       ],
     );
   }
-} 
+}

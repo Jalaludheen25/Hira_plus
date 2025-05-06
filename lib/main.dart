@@ -1,13 +1,13 @@
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/providers/multi_provider.dart';
-import 'package:canteen_app/routes/app_pages.dart';
-import 'package:canteen_app/routes/app_routes.dart';
-import 'package:canteen_app/utils/navigation_helper.dart';
+import 'package:Hira_Plus/constants/color_class.dart';  
+import 'package:Hira_Plus/providers/multi_provider.dart';
+import 'package:Hira_Plus/routes/app_pages.dart';
+import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:Hira_Plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'dart:io';
-import 'package:canteen_app/constants/global_variables.dart';
+import 'package:Hira_Plus/constants/global_variables.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

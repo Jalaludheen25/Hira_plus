@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:canteen_app/providers/date_provider.dart';
+import 'package:Hira_Plus/providers/date_provider.dart';
 
 class CanteenHomePageProvider extends ChangeNotifier {
   DateTime selectedDate = DateTime.now();

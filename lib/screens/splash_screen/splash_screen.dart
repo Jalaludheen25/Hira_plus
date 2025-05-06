@@ -1,9 +1,9 @@
-import 'package:canteen_app/routes/app_routes.dart';
-import 'package:canteen_app/utils/navigation_helper.dart';
+import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:Hira_Plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:canteen_app/constants/color_class.dart';
-import 'package:canteen_app/constants/icons_class.dart';
-import 'package:canteen_app/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:Hira_Plus/constants/icons_class.dart';
+import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

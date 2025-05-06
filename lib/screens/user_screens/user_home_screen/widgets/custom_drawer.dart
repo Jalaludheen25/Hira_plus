@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:canteen_app/constants/color_class.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
 
 class CustomDrawerItem extends StatelessWidget {
   final String title;

@@ -1,13 +1,13 @@
-import 'package:canteen_app/routes/app_routes.dart';
-import 'package:canteen_app/utils/navigation_helper.dart';
+import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:Hira_Plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:canteen_app/constants/color_class.dart';
+import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 import 'package:pinput/pinput.dart';
-import 'package:canteen_app/constants/icons_class.dart';
+import 'package:Hira_Plus/constants/icons_class.dart';
 import 'package:provider/provider.dart';
-import 'package:canteen_app/providers/auth_provider.dart';
+import 'package:Hira_Plus/providers/auth_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class LoginScreen extends StatefulWidget {
