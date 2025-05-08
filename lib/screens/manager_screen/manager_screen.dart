@@ -214,7 +214,7 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Privacy Policy',
                 icon: LucideIcons.shieldCheck,
                 onTap: () async {
-                  final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                  final Uri url = Uri.parse('https://www.termsfeed.com/live/b1d9ea79-6dfb-4c0e-83fa-0fc2841ec2b4');
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
