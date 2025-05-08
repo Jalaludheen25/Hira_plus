@@ -46,4 +46,13 @@ class AuthProvider extends ChangeNotifier {
     _showOTPField = false;
     notifyListeners();
   }
+
+  
+  void useDummyCredentials() {
+    _phone = '9998887776';
+    _otp = '123456';
+    _selectedRole = 'User';
+    _showOTPField = true;
+    notifyListeners();
+  }
 }

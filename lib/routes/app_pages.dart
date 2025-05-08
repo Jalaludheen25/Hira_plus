@@ -10,6 +10,7 @@ import 'package:Hira_Plus/screens/mess_staff_screen/mess_staff_screen.dart';
 import 'package:Hira_Plus/screens/manager_screen/manager_screen.dart';
 import 'package:Hira_Plus/screens/manager_screen/marking_list_screen.dart';
 import 'package:Hira_Plus/screens/manager_screen/users_list_screen.dart';
+import 'package:Hira_Plus/screens/forced_update_screen/force_update_screen.dart';
 import 'package:flutter/material.dart';
 
 Map<String, WidgetBuilder> getRoutes() {
@@ -24,6 +25,7 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.messStaff: (context) => const MessStaffScreen(),
     Routes.manager: (context) => const ManagerScreen(),
     Routes.markingList: (context) => MarkingListScreen(),
-    UsersListScreen.routeName: (context) => UsersListScreen(),
+    Routes.usersList: (context) => UsersListScreen(),
+    Routes.forceUpdate: (context) => const ForceUpdatePage(),
   };
 }

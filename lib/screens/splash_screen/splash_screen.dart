@@ -1,9 +1,11 @@
+import 'package:Hira_Plus/providers/version_check_provider.dart';
 import 'package:Hira_Plus/routes/app_routes.dart';
 import 'package:Hira_Plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:Hira_Plus/constants/icons_class.dart';
 import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -45,8 +47,22 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    Future.delayed(const Duration(seconds: 3), () {
-      navigatePRTo(context: context, route: Routes.login);
+    // Future.delayed(const Duration(seconds: 3), () {
+    //   navigatePRTo(context: context, route: Routes.login);
+    // }
+    // );
+     // Check for version update
+    Future.delayed(const Duration(seconds: 3), () async {
+      final versionProvider = Provider.of<VersionCheckProvider>(context, listen: false);
+      await versionProvider.checkVersion(); // Ensure you call the version check
+
+      if (versionProvider.needsUpdate) {
+        // Navigate to Forced Update Screen if an update is needed
+        navigatePRTo(context: context, route: Routes.forceUpdate);
+      } else {
+        // Navigate to the login screen or home screen if no update is needed
+        navigatePRTo(context: context, route: Routes.login);
+      }
     });
   }
 

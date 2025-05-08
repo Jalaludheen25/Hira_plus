@@ -1,3 +1,4 @@
+// imports remain unchanged
 import 'package:Hira_Plus/routes/app_routes.dart';
 import 'package:Hira_Plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Helper method to build the OTP Field using pinput
   Widget _buildOTPField(BuildContext context, AuthProvider authProvider) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -51,10 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool isValidPhoneNumber(String? value) {
-    if (value == null || value.isEmpty) {
-      return false;
-    }
-    // Regex for 10-digit phone number
+    if (value == null || value.isEmpty) return false;
     return RegExp(r'^[0-9]{10}$').hasMatch(value);
   }
 
@@ -67,12 +64,12 @@ class _LoginScreenState extends State<LoginScreen> {
           body: SafeArea(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 150),
-                    // Logo and Branding
                     Center(
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -88,7 +85,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    // App Title with Gradient
                     Center(
                       child: ShaderMask(
                         shaderCallback: (bounds) => LinearGradient(
@@ -108,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Subtitle
                     Center(
                       child: Text(
                         'Your Digital Mess Companion',
@@ -121,18 +116,21 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 48),
 
-                    // User Type Selection
                     if (!authProvider.showOTPField)
                       GestureDetector(
                         onTap: () async {
-                          final selected = await showModalBottomSheet<String>(
+                          final selected =
+                              await showModalBottomSheet<String>(
                             context: context,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(20)),
                             ),
-                            builder: (context) => _RoleSelectionSheet(selectedRole: authProvider.selectedRole),
+                            builder: (context) => _RoleSelectionSheet(
+                                selectedRole: authProvider.selectedRole),
                           );
-                          if (selected != null && selected != authProvider.selectedRole) {
+                          if (selected != null &&
+                              selected != authProvider.selectedRole) {
                             authProvider.setSelectedRole(selected);
                           }
                         },
@@ -145,7 +143,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                color: ColorClass.brandLightGreen
+                                    .withOpacity(0.1),
                                 spreadRadius: 2,
                                 blurRadius: 15,
                                 offset: const Offset(0, 4),
@@ -161,16 +160,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                   const SizedBox(width: 12),
                                   Text(
                                     authProvider.selectedRole,
-                                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16),
                                   ),
                                 ],
                               ),
-                              const Icon(Icons.keyboard_arrow_down_rounded, color: ColorClass.brandDarkGreen, size: 28),
+                              const Icon(Icons.keyboard_arrow_down_rounded,
+                                  color: ColorClass.brandDarkGreen, size: 28),
                             ],
                           ),
                         ),
                       ),
-                    // Conditionally render the phone number input
                     if (!authProvider.showOTPField)
                       Container(
                         decoration: BoxDecoration(
@@ -178,7 +179,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: ColorClass.brandLightGreen.withOpacity(0.1),
+                              color: ColorClass.brandLightGreen
+                                  .withOpacity(0.1),
                               spreadRadius: 2,
                               blurRadius: 15,
                               offset: const Offset(0, 4),
@@ -231,20 +233,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 2,
                               ),
                             ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(
-                                color: ColorClass.brandLightGreen,
-                                width: 1,
-                              ),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(
-                                color: ColorClass.brandLightGreen,
-                                width: 2,
-                              ),
-                            ),
                             filled: true,
                             fillColor: ColorClass.brandWhite,
                             contentPadding: const EdgeInsets.symmetric(
@@ -252,24 +240,17 @@ class _LoginScreenState extends State<LoginScreen> {
                               vertical: 16,
                             ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter phone number';
-                            }
-                            if (!isValidPhoneNumber(value)) {
-                              return 'Please enter valid 10-digit number';
-                            }
-                            return null;
-                          },
                           onChanged: (value) {
                             authProvider.setPhone(value);
                           },
                         ),
                       ),
-                    // Conditionally show OTP Field when mobile is entered
-                    if (authProvider.showOTPField) _buildOTPField(context, authProvider),
+                    if (authProvider.showOTPField)
+                      _buildOTPField(context, authProvider),
+
                     const SizedBox(height: 32),
-                    // Login Button with Gradient
+
+                    // Continue Button
                     if (!authProvider.showOTPField)
                       SizedBox(
                         width: double.infinity,
@@ -283,23 +264,27 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
                           onPressed: () {
-                            if (authProvider.selectedRole == 'User' || authProvider.selectedRole == 'Mess Staff' || authProvider.selectedRole == 'Manager') {
-                              if (!isValidPhoneNumber(_phoneController.text)) {
-                                toastification.show(
-                                  context: context,
-                                  title: const Text('Please enter a valid 10-digit phone number'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-                              authProvider.setShowOTPField(true);
+                            if (!isValidPhoneNumber(
+                                _phoneController.text.trim())) {
+                              toastification.show(
+                                context: context,
+                                title: const Text(
+                                    'Please enter a valid 10-digit phone number'),
+                                type: ToastificationType.error,
+                                autoCloseDuration:
+                                    const Duration(seconds: 2),
+                              );
+                              return;
                             }
+                            authProvider.setShowOTPField(true);
                           },
-                          child: const Text('Continue', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          child: const Text('Continue',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
                       ),
-                    // OTP Validate Button
+
+                    // Validate OTP Button
                     if (authProvider.showOTPField)
                       SizedBox(
                         width: double.infinity,
@@ -316,12 +301,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (authProvider.otp.length != 6) {
                               toastification.show(
                                 context: context,
-                                title: const Text('Please enter a valid 6-digit OTP'),
+                                title: const Text(
+                                    'Please enter a valid 6-digit OTP'),
                                 type: ToastificationType.error,
-                                autoCloseDuration: const Duration(seconds: 2),
+                                autoCloseDuration:
+                                    const Duration(seconds: 2),
                               );
                               return;
                             }
+
+                            if (authProvider.phone == '9998887776' &&
+                                authProvider.otp != '123456') {
+                              toastification.show(
+                                context: context,
+                                title: const Text('Invalid OTP for demo login'),
+                                type: ToastificationType.error,
+                                autoCloseDuration:
+                                    const Duration(seconds: 2),
+                              );
+                              return;
+                            }
+
+                            // Navigate to appropriate screen
                             if (authProvider.selectedRole == 'Mess Staff') {
                               navigatePRToGlobal(route: Routes.messStaff);
                             } else if (authProvider.selectedRole == 'Manager') {
@@ -329,13 +330,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             } else {
                               navigatePRToGlobal(route: Routes.bottomNav);
                             }
+
                             authProvider.reset();
                           },
-                          child: const Text('Validate', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          child: const Text('Validate',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
                       ),
+
                     const SizedBox(height: 24),
-                    // Help Text
+
                     Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -343,7 +348,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                          color:
+                              ColorClass.brandLightGreen.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -352,13 +358,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             Icon(
                               Icons.info_outline,
                               size: 16,
-                              color: ColorClass.brandLightGreen.withOpacity(0.8),
+                              color: ColorClass.brandLightGreen
+                                  .withOpacity(0.8),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Need help? Contact Hira Manager',
                               style: TextStyle(
-                                color: ColorClass.brandLightGreen.withOpacity(0.8),
+                                color: ColorClass.brandLightGreen
+                                    .withOpacity(0.8),
                                 fontSize: 12,
                               ),
                             ),
@@ -379,13 +387,17 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _roleIcon(String role) {
     switch (role) {
       case 'User':
-        return const Icon(LucideIcons.user, color: ColorClass.brandDarkGreen, size: 22);
+        return const Icon(LucideIcons.user,
+            color: ColorClass.brandDarkGreen, size: 22);
       case 'Manager':
-        return const Icon(LucideIcons.shieldCheck, color: ColorClass.brandDarkGreen, size: 22);
+        return const Icon(LucideIcons.shieldCheck,
+            color: ColorClass.brandDarkGreen, size: 22);
       case 'Mess Staff':
-        return const Icon(LucideIcons.utensils, color: ColorClass.brandDarkGreen, size: 22);
+        return const Icon(LucideIcons.utensils,
+            color: ColorClass.brandDarkGreen, size: 22);
       default:
-        return const Icon(LucideIcons.user, color: ColorClass.brandDarkGreen, size: 22);
+        return const Icon(LucideIcons.user,
+            color: ColorClass.brandDarkGreen, size: 22);
     }
   }
 }
@@ -406,13 +418,17 @@ class _RoleSelectionSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const SizedBox(height: 16),
-          const Text('Select Role', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          const Text('Select Role',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           const SizedBox(height: 8),
           ...roles.map((role) => ListTile(
-                leading: Icon(role['icon'] as IconData, color: ColorClass.brandDarkGreen),
-                title: Text(role['label'] as String, style: const TextStyle(fontSize: 16)),
+                leading: Icon(role['icon'] as IconData,
+                    color: ColorClass.brandDarkGreen),
+                title: Text(role['label'] as String,
+                    style: const TextStyle(fontSize: 16)),
                 trailing: selectedRole == role['label']
-                    ? const Icon(Icons.check, color: ColorClass.brandLightGreen)
+                    ? const Icon(Icons.check,
+                        color: ColorClass.brandLightGreen)
                     : null,
                 onTap: () => Navigator.of(context).pop(role['label']),
               )),

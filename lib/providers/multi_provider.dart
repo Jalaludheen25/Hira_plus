@@ -6,6 +6,7 @@ import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
 import 'package:Hira_Plus/providers/profile_screen_provider.dart';
 import 'package:Hira_Plus/providers/users_provider.dart';
 import 'package:Hira_Plus/providers/mess_staff_meal_provider.dart';
+import 'package:Hira_Plus/providers/version_check_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
@@ -19,5 +20,6 @@ List<SingleChildWidget> getProviders() {
     ChangeNotifierProvider(create: (context) => ProfileScreenProvider()),
     ChangeNotifierProvider(create: (context) => UsersProvider()),
     ChangeNotifierProvider(create: (context) => MessStaffMealProvider()),
+    ChangeNotifierProvider(create: (context) => VersionCheckProvider()),
   ];
 }
