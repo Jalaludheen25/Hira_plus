@@ -1,7 +1,8 @@
-import 'package:Hira_Plus/constants/color_class.dart';  
+import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:Hira_Plus/providers/multi_provider.dart';
 import 'package:Hira_Plus/routes/app_pages.dart';
 import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:Hira_Plus/services/push_notifications.dart';
 import 'package:Hira_Plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,16 @@ void main() async {
     debugPrint('⚠️ Failed to initialize shake detection: $e');
     debugPrint('StackTrace: $stackTrace');
   }
+
+  try {
+    await PushNotificationService.initializeOneSignal(
+        GlobalVariables.oneSignalKey);
+    debugPrint('📱 OneSignal initialized');
+  } catch (e, stackTrace) {
+    debugPrint('⚠️ Failed to initialize OneSignal: $e');
+    debugPrint('StackTrace: $stackTrace');
+  }
+
   runApp(const MyApp());
 }
 
