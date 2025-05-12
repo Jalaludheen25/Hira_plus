@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:Hira_Plus/constants/app_utils.dart';
 import 'package:Hira_Plus/constants/global_variables.dart';
 import 'package:Hira_Plus/providers/auth_provider.dart';
+import 'package:Hira_Plus/utils/shared_utils.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
@@ -48,7 +49,7 @@ class HttpServiceUtils {
         'Accept': 'application/json',
       };
       if (token) {
-        final authToken = GlobalVariables.dummyToken;
+        final authToken = await SharedUtils.getString('token');
         headers['Authorization'] = 'Bearer $authToken';
       }
       final response = await http
@@ -184,7 +185,7 @@ class HttpServiceUtils {
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${GlobalVariables.dummyToken}',
+          'Authorization': 'Bearer ${await SharedUtils.getString('token')}',
         },
         body: jsonEncode(data),
       );
@@ -209,7 +210,7 @@ class HttpServiceUtils {
       developer.log('Request body: $body', time: DateTime.now());
 
       Provider.of<AuthProvider>(context, listen: false);
-      final token = GlobalVariables.dummyToken;
+      final token = await SharedUtils.getString('token');
       final headers = {
         ..._headers,
         'Authorization': 'Bearer $token',
