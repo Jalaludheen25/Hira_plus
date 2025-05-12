@@ -2,25 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:Hira_Plus/constants/textstyle_class.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/date_provider.dart';
+import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
 
 class MonthCalendarView extends StatelessWidget {
   final DateTime selectedDate;
   final String Function(int) getMonthName;
   final void Function(int) onMonthChanged;
-  const MonthCalendarView({required this.selectedDate, required this.getMonthName, Key? key, required this.onMonthChanged}) : super(key: key);
-
-  String _getDateKey(DateTime date) {
-    return '${date.year}-${date.month}-${date.day}';
-  }
+  const MonthCalendarView(
+      {required this.selectedDate,
+      required this.getMonthName,
+      Key? key,
+      required this.onMonthChanged})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final firstDayOfMonth = DateTime(selectedDate.year, selectedDate.month, 1);
-    final lastDayOfMonth = DateTime(selectedDate.year, selectedDate.month + 1, 0);
+    final lastDayOfMonth =
+        DateTime(selectedDate.year, selectedDate.month + 1, 0);
     final firstWeekday = firstDayOfMonth.weekday % 7;
     final totalDays = lastDayOfMonth.day;
     final totalWeeks = ((firstWeekday + totalDays) / 7).ceil();
+    final mealProvider = Provider.of<MealProvider>(context);
 
     return Column(
       children: [
@@ -32,16 +35,19 @@ class MonthCalendarView extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_left, size: 28),
                 color: ColorClass.brandDarkGreen,
-                onPressed: selectedDate.month == 1 ? null : () => onMonthChanged(-1),
+                onPressed:
+                    selectedDate.month == 1 ? null : () => onMonthChanged(-1),
               ),
               Text(
                 '${getMonthName(selectedDate.month)} ${selectedDate.year}',
-                style: TextStyleClass.poppinsMedium(fontSize: 18, color: ColorClass.brandDarkGreen),
+                style: TextStyleClass.poppinsMedium(
+                    fontSize: 18, color: ColorClass.brandDarkGreen),
               ),
               IconButton(
                 icon: const Icon(Icons.arrow_right, size: 28),
                 color: ColorClass.brandDarkGreen,
-                onPressed: selectedDate.month == 12 ? null : () => onMonthChanged(1),
+                onPressed:
+                    selectedDate.month == 12 ? null : () => onMonthChanged(1),
               ),
             ],
           ),
@@ -71,233 +77,249 @@ class MonthCalendarView extends StatelessWidget {
                 .toList(),
           ),
         ),
-        Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(8),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 7,
-              childAspectRatio: 0.7,
-              mainAxisSpacing: 4,
-              crossAxisSpacing: 4,
+        if (mealProvider.isLoading)
+          const Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text("Loading your meals..."),
+                ],
+              ),
             ),
-            itemCount: totalWeeks * 7,
-            itemBuilder: (context, index) {
-              final dayOffset = index - firstWeekday;
-              final currentDate = firstDayOfMonth.add(Duration(days: dayOffset));
-              final isCurrentMonth = currentDate.month == selectedDate.month;
-              final isToday = currentDate.day == DateTime.now().day &&
-                  currentDate.month == DateTime.now().month &&
-                  currentDate.year == DateTime.now().year;
-              if (!isCurrentMonth) {
-                return const SizedBox();
-              }
-              final dateKey = _getDateKey(currentDate);
-              Provider.of<DateProvider>(context, listen: false).initializeDate(dateKey);
-              return GestureDetector(
-                onTap: () => _showMealBottomSheet(context, dateKey, currentDate),
-                child: Container(
-                  margin: const EdgeInsets.all(2),
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: isToday ? ColorClass.brandLightGreen : Colors.transparent,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: isToday ? ColorClass.brandLightGreen : ColorClass.neutral200,
-                      width: 1.5,
+          )
+        else if (mealProvider.errorMessage.isNotEmpty &&
+            mealProvider.meals.isEmpty)
+          Expanded(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    mealProvider.errorMessage.contains('Authentication')
+                        ? Icons.lock_outline
+                        : Icons.error_outline,
+                    size: 48,
+                    color: mealProvider.errorMessage.contains('Authentication')
+                        ? Colors.orange
+                        : Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Text(
+                      mealProvider.errorMessage,
+                      textAlign: TextAlign.center,
+                      style: TextStyleClass.poppinsMedium(
+                        fontSize: 16,
+                        color:
+                            mealProvider.errorMessage.contains('Authentication')
+                                ? Colors.orange
+                                : Colors.red,
+                      ),
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          currentDate.day.toString(),
-                          style: TextStyleClass.poppinsMedium(
-                            fontSize: 16,
-                            color: isToday
-                                ? ColorClass.brandDarkGreen
-                                : currentDate.weekday == DateTime.sunday
-                                    ? Colors.red
-                                    : ColorClass.textMain900,
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Retry'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorClass.brandDarkGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                    ),
+                    onPressed: () => mealProvider.fetchUserMeals(context),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 7,
+                childAspectRatio: 0.7,
+                mainAxisSpacing: 4,
+                crossAxisSpacing: 4,
+              ),
+              itemCount: totalWeeks * 7,
+              itemBuilder: (context, index) {
+                final dayOffset = index - firstWeekday;
+                final currentDate =
+                    firstDayOfMonth.add(Duration(days: dayOffset));
+                final isCurrentMonth = currentDate.month == selectedDate.month;
+                final isToday = currentDate.day == DateTime.now().day &&
+                    currentDate.month == DateTime.now().month &&
+                    currentDate.year == DateTime.now().year;
+                if (!isCurrentMonth) {
+                  return const SizedBox();
+                }
+
+                // Check meal status for this date
+                final hasBreakfast =
+                    mealProvider.isMealMarked(currentDate, 'breakfast');
+                final hasLunch =
+                    mealProvider.isMealMarked(currentDate, 'lunch');
+                final hasDinner =
+                    mealProvider.isMealMarked(currentDate, 'dinner');
+
+                return GestureDetector(
+                  onTap: () => _showMealBottomSheet(
+                      context, currentDate, hasBreakfast, hasLunch, hasDinner),
+                  child: Container(
+                    margin: const EdgeInsets.all(2),
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: isToday
+                          ? ColorClass.brandLightGreen
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isToday
+                            ? ColorClass.brandLightGreen
+                            : ColorClass.neutral200,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            currentDate.day.toString(),
+                            style: TextStyleClass.poppinsMedium(
+                              fontSize: 16,
+                              color: isToday
+                                  ? ColorClass.brandDarkGreen
+                                  : currentDate.weekday == DateTime.sunday
+                                      ? Colors.red
+                                      : ColorClass.textMain900,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Consumer<DateProvider>(
-                          builder: (context, dateProvider, child) {
-                            return FittedBox(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildMealIndicator('B', dateProvider.isMealSelected(dateKey, 'Breakfast'), isToday),
-                                  _buildMealIndicator('L', dateProvider.isMealSelected(dateKey, 'Lunch'), isToday),
-                                  _buildMealIndicator('D', dateProvider.isMealSelected(dateKey, 'Dinner'), isToday),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                          const SizedBox(height: 2),
+                          FittedBox(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildMealIndicator('B', hasBreakfast, isToday),
+                                _buildMealIndicator('L', hasLunch, isToday),
+                                _buildMealIndicator('D', hasDinner, isToday),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-        ),
       ],
     );
   }
 
-  void _showMealBottomSheet(BuildContext context, String dateKey, DateTime date) {
+  void _showMealBottomSheet(BuildContext context, DateTime date,
+      bool hasBreakfast, bool hasLunch, bool hasDinner) {
     showModalBottomSheet(
       context: context,
       backgroundColor: ColorClass.brandWhite,
       builder: (context) {
-        return Consumer<DateProvider>(
-          builder: (context, dateProvider, child) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    decoration: BoxDecoration(
-                      color: ColorClass.brandDarkGreen,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Text(
-                    'Mark Meals for ${date.day}-${date.month}-${date.year}',
-                    style: TextStyleClass.poppinsMedium(fontSize: 18),
-                  ),
-                  const SizedBox(height: 16),
-                  ...['Breakfast', 'Lunch', 'Dinner'].map((meal) {
-                    final isSelected = dateProvider.isMealSelected(dateKey, meal);
-                    IconData mealIcon;
-                    switch (meal) {
-                      case 'Breakfast':
-                        mealIcon = Icons.coffee;
-                        break;
-                      case 'Lunch':
-                        mealIcon = Icons.restaurant;
-                        break;
-                      case 'Dinner':
-                        mealIcon = Icons.dinner_dining;
-                        break;
-                      default:
-                        mealIcon = Icons.fastfood;
-                    }
-                    return ListTile(
-                      leading: Icon(mealIcon, color: ColorClass.brandDarkGreen),
-                      title: Text(meal),
-                      trailing: Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isSelected
-                              ? ColorClass.brandDarkGreen
-                              : Colors.white,
-                          border: Border.all(
-                            color: ColorClass.brandDarkGreen,
-                            width: 2,
-                          ),
-                        ),
-                        child: isSelected
-                            ? Center(
-                                child: Icon(
-                                  Icons.check,
-                                  size: 16,
-                                  color: ColorClass.brandLightGreen,
-                                ),
-                              )
-                            : null,
-                      ),
-                      onTap: () {
-                        dateProvider.toggleMeal(dateKey, meal);
-                      },
-                    );
-                  }).toList(),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: ColorClass.brandDarkGreen,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(
-                        'Save',
-                        style: TextStyle(
-                          color: ColorClass.brandWhite,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: ColorClass.brandDarkGreen,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            );
-          },
+              Text(
+                'Meals for ${date.day}-${date.month}-${date.year}',
+                style: TextStyleClass.poppinsMedium(fontSize: 18),
+              ),
+              const SizedBox(height: 16),
+              _buildMealListTile('Breakfast', hasBreakfast, Icons.coffee),
+              _buildMealListTile('Lunch', hasLunch, Icons.restaurant),
+              _buildMealListTile('Dinner', hasDinner, Icons.dinner_dining),
+              const SizedBox(height: 16),
+              Text(
+                'Meals are read-only. Contact staff to change.',
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 14,
+                  color: ColorClass.neutral400,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
-    final bool isTodayAndSelected = isToday && isSelected;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: 30,
-      height: 30,
-      decoration: BoxDecoration(
-        color: isTodayAndSelected
-            ? Colors.white
-            : isSelected
-                ? ColorClass.brandLightGreen
-                : Colors.transparent,
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: isTodayAndSelected
-              ? ColorClass.brandDarkGreen
-              : isSelected
-                  ? ColorClass.brandLightGreen
-                  : ColorClass.neutral300,
-          width: 1,
+  Widget _buildMealListTile(String meal, bool isSelected, IconData mealIcon) {
+    return ListTile(
+      leading: Icon(mealIcon, color: ColorClass.brandDarkGreen),
+      title: Text(meal),
+      trailing: Container(
+        width: 24,
+        height: 24,
+        decoration: BoxDecoration(
+          color: isSelected ? ColorClass.brandLightGreen : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: ColorClass.brandDarkGreen,
+            width: 1.5,
+          ),
         ),
-      ),
-      child: Center(
         child: isSelected
-            ? Icon(
+            ? const Icon(
                 Icons.check,
+                color: ColorClass.brandDarkGreen,
                 size: 18,
-                color: ColorClass.brandLightGreen,
               )
-            : Text(
-                label,
-                style: TextStyleClass.poppinsBold(
-                  fontSize: 16,
-                  color: isTodayAndSelected
-                      ? ColorClass.brandDarkGreen
-                      : isSelected
-                          ? ColorClass.brandLightGreen
-                          : ColorClass.neutral400,
-                ),
-              ),
+            : null,
       ),
     );
   }
-} 
+}
+
+Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
+  final bool isTodayAndSelected = isToday && isSelected;
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 2),
+    width: 16,
+    height: 16,
+    decoration: BoxDecoration(
+      color: isSelected ? ColorClass.brandDarkGreen : Colors.transparent,
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(
+        color: isTodayAndSelected ? Colors.white : ColorClass.brandDarkGreen,
+        width: 1,
+      ),
+    ),
+    child: Center(
+      child: Text(
+        label,
+        style: TextStyleClass.poppinsRegular(
+          fontSize: 10,
+          color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+        ),
+      ),
+    ),
+  );
+}

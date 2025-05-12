@@ -2,18 +2,91 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/providers/canteen_home_page_provider.dart';
-import 'package:Hira_Plus/providers/date_provider.dart';
+import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
+import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
 
 class HomeListView extends StatelessWidget {
   final ScrollController scrollController;
   final String Function(int) getMonthName;
   final String Function(int) getDayName;
-  const HomeListView({required this.scrollController, required this.getMonthName, required this.getDayName, Key? key}) : super(key: key);
+  const HomeListView(
+      {required this.scrollController,
+      required this.getMonthName,
+      required this.getDayName,
+      Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final canteenProvider = Provider.of<CanteenHomePageProvider>(context);
+    final mealProvider = Provider.of<MealProvider>(context);
+
+    if (mealProvider.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text("Loading your meals..."),
+          ],
+        ),
+      );
+    }
+
+    if (mealProvider.errorMessage.isNotEmpty) {
+      IconData errorIcon = Icons.error_outline;
+      Color errorColor = Colors.red;
+
+      // Different styling for auth errors vs network errors
+      if (mealProvider.errorMessage.contains('Authentication')) {
+        errorIcon = Icons.lock_outline;
+        errorColor = Colors.orange;
+      }
+
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(errorIcon, size: 48, color: errorColor),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Text(
+                mealProvider.errorMessage,
+                textAlign: TextAlign.center,
+                style: TextStyleClass.poppinsMedium(
+                  fontSize: 16,
+                  color: errorColor,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (mealProvider.meals.isNotEmpty)
+              Text(
+                "Showing cached data from last sync",
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 14,
+                  color: Colors.grey,
+                ),
+              ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorClass.brandDarkGreen,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              onPressed: () => mealProvider.fetchUserMeals(context),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: [
         Container(
@@ -52,11 +125,16 @@ class HomeListView extends StatelessWidget {
             itemCount: canteenProvider.allDays.length,
             itemBuilder: (context, index) {
               final date = canteenProvider.allDays[index];
-              final dateKey = '${date.year}-${date.month}-${date.day}';
               final isToday = date.day == DateTime.now().day &&
                   date.month == DateTime.now().month &&
                   date.year == DateTime.now().year;
               final bool isFirstDayOfMonth = date.day == 1;
+
+              // Get meal status from meal provider
+              final hasBreakfast = mealProvider.isMealMarked(date, 'breakfast');
+              final hasLunch = mealProvider.isMealMarked(date, 'lunch');
+              final hasDinner = mealProvider.isMealMarked(date, 'dinner');
+
               return Column(
                 children: [
                   if (isFirstDayOfMonth)
@@ -98,7 +176,8 @@ class HomeListView extends StatelessWidget {
                       ),
                     ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
@@ -153,41 +232,22 @@ class HomeListView extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Consumer<DateProvider>(
-                                builder: (context, dateProvider, child) {
-                                  return Checkbox(
-                                    value: dateProvider.isMealSelected(dateKey, 'Breakfast'),
-                                    onChanged: (value) {
-                                      dateProvider.toggleMeal(dateKey, 'Breakfast');
-                                    },
-                                    activeColor: ColorClass.brandLightGreen,
-                                    checkColor: ColorClass.brandDarkGreen,
-                                  );
-                                },
+                              // Breakfast checkbox (read-only indicator)
+                              _buildMealCheckbox(
+                                isChecked: hasBreakfast,
+                                isEnabled: false,
                               ),
-                              Consumer<DateProvider>(
-                                builder: (context, dateProvider, child) {
-                                  return Checkbox(
-                                    value: dateProvider.isMealSelected(dateKey, 'Lunch'),
-                                    onChanged: (value) {
-                                      dateProvider.toggleMeal(dateKey, 'Lunch');
-                                    },
-                                    activeColor: ColorClass.brandLightGreen,
-                                    checkColor: ColorClass.brandDarkGreen,
-                                  );
-                                },
+
+                              // Lunch checkbox (read-only indicator)
+                              _buildMealCheckbox(
+                                isChecked: hasLunch,
+                                isEnabled: false,
                               ),
-                              Consumer<DateProvider>(
-                                builder: (context, dateProvider, child) {
-                                  return Checkbox(
-                                    value: dateProvider.isMealSelected(dateKey, 'Dinner'),
-                                    onChanged: (value) {
-                                      dateProvider.toggleMeal(dateKey, 'Dinner');
-                                    },
-                                    activeColor: ColorClass.brandLightGreen,
-                                    checkColor: ColorClass.brandDarkGreen,
-                                  );
-                                },
+
+                              // Dinner checkbox (read-only indicator)
+                              _buildMealCheckbox(
+                                isChecked: hasDinner,
+                                isEnabled: false,
                               ),
                             ],
                           ),
@@ -203,4 +263,17 @@ class HomeListView extends StatelessWidget {
       ],
     );
   }
-} 
+
+  // Helper method to build consistent meal checkboxes
+  Widget _buildMealCheckbox({
+    required bool isChecked,
+    required bool isEnabled,
+  }) {
+    return Checkbox(
+      value: isChecked,
+      onChanged: isEnabled ? (_) {} : null,
+      activeColor: ColorClass.brandLightGreen,
+      checkColor: ColorClass.brandDarkGreen,
+    );
+  }
+}

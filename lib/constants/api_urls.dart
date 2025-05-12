@@ -10,9 +10,9 @@ class ApiUrls {
     return '$baseUrl/api/auth/test-login';
   }
 
-  // ################## MEALS ##################
+  // ################## MEALS FOR USER ##################
 
-  static String getMeals() {
+  static String getMealsForUser() {
     return '$baseUrl/api/meals/my-meals';
   }
 
