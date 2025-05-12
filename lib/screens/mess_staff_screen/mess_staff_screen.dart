@@ -29,6 +29,8 @@ import 'widgets/detailed_list.dart';
 import 'widgets/bottom_button.dart';
 import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/profile_card.dart';
 import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:Hira_Plus/providers/auth_provider.dart';
+import 'package:logger/logger.dart';
 
 class MessStaffScreen extends StatelessWidget {
   const MessStaffScreen({super.key});
@@ -59,11 +61,11 @@ class MessStaffScreen extends StatelessWidget {
 
   // Define the pages for the bottom navigation - now just 2 tabs
   List<Widget> _pages(BuildContext context) => [
-    // Home tab (previously Meal Summary)
-    _buildHomeTab(context),
-    // Settings tab (includes profile info now)
-    _buildSettingsTab(context),
-  ];
+        // Home tab (previously Meal Summary)
+        _buildHomeTab(context),
+        // Settings tab (includes profile info now)
+        _buildSettingsTab(context),
+      ];
 
   Widget _buildHomeTab(BuildContext context) {
     return SafeArea(
@@ -72,27 +74,31 @@ class MessStaffScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Meal Summary', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+            Text('Meal Summary',
+                style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
             const SizedBox(height: 12),
             Consumer<MessStaffMealProvider>(
               builder: (context, mealProvider, _) => Wrap(
                 spacing: 12.0,
                 runSpacing: 12.0,
-                children: List.generate(mealSummary.length, (index) => GestureDetector(
-                  onTap: () {
-                    mealProvider.selectMeal(index);
-                  },
-                  child: MealSummaryWidget(
-                    icon: mealSummary[index]['icon'] as IconData,
-                    label: mealSummary[index]['label'] as String,
-                    count: mealSummary[index]['count'] as int,
-                    isSelected: mealProvider.selectedMeal == index,
-                  ),
-                )),
+                children: List.generate(
+                    mealSummary.length,
+                    (index) => GestureDetector(
+                          onTap: () {
+                            mealProvider.selectMeal(index);
+                          },
+                          child: MealSummaryWidget(
+                            icon: mealSummary[index]['icon'] as IconData,
+                            label: mealSummary[index]['label'] as String,
+                            count: mealSummary[index]['count'] as int,
+                            isSelected: mealProvider.selectedMeal == index,
+                          ),
+                        )),
               ),
             ),
             const SizedBox(height: 24),
-            Text('Detailed List', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+            Text('Detailed List',
+                style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
             const SizedBox(height: 8),
             Consumer<MessStaffMealProvider>(
               builder: (context, mealProvider, _) {
@@ -105,7 +111,8 @@ class MessStaffScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Total: ${details.length}',
-                          style: TextStyleClass.poppinsBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+                          style: TextStyleClass.poppinsBold(
+                              fontSize: 18, color: ColorClass.brandDarkGreen),
                         ),
                       ],
                     ),
@@ -124,18 +131,22 @@ class MessStaffScreen extends StatelessWidget {
                     label: 'Share',
                     onTap: () {
                       final selectedIndex = mealProvider.selectedMeal;
-                      final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                      final mealLabel =
+                          mealSummary[selectedIndex]['label'] as String;
                       final details = detailedLists[selectedIndex];
-                      generateAndSharePdf(context, mealLabel, details, shareInsteadOfOpen: true);
+                      generateAndSharePdf(context, mealLabel, details,
+                          shareInsteadOfOpen: true);
                     },
                   ),
                   BottomButton(
                     label: 'Print',
                     onTap: () {
                       final selectedIndex = mealProvider.selectedMeal;
-                      final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                      final mealLabel =
+                          mealSummary[selectedIndex]['label'] as String;
                       final details = detailedLists[selectedIndex];
-                      generateAndSharePdf(context, mealLabel, details, shareInsteadOfOpen: false);
+                      generateAndSharePdf(context, mealLabel, details,
+                          shareInsteadOfOpen: false);
                     },
                   ),
                 ],
@@ -179,7 +190,8 @@ class MessStaffScreen extends StatelessWidget {
                   title: 'Privacy Policy',
                   icon: LucideIcons.shieldCheck,
                   onTap: () async {
-                    final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                    final Uri url = Uri.parse(
+                        'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
                     await launchUrl(url, mode: LaunchMode.externalApplication);
                   },
                 ),
@@ -202,7 +214,8 @@ class MessStaffScreen extends StatelessWidget {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('About Us'),
-                        content: const Text('This is dummy content for About Us.'),
+                        content:
+                            const Text('This is dummy content for About Us.'),
                         actions: [
                           TextButton(
                             onPressed: () => navigateBack(context),
@@ -233,15 +246,36 @@ class MessStaffScreen extends StatelessWidget {
                       ),
                       builder: (BuildContext context) {
                         return LogoutConfirmationBottomSheet(
-                          onLogout: () {
-                            Provider.of<BottomNavProvider>(navigatorKey.currentContext!, listen: false).setIndex(0);
+                          onLogout: () async {
+                            final logger = Logger();
+                            logger.i(
+                                '🔄 [LOGOUT] Mess Staff initiated logout process');
+
+                            // Reset bottom nav to initial index
+                            Provider.of<BottomNavProvider>(
+                                    navigatorKey.currentContext!,
+                                    listen: false)
+                                .setIndex(0);
+
+                            // Call the AuthProvider logout method to clear shared preferences
+                            await Provider.of<AuthProvider>(
+                                    navigatorKey.currentContext!,
+                                    listen: false)
+                                .logout();
+                            logger.i(
+                                '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+
                             toastification.show(
                               context: context,
-                              title: Text('Logged out successfully'),
+                              title: const Text('Logged out successfully'),
                               type: ToastificationType.success,
                               autoCloseDuration: const Duration(seconds: 2),
                             );
-                            Future.delayed(const Duration(milliseconds: 500), () {
+
+                            Future.delayed(const Duration(milliseconds: 500),
+                                () {
+                              logger.i(
+                                  '🧭 [NAVIGATION] Redirecting to login screen');
                               // Using navigation helper
                               navigatePRToGlobal(
                                 route: Routes.login,
@@ -264,7 +298,8 @@ class MessStaffScreen extends StatelessWidget {
     );
   }
 
-  Future<void> showProgressDialog(BuildContext context, ValueNotifier<double> progress) async {
+  Future<void> showProgressDialog(
+      BuildContext context, ValueNotifier<double> progress) async {
     return showDialog(
       context: context,
       barrierDismissible: false,
@@ -294,22 +329,30 @@ class MessStaffScreen extends StatelessWidget {
           build: (pw.Context context) => pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('$mealLabel - Detailed List', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.Text('$mealLabel - Detailed List',
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 12),
               pw.Align(
                 alignment: pw.Alignment.centerRight,
-                child: pw.Text('Total: ${details.length}', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                child: pw.Text('Total: ${details.length}',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
               ),
               pw.SizedBox(height: 16),
               ...details.map((item) => pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(item['name'] ?? '', style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                  pw.Text(item['type'] ?? '', style: pw.TextStyle(fontSize: 12)),
-                  pw.Text(item['room'] ?? '', style: pw.TextStyle(fontSize: 12)),
-                  pw.SizedBox(height: 8),
-                ],
-              )),
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(item['name'] ?? '',
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                      pw.Text(item['type'] ?? '',
+                          style: pw.TextStyle(fontSize: 12)),
+                      pw.Text(item['room'] ?? '',
+                          style: pw.TextStyle(fontSize: 12)),
+                      pw.SizedBox(height: 8),
+                    ],
+                  )),
             ],
           ),
         ),
@@ -320,14 +363,16 @@ class MessStaffScreen extends StatelessWidget {
       await file.writeAsBytes(await pdf.save());
       Navigator.of(context, rootNavigator: true).pop();
       if (shareInsteadOfOpen) {
-        await Share.shareXFiles([XFile(file.path)], text: '$mealLabel - Detailed List');
+        await Share.shareXFiles([XFile(file.path)],
+            text: '$mealLabel - Detailed List');
       } else {
         await OpenFile.open(file.path);
         showDialog(
           context: context,
           builder: (ctx) => Dialog(
             backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
             elevation: 8,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
@@ -337,12 +382,14 @@ class MessStaffScreen extends StatelessWidget {
                 children: [
                   Text(
                     'PDF Generated',
-                    style: TextStyleClass.poppinsBold(fontSize: 20, color: ColorClass.brandDarkGreen),
+                    style: TextStyleClass.poppinsBold(
+                        fontSize: 20, color: ColorClass.brandDarkGreen),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'Would you like to share this PDF?',
-                    style: TextStyleClass.poppinsMedium(fontSize: 16, color: ColorClass.neutral400),
+                    style: TextStyleClass.poppinsMedium(
+                        fontSize: 16, color: ColorClass.neutral400),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -351,13 +398,15 @@ class MessStaffScreen extends StatelessWidget {
                       TextButton(
                         style: TextButton.styleFrom(
                           foregroundColor: ColorClass.brandDarkGreen,
-                          textStyle: TextStyleClass.poppinsSemiBold(fontSize: 16),
+                          textStyle:
+                              TextStyleClass.poppinsSemiBold(fontSize: 16),
                         ),
                         onPressed: () async {
                           // Using navigation helper
                           navigateBack(ctx);
                           if (file != null) {
-                            await Share.shareXFiles([XFile(file.path)], text: '$mealLabel - Detailed List');
+                            await Share.shareXFiles([XFile(file.path)],
+                                text: '$mealLabel - Detailed List');
                           }
                         },
                         child: const Text('Share'),
@@ -386,12 +435,12 @@ class MessStaffScreen extends StatelessWidget {
       );
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<BottomNavProvider>(context);
     final tabTitles = ['Home', 'Settings']; // Updated names
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       // drawer: CustomDrawer(
@@ -492,18 +541,25 @@ class MessStaffScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: ColorClass.brandWhite,
         selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor:  Color.fromARGB(255, 63, 94, 43),
+        unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
         currentIndex: navProvider.selectedIndex,
-        unselectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 14, ),
+        unselectedLabelStyle: TextStyleClass.poppinsSemiBold(
+          fontSize: 14,
+        ),
         onTap: navProvider.setIndex,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.home, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.home, size: 32,),
+            icon: Icon(LucideIcons.home,
+                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(
+              LucideIcons.home,
+              size: 32,
+            ),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.settings, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            icon: Icon(LucideIcons.settings,
+                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
             activeIcon: Icon(LucideIcons.settings, size: 32),
             label: 'Settings',
           ),

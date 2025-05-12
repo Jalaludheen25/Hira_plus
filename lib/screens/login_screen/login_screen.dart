@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:Hira_Plus/providers/auth_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:logger/logger.dart';
+import 'package:Hira_Plus/utils/shared_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -344,6 +345,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             _logger.i(
                                 '🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
+
+                            // Save user type to shared preferences
+                            await SharedUtils.setString(
+                                'user_type', authProvider.selectedRole);
+
+                            // Navigate to appropriate screen based on role
                             if (authProvider.selectedRole == 'Mess Staff') {
                               navigatePRToGlobal(route: Routes.messStaff);
                             } else if (authProvider.selectedRole == 'Manager') {
@@ -352,8 +359,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               navigatePRToGlobal(route: Routes.bottomNav);
                             }
 
-                            authProvider.reset();
-                            _logger.i('🔄 [STATE] AuthProvider reset complete');
+                            // No need to reset the provider completely
+                            // as we've already stored necessary info
+                            authProvider.setShowOTPField(false);
+                            _logger.i('🔄 [STATE] Login flow completed');
                           },
                           child: const Text('Validate',
                               style: TextStyle(

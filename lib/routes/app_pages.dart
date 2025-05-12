@@ -18,7 +18,7 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.splash: (context) => const SplashScreen(),
     Routes.login: (context) => const LoginScreen(),
     Routes.bottomNav: (context) => const BottomNavigationBarScreen(),
-    Routes.profile: (context) => const ProfileScreen(),
+    Routes.profile: (context) => ProfileScreen(),
     Routes.home: (context) => const UserHomeScreen(),
     Routes.contactUs: (context) => const ContactUsScreen(),
     Routes.mealCount: (context) => const MealCountScreen(),

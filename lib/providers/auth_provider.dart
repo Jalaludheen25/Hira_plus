@@ -11,11 +11,15 @@ class AuthProvider extends ChangeNotifier {
   String _otp = '';
   String _selectedRole = 'User';
   bool _showOTPField = false;
+  bool _isLoggedIn = false;
+  String _userType = '';
 
   String get phone => _phone;
   String get otp => _otp;
   String get selectedRole => _selectedRole;
   bool get showOTPField => _showOTPField;
+  bool get isLoggedIn => _isLoggedIn;
+  String get userType => _userType;
 
   void setPhone(String value) {
     if (_phone != value) {
@@ -61,6 +65,26 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> checkLoginStatus() async {
+    try {
+      _logger.i('🔍 [AUTH] Checking login status...');
+      final token = await SharedUtils.getString('auth_token');
+      final userType = await SharedUtils.getString('user_type');
+
+      _isLoggedIn = token.isNotEmpty;
+      _userType = userType;
+
+      _logger.i('🔹 [AUTH] isLoggedIn: $_isLoggedIn, userType: $_userType');
+      notifyListeners();
+      return _isLoggedIn;
+    } catch (e) {
+      _logger.e('🔴 [AUTH] Error checking login status: $e');
+      _isLoggedIn = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> fetchTestLoginToken() async {
     try {
       _logger.i('🔵 [API] Fetching test login token...');
@@ -77,8 +101,15 @@ class AuthProvider extends ChangeNotifier {
         final data = jsonDecode(response.body);
         _logger.i('🟢 [API] Token fetched successfully!');
         _logger.d('🔹 Token: ${data['token']}');
+        
+        // Store token and update login status
         await SharedUtils.setString('auth_token', data['token']);
+        _isLoggedIn = true;
+        _userType = _selectedRole; // Set user type based on selected role
+        
         _logger.i('📦 Token stored in SharedPreferences');
+        _logger.i('🔐 [AUTH] Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType');
+        
         notifyListeners();
       } else {
         _logger.e(
@@ -90,6 +121,21 @@ class AuthProvider extends ChangeNotifier {
       _logger.e('🔴 [ERROR] Token fetch failed!');
       _logger.e('🔹 Error: $e');
       throw Exception('Error: $e');
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      _logger.i('🔄 [AUTH] Logging out user...');
+      await SharedUtils.setString('auth_token', '');
+      await SharedUtils.setString('user_type', '');
+      _isLoggedIn = false;
+      _userType = '';
+      reset();
+      _logger.i('🟢 [AUTH] Logout successful');
+      notifyListeners();
+    } catch (e) {
+      _logger.e('🔴 [AUTH] Error during logout: $e');
     }
   }
 }

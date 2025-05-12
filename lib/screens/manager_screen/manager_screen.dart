@@ -19,6 +19,8 @@ import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:logger/logger.dart';
+import 'package:Hira_Plus/providers/auth_provider.dart';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -48,31 +50,34 @@ class ManagerScreen extends StatelessWidget {
     // Use a manager meal provider similar to the MessStaffMealProvider
     // For this example, we'll use a ValueNotifier
     final selectedMealNotifier = ValueNotifier<int>(0);
-    
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Meal Summary', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+            Text('Meal Summary',
+                style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
             const SizedBox(height: 12),
             ValueListenableBuilder<int>(
               valueListenable: selectedMealNotifier,
               builder: (context, selectedMeal, _) => Wrap(
                 spacing: 12.0,
                 runSpacing: 12.0,
-                children: List.generate(mealSummary.length, (index) => GestureDetector(
-                  onTap: () {
-                    selectedMealNotifier.value = index;
-                  },
-                  child: MealSummaryWidget(
-                    icon: mealSummary[index]['icon'] as IconData,
-                    label: mealSummary[index]['label'] as String,
-                    count: mealSummary[index]['count'] as int,
-                    isSelected: selectedMeal == index,
-                  ),
-                )),
+                children: List.generate(
+                    mealSummary.length,
+                    (index) => GestureDetector(
+                          onTap: () {
+                            selectedMealNotifier.value = index;
+                          },
+                          child: MealSummaryWidget(
+                            icon: mealSummary[index]['icon'] as IconData,
+                            label: mealSummary[index]['label'] as String,
+                            count: mealSummary[index]['count'] as int,
+                            isSelected: selectedMeal == index,
+                          ),
+                        )),
               ),
             ),
             const SizedBox(height: 24),
@@ -83,14 +88,16 @@ class ManagerScreen extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Detailed List', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                    Text('Detailed List',
+                        style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
                           'Total: ${details.length}',
-                          style: TextStyleClass.poppinsBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+                          style: TextStyleClass.poppinsBold(
+                              fontSize: 18, color: ColorClass.brandDarkGreen),
                         ),
                       ],
                     ),
@@ -107,18 +114,20 @@ class ManagerScreen extends StatelessWidget {
   }
 
   static List<Widget> _pages(BuildContext context) => [
-    // Dashboard tab with selectable meals
-    Builder(builder: (context) => ((ManagerScreen()._buildDashboardTab(context)))),
-    // Markings tab
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-      child: MarkingListScreen(showAppBar: false),
-    ),
-    // Users tab
-    UsersListScreen(),
-    // Settings tab
-    SettingsScreen(),
-  ];
+        // Dashboard tab with selectable meals
+        Builder(
+            builder: (context) =>
+                ((ManagerScreen()._buildDashboardTab(context)))),
+        // Markings tab
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: MarkingListScreen(showAppBar: false),
+        ),
+        // Users tab
+        UsersListScreen(),
+        // Settings tab
+        SettingsScreen(),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +149,8 @@ class ManagerScreen extends StatelessWidget {
       ),
       body: navProvider.selectedIndex == 1
           ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: MarkingListScreen(showAppBar: false),
             )
           : _pages(context)[navProvider.selectedIndex],
@@ -154,22 +164,26 @@ class ManagerScreen extends StatelessWidget {
         selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 14),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.layoutDashboard, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            icon: Icon(LucideIcons.layoutDashboard,
+                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
             activeIcon: Icon(LucideIcons.layoutDashboard, size: 32),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.clipboardList, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            icon: Icon(LucideIcons.clipboardList,
+                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
             activeIcon: Icon(LucideIcons.clipboardList, size: 32),
             label: 'Markings',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.users, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            icon: Icon(LucideIcons.users,
+                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
             activeIcon: Icon(LucideIcons.users, size: 32),
             label: 'Users',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.settings, size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+            icon: Icon(LucideIcons.settings,
+                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
             activeIcon: Icon(LucideIcons.settings, size: 32),
             label: 'Settings',
           ),
@@ -182,7 +196,8 @@ class ManagerScreen extends StatelessWidget {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  final Logger _logger = Logger();
+  SettingsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +229,8 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Privacy Policy',
                 icon: LucideIcons.shieldCheck,
                 onTap: () async {
-                  final Uri url = Uri.parse('https://www.termsfeed.com/live/b1d9ea79-6dfb-4c0e-83fa-0fc2841ec2b4');
+                  final Uri url = Uri.parse(
+                      'https://www.termsfeed.com/live/b1d9ea79-6dfb-4c0e-83fa-0fc2841ec2b4');
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
@@ -236,7 +252,8 @@ class SettingsScreen extends StatelessWidget {
                     context: context,
                     builder: (context) => AlertDialog(
                       title: const Text('About Us'),
-                      content: const Text('This is dummy content for About Us.'),
+                      content:
+                          const Text('This is dummy content for About Us.'),
                       actions: [
                         TextButton(
                           onPressed: () => navigateBack(context),
@@ -267,15 +284,34 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     builder: (BuildContext context) {
                       return LogoutConfirmationBottomSheet(
-                        onLogout: () {
-                          Provider.of<BottomNavProvider>(navigatorKey.currentContext!, listen: false).setIndex(0);
+                        onLogout: () async {
+                          _logger.i(
+                              '🔄 [LOGOUT] Manager initiated logout process');
+
+                          // Reset bottom nav to initial index
+                          Provider.of<BottomNavProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .setIndex(0);
+
+                          // Call the AuthProvider logout method to clear shared preferences
+                          await Provider.of<AuthProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .logout();
+                          _logger.i(
+                              '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+
                           toastification.show(
                             context: context,
-                            title: Text('Logged out successfully'),
+                            title: const Text('Logged out successfully'),
                             type: ToastificationType.success,
                             autoCloseDuration: const Duration(seconds: 2),
                           );
+
                           Future.delayed(const Duration(milliseconds: 500), () {
+                            _logger.i(
+                                '🧭 [NAVIGATION] Redirecting to login screen');
                             navigatePRTo(
                               context: navigatorKey.currentContext!,
                               route: Routes.login,
