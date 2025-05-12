@@ -10,6 +10,7 @@ import 'package:Hira_Plus/constants/icons_class.dart';
 import 'package:provider/provider.dart';
 import 'package:Hira_Plus/providers/auth_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:logger/logger.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +20,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final Logger _logger = Logger();
   final TextEditingController _phoneController = TextEditingController();
 
   @override
@@ -119,8 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     if (!authProvider.showOTPField)
                       GestureDetector(
                         onTap: () async {
-                          final selected =
-                              await showModalBottomSheet<String>(
+                          final selected = await showModalBottomSheet<String>(
                             context: context,
                             shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.vertical(
@@ -143,8 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: ColorClass.brandLightGreen
-                                    .withOpacity(0.1),
+                                color:
+                                    ColorClass.brandLightGreen.withOpacity(0.1),
                                 spreadRadius: 2,
                                 blurRadius: 15,
                                 offset: const Offset(0, 4),
@@ -179,8 +180,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: ColorClass.brandLightGreen
-                                  .withOpacity(0.1),
+                              color:
+                                  ColorClass.brandLightGreen.withOpacity(0.1),
                               spreadRadius: 2,
                               blurRadius: 15,
                               offset: const Offset(0, 4),
@@ -271,8 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 title: const Text(
                                     'Please enter a valid 10-digit phone number'),
                                 type: ToastificationType.error,
-                                autoCloseDuration:
-                                    const Duration(seconds: 2),
+                                autoCloseDuration: const Duration(seconds: 2),
                               );
                               return;
                             }
@@ -297,32 +297,53 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          onPressed: () {
+                          onPressed: () async {
                             if (authProvider.otp.length != 6) {
+                              _logger.w(
+                                  '🟠 [VALIDATION] Invalid OTP length: ${authProvider.otp.length}');
                               toastification.show(
                                 context: context,
                                 title: const Text(
                                     'Please enter a valid 6-digit OTP'),
                                 type: ToastificationType.error,
-                                autoCloseDuration:
-                                    const Duration(seconds: 2),
+                                autoCloseDuration: const Duration(seconds: 2),
                               );
                               return;
                             }
 
                             if (authProvider.phone == '9998887776' &&
+                                authProvider.otp == '123456') {
+                              _logger.i('🔵 [TEST] Using test credentials...');
+                              try {
+                                await authProvider.fetchTestLoginToken();
+                                _logger
+                                    .i('🟢 [TEST] Token fetched and stored!');
+                              } catch (e) {
+                                _logger.e('🔴 [TEST] Token fetch failed!');
+                                _logger.e('🔹 Error: $e');
+                                toastification.show(
+                                  context: context,
+                                  title: const Text('Failed to fetch token'),
+                                  type: ToastificationType.error,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                );
+                                return;
+                              }
+                            } else if (authProvider.phone == '9998887776' &&
                                 authProvider.otp != '123456') {
+                              _logger.w(
+                                  '🟠 [TEST] Invalid OTP for test credentials');
                               toastification.show(
                                 context: context,
                                 title: const Text('Invalid OTP for demo login'),
                                 type: ToastificationType.error,
-                                autoCloseDuration:
-                                    const Duration(seconds: 2),
+                                autoCloseDuration: const Duration(seconds: 2),
                               );
                               return;
                             }
 
-                            // Navigate to appropriate screen
+                            _logger.i(
+                                '🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
                             if (authProvider.selectedRole == 'Mess Staff') {
                               navigatePRToGlobal(route: Routes.messStaff);
                             } else if (authProvider.selectedRole == 'Manager') {
@@ -332,6 +353,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             }
 
                             authProvider.reset();
+                            _logger.i('🔄 [STATE] AuthProvider reset complete');
                           },
                           child: const Text('Validate',
                               style: TextStyle(
@@ -348,8 +370,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           vertical: 12,
                         ),
                         decoration: BoxDecoration(
-                          color:
-                              ColorClass.brandLightGreen.withOpacity(0.1),
+                          color: ColorClass.brandLightGreen.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -358,15 +379,15 @@ class _LoginScreenState extends State<LoginScreen> {
                             Icon(
                               Icons.info_outline,
                               size: 16,
-                              color: ColorClass.brandLightGreen
-                                  .withOpacity(0.8),
+                              color:
+                                  ColorClass.brandLightGreen.withOpacity(0.8),
                             ),
                             const SizedBox(width: 8),
                             Text(
                               'Need help? Contact Hira Manager',
                               style: TextStyle(
-                                color: ColorClass.brandLightGreen
-                                    .withOpacity(0.8),
+                                color:
+                                    ColorClass.brandLightGreen.withOpacity(0.8),
                                 fontSize: 12,
                               ),
                             ),
@@ -427,8 +448,7 @@ class _RoleSelectionSheet extends StatelessWidget {
                 title: Text(role['label'] as String,
                     style: const TextStyle(fontSize: 16)),
                 trailing: selectedRole == role['label']
-                    ? const Icon(Icons.check,
-                        color: ColorClass.brandLightGreen)
+                    ? const Icon(Icons.check, color: ColorClass.brandLightGreen)
                     : null,
                 onTap: () => Navigator.of(context).pop(role['label']),
               )),
