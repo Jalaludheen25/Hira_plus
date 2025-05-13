@@ -229,49 +229,159 @@ class MonthCalendarView extends StatelessWidget {
 
   void _showMealBottomSheet(BuildContext context, DateTime date,
       bool hasBreakfast, bool hasLunch, bool hasDinner) {
+    // Track original and current meal states
+    Map<String, bool> originalMealStates = {
+      'breakfast': hasBreakfast,
+      'lunch': hasLunch,
+      'dinner': hasDinner,
+    };
+
+    Map<String, bool> currentMealStates = {
+      'breakfast': hasBreakfast,
+      'lunch': hasLunch,
+      'dinner': hasDinner,
+    };
+
     showModalBottomSheet(
       context: context,
       backgroundColor: ColorClass.brandWhite,
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: ColorClass.brandDarkGreen,
-                  borderRadius: BorderRadius.circular(2),
+        return StatefulBuilder(builder: (context, setState) {
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: ColorClass.brandDarkGreen,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-              ),
-              Text(
-                'Meals for ${date.day}-${date.month}-${date.year}',
-                style: TextStyleClass.poppinsMedium(fontSize: 18),
-              ),
-              const SizedBox(height: 16),
-              _buildMealListTile('Breakfast', hasBreakfast, Icons.coffee),
-              _buildMealListTile('Lunch', hasLunch, Icons.restaurant),
-              _buildMealListTile('Dinner', hasDinner, Icons.dinner_dining),
-              const SizedBox(height: 16),
-              Text(
-                'Meals are read-only. Contact staff to change.',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 14,
-                  color: ColorClass.neutral400,
+                Text(
+                  'Meals for ${date.day}-${date.month}-${date.year}',
+                  style: TextStyleClass.poppinsMedium(fontSize: 18),
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        );
+                const SizedBox(height: 16),
+                _buildToggleableMealTile(
+                  'Breakfast',
+                  currentMealStates['breakfast']!,
+                  Icons.coffee,
+                  () {
+                    setState(() {
+                      currentMealStates['breakfast'] =
+                          !currentMealStates['breakfast']!;
+                    });
+                    debugPrint(
+                        'Breakfast toggled to: ${currentMealStates['breakfast']}');
+                  },
+                ),
+                _buildToggleableMealTile(
+                  'Lunch',
+                  currentMealStates['lunch']!,
+                  Icons.restaurant,
+                  () {
+                    setState(() {
+                      currentMealStates['lunch'] = !currentMealStates['lunch']!;
+                    });
+                    debugPrint(
+                        'Lunch toggled to: ${currentMealStates['lunch']}');
+                  },
+                ),
+                _buildToggleableMealTile(
+                  'Dinner',
+                  currentMealStates['dinner']!,
+                  Icons.dinner_dining,
+                  () {
+                    setState(() {
+                      currentMealStates['dinner'] =
+                          !currentMealStates['dinner']!;
+                    });
+                    debugPrint(
+                        'Dinner toggled to: ${currentMealStates['dinner']}');
+                  },
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Tap on a meal to select/deselect it',
+                  style: TextStyleClass.poppinsRegular(
+                    fontSize: 14,
+                    color: ColorClass.neutral400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey.shade200,
+                          foregroundColor: ColorClass.brandDarkGreen,
+                        ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          debugPrint('Meal selection canceled');
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorClass.brandDarkGreen,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () {
+                          // Check if any changes were made
+                          if (originalMealStates['breakfast'] !=
+                                  currentMealStates['breakfast'] ||
+                              originalMealStates['lunch'] !=
+                                  currentMealStates['lunch'] ||
+                              originalMealStates['dinner'] !=
+                                  currentMealStates['dinner']) {
+                            debugPrint(
+                                'Saving meal changes: $currentMealStates');
+
+                            // Get the meal provider and update all meals at once
+                            final mealProvider =
+                                Provider.of<CanteenHomeProvider>(context,
+                                    listen: false);
+
+                            _saveMealChanges(
+                                context,
+                                mealProvider,
+                                date,
+                                currentMealStates['breakfast']!,
+                                currentMealStates['lunch']!,
+                                currentMealStates['dinner']!);
+                          } else {
+                            debugPrint('No meal changes to save');
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Save'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        });
       },
     );
   }
 
-  Widget _buildMealListTile(String meal, bool isSelected, IconData mealIcon) {
+  // Helper method to build toggleable meal tiles without API calls
+  Widget _buildToggleableMealTile(
+    String meal,
+    bool isSelected,
+    IconData mealIcon,
+    VoidCallback onTap,
+  ) {
     return ListTile(
       leading: Icon(mealIcon, color: ColorClass.brandDarkGreen),
       title: Text(meal),
@@ -294,32 +404,94 @@ class MonthCalendarView extends StatelessWidget {
               )
             : null,
       ),
+      onTap: onTap,
     );
   }
-}
 
-Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
-  final bool isTodayAndSelected = isToday && isSelected;
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 2),
-    width: 16,
-    height: 16,
-    decoration: BoxDecoration(
-      color: isSelected ? ColorClass.brandDarkGreen : Colors.transparent,
-      borderRadius: BorderRadius.circular(4),
-      border: Border.all(
-        color: isTodayAndSelected ? Colors.white : ColorClass.brandDarkGreen,
-        width: 1,
-      ),
-    ),
-    child: Center(
-      child: Text(
-        label,
-        style: TextStyleClass.poppinsRegular(
-          fontSize: 10,
-          color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+  Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
+    final bool isTodayAndSelected = isToday && isSelected;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: isSelected ? ColorClass.brandDarkGreen : Colors.transparent,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(
+          color: isTodayAndSelected ? Colors.white : ColorClass.brandDarkGreen,
+          width: 1,
         ),
       ),
-    ),
-  );
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyleClass.poppinsRegular(
+            fontSize: 10,
+            color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _saveMealChanges(
+    BuildContext context,
+    CanteenHomeProvider mealProvider,
+    DateTime date,
+    bool breakfast,
+    bool lunch,
+    bool dinner,
+  ) async {
+    try {
+      // Log detailed information about the update
+      debugPrint(
+          'Updating meals for date: ${date.toIso8601String().split('T')[0]}');
+      debugPrint('Breakfast: $breakfast, Lunch: $lunch, Dinner: $dinner');
+
+      // Make the API call to update all meals at once
+      final result = await mealProvider.updateMeal(
+        context,
+        date: date,
+        breakfast: breakfast,
+        lunch: lunch,
+        dinner: dinner,
+      );
+
+      if (result != null) {
+        debugPrint('✅ Successfully updated meals: ${result.id}');
+
+        // Show success message
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Meal preferences updated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        debugPrint('❌ Failed to update meals');
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to update meal preferences'),
+              backgroundColor: ColorClass.redBase,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error updating meals: $e');
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: ColorClass.redBase,
+          ),
+        );
+      }
+    }
+  }
 }

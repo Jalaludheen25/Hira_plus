@@ -25,6 +25,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final canteenProvider =
           Provider.of<CanteenHomeProvider>(context, listen: false);
+      // Fetch meals data when screen loads
+      canteenProvider.fetchUserMeals(context);
       _scrollToToday(canteenProvider);
       _setupViewModeListener();
     });
@@ -122,13 +124,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final canteenProvider = Provider.of<CanteenHomeProvider>(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: ColorClass.brandDarkGreen,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          'Canteen App',
+          'Hira +',
           style: TextStyleClass.poppinsSemiBold(
             fontSize: 20,
             color: ColorClass.white,
@@ -188,5 +190,3 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 }
-
-// Month view widget (inline, adapted from MonthScreen)

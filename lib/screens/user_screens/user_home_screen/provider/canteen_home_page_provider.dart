@@ -8,72 +8,73 @@ import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_mode
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/meal_service.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
 
-
 enum HomeViewMode { list, month }
 
 class CanteenHomeProvider extends ChangeNotifier {
   final MealService _mealService = MealService();
-  
+
   // HomeViewModeProvider properties
   HomeViewMode _mode = HomeViewMode.list;
-  
+
   // CanteenHomePageProvider properties
   DateTime _selectedDate = DateTime.now();
   List<DateTime> _allDays = [];
   int _currentYear = DateTime.now().year;
   bool _isLoadingNextYear = false;
-  
+
   // MealProvider properties
   List<MealModel> _meals = [];
   bool _isLoading = false;
   String _errorMessage = '';
   DateTime _lastFetchTime = DateTime(2000); // Initial value
-  
+
   // Getters
   // View mode getters
   HomeViewMode get mode => _mode;
-  
+
   // Date getters
   DateTime get selectedDate => _selectedDate;
   List<DateTime> get allDays => _allDays;
   int get currentYear => _currentYear;
   bool get isLoadingNextYear => _isLoadingNextYear;
-  
+
   // Meal getters
   List<MealModel> get meals => _meals;
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
   DateTime get lastFetchTime => _lastFetchTime;
-  
+
   // Constructor
   CanteenHomeProvider(BuildContext context) {
     _updateAllDays(context);
   }
-  
+
   // HomeViewModeProvider methods
   void toggleMode() {
     _mode = _mode == HomeViewMode.list ? HomeViewMode.month : HomeViewMode.list;
     notifyListeners();
   }
-  
+
   void setMode(HomeViewMode mode) {
     _mode = mode;
     notifyListeners();
   }
-  
+
   // CanteenHomePageProvider methods
   void _updateAllDays(BuildContext? context) {
     final now = DateTime.now();
     final prevMonth = DateTime(now.year, now.month - 1, 1);
-    final nextMonth = DateTime(now.year, now.month + 2, 0); // Last day of next month
+    final nextMonth =
+        DateTime(now.year, now.month + 2, 0); // Last day of next month
     _allDays = [];
-    
+
     DateTime currentDate = prevMonth;
-    while (currentDate.isBefore(nextMonth) || currentDate.isAtSameMomentAs(nextMonth)) {
+    while (currentDate.isBefore(nextMonth) ||
+        currentDate.isAtSameMomentAs(nextMonth)) {
       _allDays.add(currentDate);
       currentDate = currentDate.add(const Duration(days: 1));
     }
-    
+
     if (context != null) {
       final dateProvider = DateProvider();
       for (var date in _allDays) {
@@ -81,27 +82,29 @@ class CanteenHomeProvider extends ChangeNotifier {
         dateProvider.initializeDate(dateKey);
       }
     }
-    
+
     notifyListeners();
   }
-  
+
   void setSelectedDate(DateTime date, BuildContext context) {
     _selectedDate = date;
     notifyListeners();
   }
-  
+
   void goToToday(BuildContext context) {
     _selectedDate = DateTime.now();
     _updateAllDays(context);
     notifyListeners();
   }
-  
+
   int getTodayIndex() {
     final now = DateTime.now();
     return _allDays.indexWhere((date) =>
-      date.day == now.day && date.month == now.month && date.year == now.year);
+        date.day == now.day &&
+        date.month == now.month &&
+        date.year == now.year);
   }
-  
+
   // MealProvider methods
   Future<void> fetchUserMeals(BuildContext context) async {
     try {
@@ -133,7 +136,8 @@ class CanteenHomeProvider extends ChangeNotifier {
       if (e.toString().contains('401')) {
         _errorMessage = 'Authentication error. Please login again.';
       } else {
-        _errorMessage = 'Failed to load meals. Please check your connection and try again.';
+        _errorMessage =
+            'Failed to load meals. Please check your connection and try again.';
       }
 
       // Try to load from cache if available
@@ -149,11 +153,12 @@ class CanteenHomeProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   Future<void> _saveMealsToCache() async {
     try {
       if (_meals.isNotEmpty) {
-        final mealJsonList = _meals.map((meal) => jsonEncode(meal.toJson())).toList();
+        final mealJsonList =
+            _meals.map((meal) => jsonEncode(meal.toJson())).toList();
         final mealJsonString = jsonEncode(mealJsonList);
         await SharedUtils.setString('cached_meals', mealJsonString);
         log('💾 Saved ${_meals.length} meals to cache');
@@ -162,7 +167,7 @@ class CanteenHomeProvider extends ChangeNotifier {
       log('❌ Error saving meals to cache: $e');
     }
   }
-  
+
   Future<void> _loadMealsFromCache() async {
     try {
       if (_meals.isEmpty) {
@@ -183,7 +188,7 @@ class CanteenHomeProvider extends ChangeNotifier {
       log('❌ Error loading meals from cache: $e');
     }
   }
-  
+
   MealModel? getMealForDate(DateTime date) {
     final formattedDate = DateTime(date.year, date.month, date.day);
 
@@ -207,7 +212,7 @@ class CanteenHomeProvider extends ChangeNotifier {
 
     return meal;
   }
-  
+
   bool isMealMarked(DateTime date, String mealType) {
     final meal = getMealForDate(date);
     if (meal == null) return false;
@@ -223,7 +228,91 @@ class CanteenHomeProvider extends ChangeNotifier {
         return false;
     }
   }
-  
+
+  /// Updates a meal option for a specific date
+  /// Returns the updated meal
+  Future<MealModel?> updateMeal(
+    BuildContext context, {
+    required DateTime date,
+    bool? breakfast,
+    bool? lunch,
+    bool? dinner,
+  }) async {
+    try {
+      // Show loading state
+      _isLoading = true;
+      _errorMessage = '';
+      notifyListeners();
+
+      log('🔄 Updating meal for date: ${date.toIso8601String().split('T')[0]}',
+          name: 'CanteenHomeProvider');
+      log('Meal options - Breakfast: $breakfast, Lunch: $lunch, Dinner: $dinner',
+          name: 'CanteenHomeProvider');
+
+      // Get current meal values for the date
+      final currentMeal = getMealForDate(date);
+      log('Current meal state: ${currentMeal?.toJson()}',
+          name: 'CanteenHomeProvider');
+
+      // Use provided values or fallback to current values
+      final updatedBreakfast = breakfast ?? currentMeal?.breakfast ?? false;
+      final updatedLunch = lunch ?? currentMeal?.lunch ?? false;
+      final updatedDinner = dinner ?? currentMeal?.dinner ?? false;
+
+      log('Final meal values to send - Breakfast: $updatedBreakfast, Lunch: $updatedLunch, Dinner: $updatedDinner',
+          name: 'CanteenHomeProvider');
+
+      // Call meal service to update the meal
+      final updatedMeal = await _mealService.addMealForUser(
+        context,
+        date: date,
+        breakfast: updatedBreakfast,
+        lunch: updatedLunch,
+        dinner: updatedDinner,
+      );
+
+      log('✅ Meal updated successfully: ${updatedMeal.id}',
+          name: 'CanteenHomeProvider');
+      log('Updated meal details: ${updatedMeal.toJson()}',
+          name: 'CanteenHomeProvider');
+
+      // Update local meals list
+      if (currentMeal != null && currentMeal.id.isNotEmpty) {
+        // Replace existing meal
+        final index = _meals.indexWhere((meal) => meal.id == currentMeal.id);
+        if (index != -1) {
+          log('Replacing existing meal at index $index',
+              name: 'CanteenHomeProvider');
+          _meals[index] = updatedMeal;
+        } else {
+          log('Adding new meal (existing meal not found in local list)',
+              name: 'CanteenHomeProvider');
+          _meals.add(updatedMeal);
+        }
+      } else {
+        // Add new meal
+        log('Adding entirely new meal to local list',
+            name: 'CanteenHomeProvider');
+        _meals.add(updatedMeal);
+      }
+
+      // Update cache
+      await _saveMealsToCache();
+      log('Meal cache updated', name: 'CanteenHomeProvider');
+
+      _isLoading = false;
+      notifyListeners();
+
+      return updatedMeal;
+    } catch (e) {
+      log('❌ Error updating meal: $e', name: 'CanteenHomeProvider');
+      _isLoading = false;
+      _errorMessage = 'Failed to update meal. Please try again.';
+      notifyListeners();
+      return null;
+    }
+  }
+
   // Reset all provider state
   void reset() {
     _meals = [];

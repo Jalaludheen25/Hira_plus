@@ -97,6 +97,9 @@ class AuthProvider extends ChangeNotifier {
         }),
       );
 
+      _logger.d('🔹 [API] Response status: ${response.statusCode}');
+      _logger.d('🔹 [API] Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         _logger.i('🟢 [API] Token fetched successfully!');
@@ -104,6 +107,7 @@ class AuthProvider extends ChangeNotifier {
 
         // Store token and update login status
         await SharedUtils.setString('auth_token', data['token']);
+        await SharedUtils.setString('user_type', _selectedRole);
         _isLoggedIn = true;
         _userType = _selectedRole; // Set user type based on selected role
 
@@ -116,12 +120,33 @@ class AuthProvider extends ChangeNotifier {
         _logger.e(
             '🔴 [API] Failed to fetch token! Status: ${response.statusCode}');
         _logger.e('🔹 Response: ${response.body}');
-        throw Exception('Failed to fetch token');
+
+        // Try to parse error message from response
+        String errorMessage = 'Failed to fetch token';
+        try {
+          final errorData = jsonDecode(response.body);
+          if (errorData != null && errorData['message'] != null) {
+            errorMessage = errorData['message'];
+          }
+        } catch (e) {
+          _logger.e('🔴 [API] Could not parse error message: $e');
+        }
+
+        throw Exception('$errorMessage (Status: ${response.statusCode})');
       }
+    } on http.ClientException catch (e) {
+      _logger.e('🔴 [NETWORK] Connection error: $e');
+      throw Exception(
+          'Network connection failed. Please check your internet connection.');
     } catch (e) {
       _logger.e('🔴 [ERROR] Token fetch failed!');
       _logger.e('🔹 Error: $e');
-      throw Exception('Error: $e');
+
+      // Rethrow with a more user-friendly message if it's not already an Exception
+      if (e is! Exception) {
+        throw Exception('Authentication failed. Please try again later.');
+      }
+      throw e;
     }
   }
 

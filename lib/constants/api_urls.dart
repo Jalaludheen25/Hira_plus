@@ -16,7 +16,7 @@ class ApiUrls {
     return '$baseUrl/api/meals/my-meals';
   }
 
-  // static String getMealById(String id) {
-  //   return '$baseUrl/api/meals/$id';
-  // }
+  static String addMealForUser() {
+    return '$baseUrl/api/meals/mark';
+  }
 }

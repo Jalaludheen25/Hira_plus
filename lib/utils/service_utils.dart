@@ -41,14 +41,14 @@ class HttpServiceUtils {
     }
   }
 
-  // Main fetch method with enhanced error handling
+  // Update your fetchData method in HttpServiceUtils class
   static Future<dynamic> fetchData(String url, bool token) async {
     try {
       Map<String, String> headers = {
         'Accept': 'application/json',
       };
       if (token) {
-        final authToken = await SharedUtils.getString('token');
+        final authToken = await SharedUtils.getString('auth_token');
         headers['Authorization'] = 'Bearer $authToken';
       }
       final response = await http
@@ -57,22 +57,28 @@ class HttpServiceUtils {
             headers: headers,
           )
           .timeout(
-            const Duration(
-                minutes: 2), // Increased from 30 seconds to 2 minutes
+            const Duration(minutes: 2),
           );
       log('URL: $url');
       log('Response Status Code: ${response.statusCode}');
-      // log('Response Headers: ${response.headers}');
 
       if (response.statusCode == 200) {
         log('✅ Success: ${response.body.length} bytes received');
         return jsonDecode(response.body);
       } else if (response.statusCode == 401) {
-        // Handle unauthorized error
+        // Try to refresh the token first
         log('🔒 Authentication error: Token may be expired or invalid');
-        // In a real app, we would refresh the token here
-        // For now, we'll just return mock data for testing purposes
-        return _getMockMealsData();
+
+        // Create a BuildContext parameter for this method to use refreshToken
+        // Or make it not require a context by adjusting the refresh token logic
+
+        /* Uncomment when you've implemented the context parameter or modified refreshToken
+      final refreshed = await refreshToken();
+      if (refreshed) {
+        // Retry the request with the new token
+        return await fetchData(url, token);
+      }
+      */
       } else {
         log('❌ Error: Failed with status code ${response.statusCode}');
         log('Error Response Body: ${response.body}');
@@ -87,35 +93,6 @@ class HttpServiceUtils {
       log('🐞 Error fetching data from $url: $e');
       rethrow;
     }
-  }
-
-  // Mock data for testing purposes when API fails with 401
-  static List<dynamic> _getMockMealsData() {
-    log('🔄 Returning mock meal data due to API authentication error');
-    return [
-      {
-        "_id": "mock1",
-        "date": DateTime.now().toString(),
-        "userId": "mockUser",
-        "__v": 0,
-        "breakfast": true,
-        "createdAt": DateTime.now().toString(),
-        "dinner": false,
-        "lunch": true,
-        "updatedAt": DateTime.now().toString()
-      },
-      {
-        "_id": "mock2",
-        "date": DateTime.now().add(const Duration(days: 1)).toString(),
-        "userId": "mockUser",
-        "__v": 0,
-        "breakfast": false,
-        "createdAt": DateTime.now().toString(),
-        "dinner": true,
-        "lunch": false,
-        "updatedAt": DateTime.now().toString()
-      }
-    ];
   }
 
   // Enhanced response handler with logging
@@ -184,7 +161,8 @@ class HttpServiceUtils {
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${await SharedUtils.getString('token')}',
+          'Authorization':
+              'Bearer ${await SharedUtils.getString('auth_token')}',
         },
         body: jsonEncode(data),
       );
@@ -209,7 +187,7 @@ class HttpServiceUtils {
       developer.log('Request body: $body', time: DateTime.now());
 
       Provider.of<AuthProvider>(context, listen: false);
-      final token = await SharedUtils.getString('token');
+      final token = await SharedUtils.getString('auth_token');
       final headers = {
         ..._headers,
         'Authorization': 'Bearer $token',
@@ -258,6 +236,50 @@ class HttpServiceUtils {
         AppUtils.showInSnackBarNormal('Error deleting data', context);
       }
       rethrow;
+    }
+  }
+
+// Add this method to your HttpServiceUtils class in service_utils.dart
+  static Future<bool> refreshToken(BuildContext context) async {
+    try {
+      log('🔄 Attempting to refresh authentication token');
+
+      // Get the refresh token from storage (you may need to store this)
+      final refreshToken = await SharedUtils.getString('refresh_token');
+
+      if (refreshToken.isEmpty) {
+        log('❌ No refresh token available');
+        return false;
+      }
+
+      // Make a request to your refresh token endpoint
+      // Replace with your actual refresh token endpoint
+      final response = await http.post(
+        Uri.parse('https://hiraplusapi.dharmadhara.com/api/auth/refresh-token'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'refreshToken': refreshToken,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final newToken = data['token']; // Adjust based on your API response
+
+        // Save the new token
+        await SharedUtils.setString('auth_token', newToken);
+
+        log('✅ Token refreshed successfully');
+        return true;
+      } else {
+        log('❌ Failed to refresh token: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      log('❌ Error refreshing token: $e');
+      return false;
     }
   }
 }
