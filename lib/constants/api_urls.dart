@@ -9,6 +9,11 @@ class ApiUrls {
   static String getTestUser() {
     return '$baseUrl/api/auth/test-login';
   }
+  
+ 
+  static String getMessStaffLogin() {
+    return '$baseUrl/api/mess-staff/login';
+  }
 
   // ################## MEALS FOR USER ##################
 
