@@ -231,22 +231,31 @@ class HomeListView extends StatelessWidget {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              // Breakfast checkbox (read-only indicator)
+                              // Updated: Clickable breakfast checkbox
                               _buildMealCheckbox(
+                                context: context,
+                                date: date,
                                 isChecked: hasBreakfast,
-                                isEnabled: false,
+                                mealType: 'breakfast',
+                                isEnabled: true,
                               ),
 
-                              // Lunch checkbox (read-only indicator)
+                              // Updated: Clickable lunch checkbox
                               _buildMealCheckbox(
+                                context: context,
+                                date: date,
                                 isChecked: hasLunch,
-                                isEnabled: false,
+                                mealType: 'lunch',
+                                isEnabled: true,
                               ),
 
-                              // Dinner checkbox (read-only indicator)
+                              // Updated: Clickable dinner checkbox
                               _buildMealCheckbox(
+                                context: context,
+                                date: date,
                                 isChecked: hasDinner,
-                                isEnabled: false,
+                                mealType: 'dinner',
+                                isEnabled: true,
                               ),
                             ],
                           ),
@@ -263,16 +272,140 @@ class HomeListView extends StatelessWidget {
     );
   }
 
-  // Helper method to build consistent meal checkboxes
+  // Updated helper method to build clickable meal checkboxes
   Widget _buildMealCheckbox({
+    required BuildContext context,
+    required DateTime date,
     required bool isChecked,
+    required String mealType,
     required bool isEnabled,
   }) {
+    final mealProvider =
+        Provider.of<CanteenHomeProvider>(context, listen: false);
+
     return Checkbox(
       value: isChecked,
-      onChanged: isEnabled ? (_) {} : null,
+      onChanged: isEnabled
+          ? (newValue) {
+              _updateMeal(
+                  context, mealProvider, date, mealType, newValue ?? false);
+            }
+          : null,
       activeColor: ColorClass.brandLightGreen,
       checkColor: ColorClass.brandDarkGreen,
     );
+  }
+
+  // New helper method to handle meal updates
+  Future<void> _updateMeal(
+    BuildContext context,
+    CanteenHomeProvider mealProvider,
+    DateTime date,
+    String mealType,
+    bool newValue,
+  ) async {
+    try {
+      debugPrint(
+          'Updating $mealType for ${date.toIso8601String().split('T')[0]} to: $newValue');
+
+      // Prepare meal parameters based on mealType
+      bool? breakfast;
+      bool? lunch;
+      bool? dinner;
+
+      switch (mealType.toLowerCase()) {
+        case 'breakfast':
+          breakfast = newValue;
+          break;
+        case 'lunch':
+          lunch = newValue;
+          break;
+        case 'dinner':
+          dinner = newValue;
+          break;
+      }
+
+      // Show a loading indicator
+      final loadingOverlay = _showLoadingOverlay(context);
+
+      // Make the API call to update the meal
+      final result = await mealProvider.updateMeal(
+        context,
+        date: date,
+        breakfast: breakfast,
+        lunch: lunch,
+        dinner: dinner,
+      );
+
+      // Hide loading indicator
+      loadingOverlay.remove();
+
+      // Check if the widget is still mounted before showing feedback
+      if (context.mounted) {
+        // Show appropriate feedback
+        if (result != null) {
+          debugPrint(
+              '✅ Successfully updated $mealType for ${date.day}-${date.month}-${date.year}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$mealType updated successfully'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        } else {
+          debugPrint('❌ Failed to update $mealType');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update $mealType'),
+              backgroundColor: ColorClass.redBase,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error updating meal: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: ColorClass.redBase,
+          ),
+        );
+      }
+    }
+  }
+
+  // Helper method to show a loading overlay
+  OverlayEntry _showLoadingOverlay(BuildContext context) {
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: Container(
+          color: Colors.black.withOpacity(0.3),
+          child: const Center(
+            child: Card(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 16),
+                    Text('Updating meal...'),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(overlayEntry);
+    return overlayEntry;
   }
 }
