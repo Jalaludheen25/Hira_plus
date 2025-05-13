@@ -3,7 +3,6 @@ import 'package:hira_plus/screens/bottom_nav/view/bottom_navigation_bar.dart';
 import 'package:hira_plus/screens/login_screen/view/login_screen.dart';
 import 'package:hira_plus/screens/profile_screen/view/profile_screen.dart';
 import 'package:hira_plus/screens/splash_screen/splash_screen.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/screen/user_home_screen.dart';
 import 'package:hira_plus/screens/user_screens/contact_us/contact_us_screen.dart';
 import 'package:hira_plus/screens/user_screens/meal_count/meal_count_page.dart';
 import 'package:hira_plus/screens/mess_staff_screen/view/mess_staff_screen.dart';
@@ -12,6 +11,7 @@ import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
 import 'package:hira_plus/screens/forced_update_screen/view/force_update_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/view/user_home_screen.dart';
 
 Map<String, WidgetBuilder> getRoutes() {
   return {
