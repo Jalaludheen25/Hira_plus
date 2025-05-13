@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
 
 class HomeListView extends StatelessWidget {
   final ScrollController scrollController;
@@ -18,8 +17,8 @@ class HomeListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canteenProvider = Provider.of<CanteenHomePageProvider>(context);
-    final mealProvider = Provider.of<MealProvider>(context);
+    final canteenProvider = Provider.of<CanteenHomeProvider>(context);
+    final mealProvider = Provider.of<CanteenHomeProvider>(context);
 
     if (mealProvider.isLoading) {
       return const Center(

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
 
 class MonthCalendarView extends StatelessWidget {
   final DateTime selectedDate;
@@ -23,7 +23,7 @@ class MonthCalendarView extends StatelessWidget {
     final firstWeekday = firstDayOfMonth.weekday % 7;
     final totalDays = lastDayOfMonth.day;
     final totalWeeks = ((firstWeekday + totalDays) / 7).ceil();
-    final mealProvider = Provider.of<MealProvider>(context);
+    final mealProvider = Provider.of<CanteenHomeProvider>(context);
 
     return Column(
       children: [

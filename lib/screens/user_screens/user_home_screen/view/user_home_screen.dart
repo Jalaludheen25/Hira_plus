@@ -2,7 +2,6 @@ import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/provider/home_view_mode_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
 import '../widgets/month_calendar_view.dart';
 import '../widgets/home_list_view.dart';
@@ -17,7 +16,7 @@ class UserHomeScreen extends StatefulWidget {
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
   final ScrollController _scrollController = ScrollController();
-  HomeViewModeProvider? _viewModeProvider;
+  CanteenHomeProvider? _viewModeProvider;
   VoidCallback? _viewModeListener;
 
   @override
@@ -25,7 +24,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final canteenProvider =
-          Provider.of<CanteenHomePageProvider>(context, listen: false);
+          Provider.of<CanteenHomeProvider>(context, listen: false);
       _scrollToToday(canteenProvider);
       _setupViewModeListener();
     });
@@ -33,11 +32,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   void _setupViewModeListener() {
     _viewModeProvider =
-        Provider.of<HomeViewModeProvider>(context, listen: false);
+        Provider.of<CanteenHomeProvider>(context, listen: false);
     _viewModeListener = () {
       if (_viewModeProvider!.mode == HomeViewMode.list) {
         final canteenProvider =
-            Provider.of<CanteenHomePageProvider>(context, listen: false);
+            Provider.of<CanteenHomeProvider>(context, listen: false);
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToToday(canteenProvider);
         });
@@ -58,7 +57,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final canteenProvider =
-          Provider.of<CanteenHomePageProvider>(context, listen: false);
+          Provider.of<CanteenHomeProvider>(context, listen: false);
       _scrollToToday(canteenProvider);
     });
   }
@@ -102,7 +101,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
 
-  void _scrollToToday(CanteenHomePageProvider canteenProvider) {
+  void _scrollToToday(CanteenHomeProvider canteenProvider) {
     final todayIndex = canteenProvider.getTodayIndex();
     if (todayIndex != -1) {
       if (_scrollController.hasClients) {
@@ -122,8 +121,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final canteenProvider = Provider.of<CanteenHomePageProvider>(context);
-    final viewModeProvider = Provider.of<HomeViewModeProvider>(context);
+    final canteenProvider = Provider.of<CanteenHomeProvider>(context);
+    
     return Scaffold(
       appBar: AppBar(
         backgroundColor: ColorClass.brandDarkGreen,
@@ -138,7 +137,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         actions: [
           TextButton.icon(
             onPressed: () {
-              viewModeProvider.toggleMode();
+              canteenProvider.toggleMode();
             },
             icon: const Icon(Icons.calendar_month, color: Colors.white),
             label: Text(
@@ -151,7 +150,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ),
         ],
       ),
-      body: viewModeProvider.mode == HomeViewMode.list
+      body: canteenProvider.mode == HomeViewMode.list
           ? HomeListView(
               scrollController: _scrollController,
               getMonthName: _getMonthName,
@@ -176,7 +175,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 }
               },
             ),
-      floatingActionButton: viewModeProvider.mode == HomeViewMode.list
+      floatingActionButton: canteenProvider.mode == HomeViewMode.list
           ? TodayFAB(
               onPressed: () {
                 canteenProvider.goToToday(context);
