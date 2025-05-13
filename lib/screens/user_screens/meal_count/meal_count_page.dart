@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/constants/color_class.dart';  
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/providers/date_provider.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/providers/date_provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class MealCountScreen extends StatelessWidget {
@@ -21,7 +21,11 @@ class MealCountScreen extends StatelessWidget {
     });
     return Scaffold(
       appBar: AppBar(
-        title:  Text('Meal Count',style: TextStyleClass.poppinsSemiBold(fontSize: 20, color: ColorClass.white),),
+        title: Text(
+          'Meal Count',
+          style: TextStyleClass.poppinsSemiBold(
+              fontSize: 20, color: ColorClass.white),
+        ),
         backgroundColor: ColorClass.brandDarkGreen,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
@@ -33,12 +37,14 @@ class MealCountScreen extends StatelessWidget {
           children: [
             Text(
               'Your Marked Meals',
-              style: TextStyleClass.poppinsSemiBold(fontSize: 22, color: ColorClass.brandDarkGreen),
+              style: TextStyleClass.poppinsSemiBold(
+                  fontSize: 22, color: ColorClass.brandDarkGreen),
             ),
             const SizedBox(height: 8),
             Text(
               'Here is a summary of your marked meals.',
-              style: TextStyleClass.poppinsRegular(fontSize: 15, color: ColorClass.neutral500),
+              style: TextStyleClass.poppinsRegular(
+                  fontSize: 15, color: ColorClass.neutral500),
             ),
             const SizedBox(height: 32),
             _buildMealCountCard(
@@ -73,7 +79,12 @@ class MealCountScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMealCountCard(BuildContext context, {required IconData icon, required String label, required int count, required Color color, required Color bgColor}) {
+  Widget _buildMealCountCard(BuildContext context,
+      {required IconData icon,
+      required String label,
+      required int count,
+      required Color color,
+      required Color bgColor}) {
     return Container(
       decoration: BoxDecoration(
         color: bgColor,
@@ -110,4 +121,4 @@ class MealCountScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

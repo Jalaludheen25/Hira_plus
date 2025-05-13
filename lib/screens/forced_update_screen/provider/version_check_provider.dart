@@ -1,8 +1,8 @@
 import 'dart:developer' as dev;
 import 'dart:io';
 
-import 'package:Hira_Plus/constants/api_urls.dart';
-import 'package:Hira_Plus/constants/global_variables.dart';
+import 'package:hira_plus/constants/api_urls.dart';
+import 'package:hira_plus/constants/global_variables.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';

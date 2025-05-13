@@ -1,16 +1,16 @@
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/screens/bottom_nav/bottom_navigation_bar.dart';
-import 'package:Hira_Plus/screens/login_screen/login_screen.dart';
-import 'package:Hira_Plus/screens/user_screens/profile_screen/profile_screen.dart';
-import 'package:Hira_Plus/screens/splash_screen/splash_screen.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/screen/user_home_screen.dart';
-import 'package:Hira_Plus/screens/user_screens/contact_us/contact_us_screen.dart';
-import 'package:Hira_Plus/screens/user_screens/meal_count/meal_count_page.dart';
-import 'package:Hira_Plus/screens/mess_staff_screen/mess_staff_screen.dart';
-import 'package:Hira_Plus/screens/manager_screen/manager_screen.dart';
-import 'package:Hira_Plus/screens/manager_screen/marking_list_screen.dart';
-import 'package:Hira_Plus/screens/manager_screen/users_list_screen.dart';
-import 'package:Hira_Plus/screens/forced_update_screen/force_update_screen.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/screens/bottom_nav/view/bottom_navigation_bar.dart';
+import 'package:hira_plus/screens/login_screen/view/login_screen.dart';
+import 'package:hira_plus/screens/profile_screen/view/profile_screen.dart';
+import 'package:hira_plus/screens/splash_screen/splash_screen.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/screen/user_home_screen.dart';
+import 'package:hira_plus/screens/user_screens/contact_us/contact_us_screen.dart';
+import 'package:hira_plus/screens/user_screens/meal_count/meal_count_page.dart';
+import 'package:hira_plus/screens/mess_staff_screen/view/mess_staff_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/manager_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
+import 'package:hira_plus/screens/forced_update_screen/view/force_update_screen.dart';
 import 'package:flutter/material.dart';
 
 Map<String, WidgetBuilder> getRoutes() {

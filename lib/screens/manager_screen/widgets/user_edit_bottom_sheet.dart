@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';  
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 
 class UserEditBottomSheet extends StatefulWidget {
   final String initialName;
@@ -50,13 +50,16 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.title, style: TextStyleClass.poppinsBold(fontSize: 20, color: ColorClass.textMain900)),
+          Text(widget.title,
+              style: TextStyleClass.poppinsBold(
+                  fontSize: 20, color: ColorClass.textMain900)),
           const SizedBox(height: 20),
           TextField(
             controller: nameController,
             decoration: InputDecoration(
               labelText: 'Name',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
           const SizedBox(height: 16),
@@ -64,7 +67,8 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
             controller: usernameController,
             decoration: InputDecoration(
               labelText: 'Username',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
           const SizedBox(height: 24),
@@ -74,7 +78,8 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorClass.brandDarkGreen,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: () {
@@ -88,4 +93,4 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
       ),
     );
   }
-} 
+}

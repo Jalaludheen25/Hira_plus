@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';  
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/users_provider.dart';
-import 'package:Hira_Plus/screens/manager_screen/widgets/user_edit_bottom_sheet.dart';
-import 'package:Hira_Plus/screens/manager_screen/widgets/user_action_button.dart';
-import 'package:Hira_Plus/screens/manager_screen/widgets/delete_confirm_dialog.dart';
+import 'package:hira_plus/screens/manager_screen/provider/users_provider.dart';
+import 'package:hira_plus/screens/manager_screen/widgets/user_edit_bottom_sheet.dart';
+import 'package:hira_plus/screens/manager_screen/widgets/user_action_button.dart';
+import 'package:hira_plus/screens/manager_screen/widgets/delete_confirm_dialog.dart';
 
 class UsersListScreen extends StatelessWidget {
   static const String routeName = '/manager/users_list';
@@ -28,7 +28,8 @@ class UsersListScreen extends StatelessWidget {
 
 class _UsersListView extends StatefulWidget {
   final TextEditingController searchController;
-  const _UsersListView({required this.searchController, Key? key}) : super(key: key);
+  const _UsersListView({required this.searchController, Key? key})
+      : super(key: key);
 
   @override
   State<_UsersListView> createState() => _UsersListViewState();
@@ -37,7 +38,8 @@ class _UsersListView extends StatefulWidget {
 class _UsersListViewState extends State<_UsersListView> {
   String _searchText = '';
 
-  void _showEditUserSheet(BuildContext context, int index, UsersProvider provider, Map<String, String> user) {
+  void _showEditUserSheet(BuildContext context, int index,
+      UsersProvider provider, Map<String, String> user) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -56,7 +58,8 @@ class _UsersListViewState extends State<_UsersListView> {
     );
   }
 
-  void _showDeleteUserDialog(BuildContext context, int index, UsersProvider provider) {
+  void _showDeleteUserDialog(
+      BuildContext context, int index, UsersProvider provider) {
     showDialog(
       context: context,
       builder: (context) => DeleteConfirmDialog(
@@ -94,9 +97,11 @@ class _UsersListViewState extends State<_UsersListView> {
                     onChanged: (value) => setState(() => _searchText = value),
                     decoration: InputDecoration(
                       hintText: 'Search users',
-                      hintStyle: TextStyleClass.poppinsRegular(fontSize: 16, color: ColorClass.neutral400),
+                      hintStyle: TextStyleClass.poppinsRegular(
+                          fontSize: 16, color: ColorClass.neutral400),
                       border: InputBorder.none,
-                      prefixIcon: const Icon(Icons.search, color: ColorClass.neutral400),
+                      prefixIcon: const Icon(Icons.search,
+                          color: ColorClass.neutral400),
                       contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
@@ -116,14 +121,17 @@ class _UsersListViewState extends State<_UsersListView> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 0),
                         title: Text(
                           user['name']!,
-                          style: TextStyleClass.poppinsMedium(fontSize: 16, color: ColorClass.textMain900),
+                          style: TextStyleClass.poppinsMedium(
+                              fontSize: 16, color: ColorClass.textMain900),
                         ),
                         subtitle: Text(
                           user['username']!,
-                          style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.neutral400),
+                          style: TextStyleClass.poppinsRegular(
+                              fontSize: 14, color: ColorClass.neutral400),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -132,14 +140,16 @@ class _UsersListViewState extends State<_UsersListView> {
                               icon: LucideIcons.edit,
                               iconColor: ColorClass.textMain900,
                               backgroundColor: ColorClass.neutral100,
-                              onTap: () => _showEditUserSheet(context, realIndex, provider, user),
+                              onTap: () => _showEditUserSheet(
+                                  context, realIndex, provider, user),
                             ),
                             const SizedBox(width: 8),
                             UserActionButton(
                               icon: LucideIcons.trash,
                               iconColor: ColorClass.redDark,
                               backgroundColor: ColorClass.redLight,
-                              onTap: () => _showDeleteUserDialog(context, realIndex, provider),
+                              onTap: () => _showDeleteUserDialog(
+                                  context, realIndex, provider),
                             ),
                           ],
                         ),
@@ -157,14 +167,16 @@ class _UsersListViewState extends State<_UsersListView> {
                       context: context,
                       isScrollControlled: true,
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20)),
                       ),
                       builder: (context) => UserEditBottomSheet(
                         title: 'Add User',
                         initialName: '',
                         initialUsername: '',
                         onSave: (name, username) {
-                          Provider.of<UsersProvider>(context, listen: false).addUser(name, username);
+                          Provider.of<UsersProvider>(context, listen: false)
+                              .addUser(name, username);
                         },
                       ),
                     );
@@ -177,4 +189,4 @@ class _UsersListViewState extends State<_UsersListView> {
       },
     );
   }
-} 
+}

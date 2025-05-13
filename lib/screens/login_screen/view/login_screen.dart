@@ -1,17 +1,17 @@
 // imports remain unchanged
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
 import 'package:flutter/services.dart';
 import 'package:toastification/toastification.dart';
 import 'package:pinput/pinput.dart';
-import 'package:Hira_Plus/constants/icons_class.dart';
+import 'package:hira_plus/constants/icons_class.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/auth_provider.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:logger/logger.dart';
-import 'package:Hira_Plus/utils/shared_utils.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           shape: BoxShape.circle,
                         ),
                         child: Image.asset(
-                          IconClass.HiraPlus,
+                          IconClass.hiraPlus,
                           width: 48,
                           height: 48,
                         ),

@@ -3,10 +3,9 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/api_urls.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/models/meal_model.dart';
-import 'package:Hira_Plus/services/meal_service.dart';
-import 'package:Hira_Plus/utils/shared_utils.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_model.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/services/meal_service.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
 
 class MealProvider extends ChangeNotifier {
   final MealService _mealService = MealService();

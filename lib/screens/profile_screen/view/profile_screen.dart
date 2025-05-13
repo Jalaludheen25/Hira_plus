@@ -1,21 +1,21 @@
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/providers/auth_provider.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/profile_screen_provider.dart';
-import 'widgets/logout_confirmation_bottom_sheet.dart';
-import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
+import '../widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'widgets/profile_card.dart';
-import 'widgets/powered_by_section.dart';
+import '../widgets/profile_card.dart';
+import '../widgets/powered_by_section.dart';
 import 'package:logger/logger.dart';
 
 class ProfileScreen extends StatelessWidget {

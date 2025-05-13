@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 
 class DeleteConfirmDialog extends StatelessWidget {
   final String title;
@@ -21,8 +21,12 @@ class DeleteConfirmDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Text(title, style: TextStyleClass.poppinsBold(fontSize: 18, color: ColorClass.brandDarkGreen)),
-      content: Text(content, style: TextStyleClass.poppinsRegular(fontSize: 16, color: ColorClass.textMain900)),
+      title: Text(title,
+          style: TextStyleClass.poppinsBold(
+              fontSize: 18, color: ColorClass.brandDarkGreen)),
+      content: Text(content,
+          style: TextStyleClass.poppinsRegular(
+              fontSize: 16, color: ColorClass.textMain900)),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
@@ -46,4 +50,4 @@ class DeleteConfirmDialog extends StatelessWidget {
       ],
     );
   }
-} 
+}

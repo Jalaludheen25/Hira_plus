@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/icons_class.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/icons_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
@@ -14,7 +14,9 @@ class ContactUsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: ColorClass.brandDarkGreen,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text('Contact Us', style: TextStyleClass.poppinsSemiBold(fontSize: 20, color: ColorClass.white)),
+        title: Text('Contact Us',
+            style: TextStyleClass.poppinsSemiBold(
+                fontSize: 20, color: ColorClass.white)),
         centerTitle: true,
       ),
       body: Padding(
@@ -38,7 +40,8 @@ class ContactUsScreen extends StatelessWidget {
               label: 'Email',
               value: 'mail@d4dx.co',
               onTap: () async {
-                final Uri emailLaunchUri = Uri(scheme: 'mailto', path: 'mail@d4dx.co');
+                final Uri emailLaunchUri =
+                    Uri(scheme: 'mailto', path: 'mail@d4dx.co');
                 if (await canLaunchUrl(emailLaunchUri)) {
                   await launchUrl(emailLaunchUri);
                 } else {
@@ -89,7 +92,8 @@ class ContactUsScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 4, bottom: 4),
                 child: Text(
                   'Address',
-                  style: TextStyleClass.poppinsMedium(fontSize: 14, color: ColorClass.textSub500),
+                  style: TextStyleClass.poppinsMedium(
+                      fontSize: 14, color: ColorClass.textSub500),
                 ),
               ),
             ),
@@ -97,7 +101,8 @@ class ContactUsScreen extends StatelessWidget {
             const Spacer(),
             Text(
               'We are here to help you! Reach out to us for any queries or support.',
-              style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.textSub500),
+              style: TextStyleClass.poppinsRegular(
+                  fontSize: 14, color: ColorClass.textSub500),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 24),
@@ -132,7 +137,9 @@ class ContactUsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyleClass.poppinsMedium(fontSize: 14, color: ColorClass.textSub500)),
+                Text(label,
+                    style: TextStyleClass.poppinsMedium(
+                        fontSize: 14, color: ColorClass.textSub500)),
                 Text(
                   value,
                   style: TextStyleClass.poppinsBold(
@@ -143,7 +150,8 @@ class ContactUsScreen extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.arrow_forward_ios, color: ColorClass.brandDarkGreen, size: 18),
+          Icon(Icons.arrow_forward_ios,
+              color: ColorClass.brandDarkGreen, size: 18),
         ],
       ),
     );
@@ -165,11 +173,12 @@ class ContactUsScreen extends StatelessWidget {
           Expanded(
             child: Text(
               'Attarwala Appartment First Floor, 5/3520G, (44/1342), Mavoor Road, Thiruthiyad, Calicut, Kerala, Pin 673004,',
-              style: TextStyleClass.poppinsMedium(fontSize: 15, color: ColorClass.textMain900),
+              style: TextStyleClass.poppinsMedium(
+                  fontSize: 15, color: ColorClass.textMain900),
             ),
           ),
         ],
       ),
     );
   }
-} 
+}

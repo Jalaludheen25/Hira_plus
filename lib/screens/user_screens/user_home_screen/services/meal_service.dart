@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/api_urls.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/models/meal_model.dart';
-import 'package:Hira_Plus/utils/service_utils.dart';
+import 'package:hira_plus/constants/api_urls.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_model.dart';
+import 'package:hira_plus/utils/service_utils.dart';
 
 class MealService {
   /// Fetches meals for the current user

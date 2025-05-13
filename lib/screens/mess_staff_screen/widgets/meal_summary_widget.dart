@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 
 class MealSummaryWidget extends StatelessWidget {
   final IconData icon;
@@ -25,7 +24,8 @@ class MealSummaryWidget extends StatelessWidget {
         color: isSelected ? ColorClass.brandLightGreen : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? ColorClass.brandLightGreen : ColorClass.neutral200,
+          color:
+              isSelected ? ColorClass.brandLightGreen : ColorClass.neutral200,
           width: 1.5,
         ),
       ),
@@ -39,11 +39,12 @@ class MealSummaryWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(label, style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-              Text(count.toString(), style: TextStyleClass.poppinsBold(fontSize: 22)),
+              Text(count.toString(),
+                  style: TextStyleClass.poppinsBold(fontSize: 22)),
             ],
           ),
         ],
       ),
     );
   }
-} 
+}

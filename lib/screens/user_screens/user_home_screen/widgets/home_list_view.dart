@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
 
 class HomeListView extends StatelessWidget {
   final ScrollController scrollController;

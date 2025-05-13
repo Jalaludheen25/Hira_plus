@@ -1,11 +1,11 @@
-import 'package:Hira_Plus/constants/icons_class.dart';
+import 'package:hira_plus/constants/icons_class.dart';
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/providers/version_check_provider.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/screens/forced_update_screen/provider/version_check_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class ForceUpdatePage extends StatefulWidget {

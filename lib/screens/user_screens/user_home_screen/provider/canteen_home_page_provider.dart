@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/providers/date_provider.dart';
+import 'package:hira_plus/providers/date_provider.dart';
 
 class CanteenHomePageProvider extends ChangeNotifier {
   DateTime selectedDate = DateTime.now();
@@ -14,10 +14,12 @@ class CanteenHomePageProvider extends ChangeNotifier {
   void _updateAllDays(BuildContext? context) {
     final now = DateTime.now();
     final prevMonth = DateTime(now.year, now.month - 1, 1);
-    final nextMonth = DateTime(now.year, now.month + 2, 0); // Last day of next month
+    final nextMonth =
+        DateTime(now.year, now.month + 2, 0); // Last day of next month
     allDays = [];
     DateTime currentDate = prevMonth;
-    while (currentDate.isBefore(nextMonth) || currentDate.isAtSameMomentAs(nextMonth)) {
+    while (currentDate.isBefore(nextMonth) ||
+        currentDate.isAtSameMomentAs(nextMonth)) {
       allDays.add(currentDate);
       currentDate = currentDate.add(const Duration(days: 1));
     }
@@ -43,6 +45,8 @@ class CanteenHomePageProvider extends ChangeNotifier {
   int getTodayIndex() {
     final now = DateTime.now();
     return allDays.indexWhere((date) =>
-      date.day == now.day && date.month == now.month && date.year == now.year);
+        date.day == now.day &&
+        date.month == now.month &&
+        date.year == now.year);
   }
-} 
+}

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/constants/color_class.dart';  
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/providers/date_provider.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/providers/date_provider.dart';
 
 class MarkingListScreen extends StatelessWidget {
   static const String routeName = '/manager/marking_list';
@@ -12,7 +12,7 @@ class MarkingListScreen extends StatelessWidget {
   }
 
   final bool showAppBar;
-  MarkingListScreen({Key? key, this.showAppBar = true}) : super(key: key);
+  const MarkingListScreen({Key? key, this.showAppBar = true}) : super(key: key);
 
   final List<String> userNames = const [
     'Jenny Miller',
@@ -85,7 +85,8 @@ class MarkingListScreen extends StatelessWidget {
                   final userName = userNames[index];
                   final dateKey = userName; // Use user name as key for marking
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
@@ -118,9 +119,11 @@ class MarkingListScreen extends StatelessWidget {
                               Consumer<DateProvider>(
                                 builder: (context, dateProvider, child) {
                                   return Checkbox(
-                                    value: dateProvider.isMealSelected(dateKey, 'Breakfast'),
+                                    value: dateProvider.isMealSelected(
+                                        dateKey, 'Breakfast'),
                                     onChanged: (value) {
-                                      dateProvider.toggleMeal(dateKey, 'Breakfast');
+                                      dateProvider.toggleMeal(
+                                          dateKey, 'Breakfast');
                                     },
                                     activeColor: ColorClass.brandLightGreen,
                                     checkColor: ColorClass.brandDarkGreen,
@@ -130,7 +133,8 @@ class MarkingListScreen extends StatelessWidget {
                               Consumer<DateProvider>(
                                 builder: (context, dateProvider, child) {
                                   return Checkbox(
-                                    value: dateProvider.isMealSelected(dateKey, 'Lunch'),
+                                    value: dateProvider.isMealSelected(
+                                        dateKey, 'Lunch'),
                                     onChanged: (value) {
                                       dateProvider.toggleMeal(dateKey, 'Lunch');
                                     },
@@ -142,9 +146,11 @@ class MarkingListScreen extends StatelessWidget {
                               Consumer<DateProvider>(
                                 builder: (context, dateProvider, child) {
                                   return Checkbox(
-                                    value: dateProvider.isMealSelected(dateKey, 'Dinner'),
+                                    value: dateProvider.isMealSelected(
+                                        dateKey, 'Dinner'),
                                     onChanged: (value) {
-                                      dateProvider.toggleMeal(dateKey, 'Dinner');
+                                      dateProvider.toggleMeal(
+                                          dateKey, 'Dinner');
                                     },
                                     activeColor: ColorClass.brandLightGreen,
                                     checkColor: ColorClass.brandDarkGreen,
@@ -165,4 +171,4 @@ class MarkingListScreen extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/constants/ui_styles.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/ui_styles.dart';
 
 class LogoutConfirmationBottomSheet extends StatelessWidget {
   final VoidCallback onLogout;
-  const LogoutConfirmationBottomSheet({Key? key, required this.onLogout}) : super(key: key);
+  const LogoutConfirmationBottomSheet({Key? key, required this.onLogout})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,8 @@ class LogoutConfirmationBottomSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          FaIcon(FontAwesomeIcons.exclamationTriangle, size: 40, color: ColorClass.orangeBase),
+          FaIcon(FontAwesomeIcons.exclamationTriangle,
+              size: 40, color: ColorClass.orangeBase),
           const SizedBox(height: 12),
           Text(
             'Are you sure you want to logout?',
@@ -57,7 +58,10 @@ class LogoutConfirmationBottomSheet extends StatelessWidget {
                   Navigator.of(context).pop();
                   onLogout();
                 },
-                child: const Text('Logout', style: TextStyle(color: ColorClass.redBase),),
+                child: const Text(
+                  'Logout',
+                  style: TextStyle(color: ColorClass.redBase),
+                ),
               ),
             ],
           ),
@@ -65,4 +69,4 @@ class LogoutConfirmationBottomSheet extends StatelessWidget {
       ),
     );
   }
-} 
+}

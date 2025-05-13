@@ -5,10 +5,9 @@ import 'dart:developer' as developer;
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'package:Hira_Plus/constants/app_utils.dart';
-import 'package:Hira_Plus/constants/global_variables.dart';
-import 'package:Hira_Plus/providers/auth_provider.dart';
-import 'package:Hira_Plus/utils/shared_utils.dart';
+import 'package:hira_plus/constants/app_utils.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
 // ignore: depend_on_referenced_packages
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';

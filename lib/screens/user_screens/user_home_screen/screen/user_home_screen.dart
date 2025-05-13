@@ -1,10 +1,10 @@
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/home_view_mode_provider.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/home_view_mode_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meal_provider.dart';
 import '../widgets/month_calendar_view.dart';
 import '../widgets/home_list_view.dart';
 import '../widgets/today_fab.dart';
@@ -226,44 +226,4 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ),
     );
   }
-}
-
-// Month view widget (inline, adapted from MonthScreen)
-
-Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
-  final bool isTodayAndSelected = isToday && isSelected;
-  return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 4),
-    width: 30,
-    height: 30,
-    decoration: BoxDecoration(
-      color: isTodayAndSelected
-          ? Colors.white
-          : isSelected
-              ? ColorClass.greenBase
-              : Colors.transparent,
-      shape: BoxShape.circle,
-      border: Border.all(
-        color: isTodayAndSelected
-            ? ColorClass.greenBase
-            : isSelected
-                ? ColorClass.greenBase
-                : ColorClass.neutral300,
-        width: 1,
-      ),
-    ),
-    child: Center(
-      child: Text(
-        label,
-        style: TextStyleClass.poppinsBold(
-          fontSize: 16,
-          color: isTodayAndSelected
-              ? ColorClass.primaryBase
-              : isSelected
-                  ? Colors.white
-                  : ColorClass.neutral400,
-        ),
-      ),
-    ),
-  );
 }

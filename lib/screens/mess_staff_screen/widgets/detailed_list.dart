@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
 
 class DetailedList extends StatelessWidget {
   final List<Map<String, String>> details;
@@ -12,18 +12,23 @@ class DetailedList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...details.map((item) => Padding(
-          padding: const EdgeInsets.only(bottom: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(item['name'] ?? '', style: TextStyleClass.poppinsMedium(fontSize: 16)),
-              const SizedBox(height: 2),
-              Text(item['type'] ?? '', style: TextStyleClass.poppinsRegular(fontSize: 13, color: ColorClass.neutral400)),
-              Text(item['room'] ?? '', style: TextStyleClass.poppinsRegular(fontSize: 13, color: ColorClass.neutral400)),
-            ],
-          ),
-        )),
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item['name'] ?? '',
+                      style: TextStyleClass.poppinsMedium(fontSize: 16)),
+                  const SizedBox(height: 2),
+                  Text(item['type'] ?? '',
+                      style: TextStyleClass.poppinsRegular(
+                          fontSize: 13, color: ColorClass.neutral400)),
+                  Text(item['room'] ?? '',
+                      style: TextStyleClass.poppinsRegular(
+                          fontSize: 13, color: ColorClass.neutral400)),
+                ],
+              ),
+            )),
       ],
     );
   }
-} 
+}

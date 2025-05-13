@@ -1,6 +1,6 @@
-import 'package:Hira_Plus/utils/shared_utils.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/api_urls.dart';
+import 'package:hira_plus/constants/api_urls.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:logger/logger.dart';
@@ -101,15 +101,16 @@ class AuthProvider extends ChangeNotifier {
         final data = jsonDecode(response.body);
         _logger.i('🟢 [API] Token fetched successfully!');
         _logger.d('🔹 Token: ${data['token']}');
-        
+
         // Store token and update login status
         await SharedUtils.setString('auth_token', data['token']);
         _isLoggedIn = true;
         _userType = _selectedRole; // Set user type based on selected role
-        
+
         _logger.i('📦 Token stored in SharedPreferences');
-        _logger.i('🔐 [AUTH] Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType');
-        
+        _logger.i(
+            '🔐 [AUTH] Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType');
+
         notifyListeners();
       } else {
         _logger.e(
