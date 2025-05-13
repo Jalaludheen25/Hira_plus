@@ -313,6 +313,45 @@ class CanteenHomeProvider extends ChangeNotifier {
     }
   }
 
+// Method to count meals for the current month
+Map<String, int> getCurrentMonthMealCounts() {
+  final now = DateTime.now();
+  final currentMonth = now.month;
+  final currentYear = now.year;
+  
+  log('🔢 Calculating meal counts for month: $currentMonth/$currentYear', name: 'MealCounts');
+
+  int breakfastCount = 0;
+  int lunchCount = 0;
+  int dinnerCount = 0;
+
+  // Get first and last day of the current month
+  final firstDay = DateTime(currentYear, currentMonth, 1);
+  final lastDay = DateTime(currentYear, currentMonth + 1, 0);
+
+  log('📅 Date range: ${firstDay.toString().split(' ')[0]} to ${lastDay.toString().split(' ')[0]}', name: 'MealCounts');
+
+  // Iterate through each day of the month
+  for (DateTime date = firstDay; 
+       date.isBefore(lastDay.add(const Duration(days: 1))); 
+       date = date.add(const Duration(days: 1))) {
+    
+    if (isMealMarked(date, 'breakfast')) breakfastCount++;
+    if (isMealMarked(date, 'lunch')) lunchCount++;
+    if (isMealMarked(date, 'dinner')) dinnerCount++;
+  }
+
+  log('✅ Meal counts calculated: Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount', name: 'MealCounts');
+
+  return {
+    'breakfast': breakfastCount,
+    'lunch': lunchCount,
+    'dinner': dinnerCount,
+  };
+}
+
+
+
   // Reset all provider state
   void reset() {
     _meals = [];
