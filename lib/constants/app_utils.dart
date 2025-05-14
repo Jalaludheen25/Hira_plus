@@ -2,8 +2,8 @@
 
 import 'dart:io';
 
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
@@ -28,7 +28,8 @@ class AppUtils {
       return false;
     }
   }
-static showInSnackBarNormal(String message, BuildContext context) {
+
+  static showInSnackBarNormal(String message, BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         closeIconColor: ColorClass.white,
         backgroundColor: ColorClass.greenDark,
@@ -42,11 +43,6 @@ static showInSnackBarNormal(String message, BuildContext context) {
               fontSize: 15, color: ColorClass.white),
         )));
   }
-
-
-
- 
-
 
   static buttonWithOnlyText({
     required void Function() onTap,

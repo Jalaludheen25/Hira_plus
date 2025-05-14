@@ -5,9 +5,10 @@ import 'dart:developer' as developer;
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'package:Hira_Plus/constants/app_utils.dart';
-import 'package:Hira_Plus/constants/global_variables.dart';
 
+import 'package:hira_plus/constants/app_utils.dart';
+import 'package:hira_plus/constants/global_variables.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -41,13 +42,15 @@ class HttpServiceUtils {
     }
   }
 
-  // Main fetch method with enhanced error handling
+  // Update your fetchData method in HttpServiceUtils class
   static Future<dynamic> fetchData(String url, bool token) async {
     try {
       Map<String, String> headers = {
         'Accept': 'application/json',
       };
       if (token) {
+        final authToken = await SharedUtils.getString('auth_token');
+        headers['Authorization'] = 'Bearer $authToken';
         headers['Authorization'] = 'Bearer ${GlobalVariables.dummyToken}';
       }
       final response = await http
@@ -59,19 +62,37 @@ class HttpServiceUtils {
             const Duration(minutes: 2),
           );
       log('URL: $url');
-      log('Response: ${response.body}');
+      log('Response Status Code: ${response.statusCode}');
+
       if (response.statusCode == 200) {
+        log('✅ Success: ${response.body.length} bytes received');
         return jsonDecode(response.body);
+      } else if (response.statusCode == 401) {
+        // Try to refresh the token first
+        log('🔒 Authentication error: Token may be expired or invalid');
+
+        // Create a BuildContext parameter for this method to use refreshToken
+        // Or make it not require a context by adjusting the refresh token logic
+
+        /* Uncomment when you've implemented the context parameter or modified refreshToken
+      final refreshed = await refreshToken();
+      if (refreshed) {
+        // Retry the request with the new token
+        return await fetchData(url, token);
+      }
+      */
       } else {
+        log('❌ Error: Failed with status code ${response.statusCode}');
+        log('Error Response Body: ${response.body}');
         throw HttpException(
             'Failed to load data. Status: ${response.statusCode}');
       }
     } on TimeoutException {
-      debugPrint('Request timed out for URL: $url');
+      log('⏱️ Request timed out for URL: $url');
       throw const HttpException(
           'Request timed out. Please check your internet connection and try again.');
     } catch (e) {
-      debugPrint('Error fetching data from $url: $e');
+      log('🐞 Error fetching data from $url: $e');
       rethrow;
     }
   }
@@ -206,6 +227,50 @@ class HttpServiceUtils {
         AppUtils.showInSnackBarNormal('Error deleting data', context);
       }
       rethrow;
+    }
+  }
+
+// Add this method to your HttpServiceUtils class in service_utils.dart
+  static Future<bool> refreshToken(BuildContext context) async {
+    try {
+      log('🔄 Attempting to refresh authentication token');
+
+      // Get the refresh token from storage (you may need to store this)
+      final refreshToken = await SharedUtils.getString('refresh_token');
+
+      if (refreshToken.isEmpty) {
+        log('❌ No refresh token available');
+        return false;
+      }
+
+      // Make a request to your refresh token endpoint
+      // Replace with your actual refresh token endpoint
+      final response = await http.post(
+        Uri.parse('https://hiraplusapi.dharmadhara.com/api/auth/refresh-token'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'refreshToken': refreshToken,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final newToken = data['token']; // Adjust based on your API response
+
+        // Save the new token
+        await SharedUtils.setString('auth_token', newToken);
+
+        log('✅ Token refreshed successfully');
+        return true;
+      } else {
+        log('❌ Failed to refresh token: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      log('❌ Error refreshing token: $e');
+      return false;
     }
   }
 }

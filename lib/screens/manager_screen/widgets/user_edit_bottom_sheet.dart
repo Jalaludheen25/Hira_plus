@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/screens/manager_screen/provider/users_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/users_provider.dart';
 
 class UserEditBottomSheet extends StatefulWidget {
   final String title;
@@ -159,4 +159,4 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
       ),
     );
   }
-} 
+}

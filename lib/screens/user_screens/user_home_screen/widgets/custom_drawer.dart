@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
 
 class CustomDrawerItem extends StatelessWidget {
   final String title;
@@ -23,7 +23,9 @@ class CustomDrawerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: isDestructive ? ColorClass.redBase : ColorClass.brandDarkGreen),
+      leading: Icon(icon,
+          color:
+              isDestructive ? ColorClass.redBase : ColorClass.brandDarkGreen),
       title: Text(
         title,
         style: TextStyle(
@@ -83,7 +85,8 @@ class CustomDrawer extends StatelessWidget {
                   CircleAvatar(
                     radius: 28,
                     backgroundColor: ColorClass.brandDarkGreen,
-                    child: Icon(LucideIcons.user, color: ColorClass.brandLightGreen, size: 32),
+                    child: Icon(LucideIcons.user,
+                        color: ColorClass.brandLightGreen, size: 32),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -164,4 +167,4 @@ class CustomDrawer extends StatelessWidget {
       ),
     );
   }
-} 
+}

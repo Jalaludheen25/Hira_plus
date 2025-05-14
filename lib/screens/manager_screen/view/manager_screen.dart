@@ -1,26 +1,27 @@
-import 'package:Hira_Plus/screens/mess_staff_screen/widgets/detailed_list.dart';
+import 'package:hira_plus/screens/mess_staff_screen/widgets/detailed_list.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:Hira_Plus/screens/mess_staff_screen/widgets/meal_summary_widget.dart';
-import 'package:Hira_Plus/screens/manager_screen/marking_list_screen.dart';
-import 'package:Hira_Plus/screens/manager_screen/users_list_screen.dart';
-import 'package:Hira_Plus/providers/profile_screen_provider.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
-import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/profile_card.dart';
-import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/powered_by_section.dart';
-import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
+import 'package:hira_plus/screens/mess_staff_screen/widgets/meal_summary_widget.dart';
+import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/profile_card.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
+import 'package:hira_plus/routes/app_routes.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:Hira_Plus/providers/users_by_meals.dart';
-import 'package:Hira_Plus/models/meal_users_model.dart';
+import 'package:hira_plus/providers/users_by_meals.dart';
+import 'package:hira_plus/models/meal_users_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -227,7 +228,7 @@ class ManagerScreen extends StatelessWidget {
         // Users tab
         UsersListScreen(),
         // Settings tab
-        const SettingsScreen(),
+         SettingsScreen(),
       ];
 
   @override
@@ -308,7 +309,8 @@ class DateTimeNotifier extends ValueNotifier<DateTime> {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  final Logger _logger = Logger();
+  SettingsScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -402,11 +404,14 @@ class SettingsScreen extends StatelessWidget {
                               .setIndex(0);
                           toastification.show(
                             context: context,
-                            title: Text('Logged out successfully'),
+                            title: const Text('Logged out successfully'),
                             type: ToastificationType.success,
                             autoCloseDuration: const Duration(seconds: 2),
                           );
+
                           Future.delayed(const Duration(milliseconds: 500), () {
+                            _logger.i(
+                                '🧭 [NAVIGATION] Redirecting to login screen');
                             navigatePRTo(
                               context: navigatorKey.currentContext!,
                               route: Routes.login,

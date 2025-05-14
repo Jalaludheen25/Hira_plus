@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/models/users_list_model.dart';
-import 'package:Hira_Plus/utils/service_utils.dart';
-import 'package:Hira_Plus/constants/api_urls.dart';
+import 'package:hira_plus/constants/api_urls.dart';
+import 'package:hira_plus/models/users_list_model.dart';
+import 'package:hira_plus/utils/service_utils.dart';
+
 
 class UsersProvider extends ChangeNotifier {
   List<UsersListModel> _users = [];

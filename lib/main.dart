@@ -1,14 +1,14 @@
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/providers/multi_provider.dart';
-import 'package:Hira_Plus/routes/app_pages.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/services/push_notifications.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/providers/multi_provider.dart';
+import 'package:hira_plus/routes/app_pages.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/services/push_notifications.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'dart:io';
-import 'package:Hira_Plus/constants/global_variables.dart';
+import 'package:hira_plus/constants/global_variables.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

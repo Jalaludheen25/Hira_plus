@@ -1,10 +1,10 @@
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/routes/app_pages.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/routes/app_pages.dart';
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/constants/color_class.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
+import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 
 class BottomNavigationBarScreen extends StatelessWidget {
   const BottomNavigationBarScreen({super.key});
@@ -33,11 +33,12 @@ class BottomNavigationBarScreen extends StatelessWidget {
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: ColorClass.brandWhite,
         selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor:  Color.fromARGB(255, 63, 94, 43),
+        unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
         unselectedFontSize: 14,
         selectedFontSize: 14,
-        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 14, ),
-
+        selectedLabelStyle: TextStyleClass.poppinsSemiBold(
+          fontSize: 14,
+        ),
         currentIndex: selectedIndex,
         onTap: (int index) {
           bottomNavProvider.setIndex(index);

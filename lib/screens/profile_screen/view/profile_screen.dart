@@ -1,30 +1,34 @@
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:toastification/toastification.dart';
-import 'package:Hira_Plus/constants/color_class.dart';  
+import 'package:hira_plus/constants/color_class.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/profile_screen_provider.dart';
-import 'widgets/logout_confirmation_bottom_sheet.dart';
-import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
+import '../widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'widgets/profile_card.dart';
-import 'widgets/powered_by_section.dart';
+import '../widgets/profile_card.dart';
+import '../widgets/powered_by_section.dart';
+import 'package:logger/logger.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final Logger _logger = Logger();
+  ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final profileProvider = Provider.of<ProfileScreenProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Profile', style: TextStyleClass.primaryFont500(20, ColorClass.white)),
+        title: Text('Profile',
+            style: TextStyleClass.primaryFont500(20, ColorClass.white)),
         backgroundColor: ColorClass.brandDarkGreen,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
@@ -45,7 +49,10 @@ class ProfileScreen extends StatelessWidget {
                   title: 'Meal Marked Count',
                   icon: LucideIcons.utensils,
                   onTap: () {
-                    navigateTo(context: context, route: Routes.mealCount, useRootNavigator: true);
+                    navigateTo(
+                        context: context,
+                        route: Routes.mealCount,
+                        useRootNavigator: true);
                   },
                 ),
                 CustomDrawerItem(
@@ -63,7 +70,8 @@ class ProfileScreen extends StatelessWidget {
                   title: 'Privacy Policy',
                   icon: LucideIcons.shieldCheck,
                   onTap: () async {
-                    final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                    final Uri url = Uri.parse(
+                        'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
                     await launchUrl(url, mode: LaunchMode.externalApplication);
                   },
                 ),
@@ -82,7 +90,8 @@ class ProfileScreen extends StatelessWidget {
                       context: context,
                       builder: (context) => AlertDialog(
                         title: const Text('About Us'),
-                        content: const Text('This is dummy content for About Us.'),
+                        content:
+                            const Text('This is dummy content for About Us.'),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
@@ -113,15 +122,35 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       builder: (BuildContext context) {
                         return LogoutConfirmationBottomSheet(
-                          onLogout: () {
-                            Provider.of<BottomNavProvider>(navigatorKey.currentContext!, listen: false).setIndex(0);
+                          onLogout: () async {
+                            _logger
+                                .i('🔄 [LOGOUT] User initiated logout process');
+
+                            // Reset bottom nav to initial index
+                            Provider.of<BottomNavProvider>(
+                                    navigatorKey.currentContext!,
+                                    listen: false)
+                                .setIndex(0);
+
+                            // Call the AuthProvider logout method to clear shared preferences
+                            await Provider.of<AuthProvider>(
+                                    navigatorKey.currentContext!,
+                                    listen: false)
+                                .logout();
+                            _logger.i(
+                                '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+
                             toastification.show(
                               context: context,
-                              title: Text('Logged out successfully'),
+                              title: const Text('Logged out successfully'),
                               type: ToastificationType.success,
                               autoCloseDuration: const Duration(seconds: 2),
                             );
-                            Future.delayed(const Duration(milliseconds: 500), () {
+
+                            Future.delayed(const Duration(milliseconds: 500),
+                                () {
+                              _logger.i(
+                                  '🧭 [NAVIGATION] Redirecting to login screen');
                               navigatePRTo(
                                 context: navigatorKey.currentContext!,
                                 route: Routes.login,

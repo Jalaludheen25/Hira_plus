@@ -1,4 +1,4 @@
-import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
 import 'package:flutter/material.dart';
 
 class UiStyles {

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 
 class BottomButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
-  const BottomButton({required this.label, required this.onTap, Key? key}) : super(key: key);
+  const BottomButton({required this.label, required this.onTap, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +22,12 @@ class BottomButton extends StatelessWidget {
           child: Center(
             child: Text(
               label,
-              style: TextStyleClass.poppinsSemiBold(fontSize: 16, color: Colors.black),
+              style: TextStyleClass.poppinsSemiBold(
+                  fontSize: 16, color: Colors.black),
             ),
           ),
         ),
       ),
     );
   }
-} 
+}

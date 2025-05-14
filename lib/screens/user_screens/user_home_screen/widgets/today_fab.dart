@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 
 class TodayFAB extends StatelessWidget {
   final VoidCallback onPressed;
@@ -20,4 +20,4 @@ class TodayFAB extends StatelessWidget {
       backgroundColor: ColorClass.brandLightGreen,
     );
   }
-} 
+}

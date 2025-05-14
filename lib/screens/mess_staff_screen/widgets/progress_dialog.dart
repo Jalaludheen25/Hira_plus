@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart'; 
-import 'package:Hira_Plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 
 class ProgressDialog extends StatelessWidget {
   final ValueNotifier<double> progress;
@@ -23,18 +23,21 @@ class ProgressDialog extends StatelessWidget {
                 value: value,
                 minHeight: 8,
                 backgroundColor: ColorClass.neutral200,
-                valueColor: AlwaysStoppedAnimation<Color>(ColorClass.brandLightGreen),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(ColorClass.brandLightGreen),
                 borderRadius: BorderRadius.circular(8),
               ),
               const SizedBox(height: 24),
               Text(
                 '${(value * 100).toStringAsFixed(0)}%',
-                style: TextStyleClass.poppinsBold(fontSize: 22, color: ColorClass.brandDarkGreen),
+                style: TextStyleClass.poppinsBold(
+                    fontSize: 22, color: ColorClass.brandDarkGreen),
               ),
               const SizedBox(height: 10),
               Text(
                 'Generating PDF...',
-                style: TextStyleClass.poppinsMedium(fontSize: 16, color: ColorClass.neutral400),
+                style: TextStyleClass.poppinsMedium(
+                    fontSize: 16, color: ColorClass.neutral400),
               ),
             ],
           ),
@@ -42,4 +45,4 @@ class ProgressDialog extends StatelessWidget {
       ),
     );
   }
-} 
+}

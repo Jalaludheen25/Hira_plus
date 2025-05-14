@@ -1,16 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';  
-import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/models/users_list_model.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:Hira_Plus/providers/users_provider.dart';
-import 'package:Hira_Plus/screens/manager_screen/widgets/user_edit_bottom_sheet.dart';
-import 'package:Hira_Plus/screens/manager_screen/widgets/user_action_button.dart';
-import 'package:Hira_Plus/screens/manager_screen/widgets/delete_confirm_dialog.dart';
-import 'package:Hira_Plus/models/users_list_model.dart';
+import 'package:hira_plus/screens/manager_screen/provider/users_provider.dart';
+import 'package:hira_plus/screens/manager_screen/widgets/user_edit_bottom_sheet.dart';
+import 'package:hira_plus/screens/manager_screen/widgets/user_action_button.dart';
+import 'package:hira_plus/screens/manager_screen/widgets/delete_confirm_dialog.dart';
 
 class UsersListScreen extends StatefulWidget {
   static const String routeName = '/manager/users_list';
@@ -27,6 +27,7 @@ class UsersListScreen extends StatefulWidget {
 class _UsersListScreenState extends State<UsersListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
+  int _realIndex = 0;
 
   @override
   void initState() {
@@ -106,9 +107,11 @@ class _UsersListScreenState extends State<UsersListScreen> {
                     onChanged: (value) => setState(() => _searchText = value),
                     decoration: InputDecoration(
                       hintText: 'Search users',
-                      hintStyle: TextStyleClass.poppinsRegular(fontSize: 16, color: ColorClass.neutral400),
+                      hintStyle: TextStyleClass.poppinsRegular(
+                          fontSize: 16, color: ColorClass.neutral400),
                       border: InputBorder.none,
-                      prefixIcon: const Icon(Icons.search, color: ColorClass.neutral400),
+                      prefixIcon: const Icon(Icons.search,
+                          color: ColorClass.neutral400),
                       contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
@@ -127,7 +130,8 @@ class _UsersListScreenState extends State<UsersListScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 0),
                         title: Text(
                           user.name ?? 'No Name',
                           style: TextStyleClass.poppinsMedium(fontSize: 16, color: ColorClass.textMain900),
@@ -178,7 +182,8 @@ class _UsersListScreenState extends State<UsersListScreen> {
                       context: context,
                       isScrollControlled: true,
                       shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20)),
                       ),
                       builder: (context) => UserEditBottomSheet(
                         title: 'Add User',
@@ -202,4 +207,4 @@ class _UsersListScreenState extends State<UsersListScreen> {
       },
     );
   }
-} 
+}

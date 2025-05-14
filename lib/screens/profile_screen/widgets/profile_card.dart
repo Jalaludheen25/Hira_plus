@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/constants/color_class.dart';
+import 'package:hira_plus/constants/color_class.dart';
 
 class ProfileCard extends StatelessWidget {
   final String userName;
   final String phone;
-  const ProfileCard({required this.userName, required this.phone});
+  const ProfileCard({super.key, required this.userName, required this.phone});
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +28,19 @@ class ProfileCard extends StatelessWidget {
             radius: 32,
             backgroundColor: ColorClass.brandLightGreen,
             child: Text(
-              userName.isNotEmpty ? userName.trim().split(' ').map((e) => e[0]).take(2).join().toUpperCase() : '',
-              style: const TextStyle(fontSize: 28, color: ColorClass.brandDarkGreen, fontWeight: FontWeight.bold),
+              userName.isNotEmpty
+                  ? userName
+                      .trim()
+                      .split(' ')
+                      .map((e) => e[0])
+                      .take(2)
+                      .join()
+                      .toUpperCase()
+                  : '',
+              style: const TextStyle(
+                  fontSize: 28,
+                  color: ColorClass.brandDarkGreen,
+                  fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(width: 20),
@@ -39,7 +50,10 @@ class ProfileCard extends StatelessWidget {
               children: [
                 Text(
                   userName,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -53,4 +67,4 @@ class ProfileCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

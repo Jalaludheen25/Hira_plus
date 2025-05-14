@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:Hira_Plus/models/meal_users_model.dart';
-import 'package:Hira_Plus/utils/service_utils.dart';
-import 'package:Hira_Plus/constants/api_urls.dart';
+import 'package:hira_plus/models/meal_users_model.dart';
+import 'package:hira_plus/utils/service_utils.dart';
+import 'package:hira_plus/constants/api_urls.dart';
 import 'package:intl/intl.dart';
 
 class UsersByMealsProvider extends ChangeNotifier {
