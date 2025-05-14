@@ -19,21 +19,21 @@ class ApiUrls {
   }
 
   static String getTestUser() {
-    return '$baseUrl/api/auth/test-login';
+    return '$baseUrl/auth/test-login';
   }
   
  
   static String getMessStaffLogin() {
-    return '$baseUrl/api/mess-staff/login';
+    return '$baseUrl/mess-staff/login';
   }
 
   // ################## MEALS FOR USER ##################
 
   static String getMealsForUser() {
-    return '$baseUrl/api/meals/my-meals';
+    return '$baseUrl/meals/my-meals';
   }
 
   static String addMealForUser() {
-    return '$baseUrl/api/meals/mark';
+    return '$baseUrl/meals/mark';
   }
 }
