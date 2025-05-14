@@ -233,7 +233,7 @@ class ManagerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = ['Dashboard', 'Markings', 'Users', 'Settings'];
+    final tabTitles = ['Dashboard', 'Markings', 'Users', 'Notifications', 'Settings'];
     return Scaffold(
       backgroundColor: ColorClass.bgWhite0,
       appBar: AppBar(
@@ -260,32 +260,39 @@ class ManagerScreen extends StatelessWidget {
         backgroundColor: ColorClass.brandWhite,
         selectedItemColor: ColorClass.brandDarkGreen,
         unselectedItemColor: const Color.fromARGB(255, 63, 94, 43),
-        unselectedFontSize: 14,
-        selectedFontSize: 14,
-        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 14),
+        unselectedFontSize: 10,
+        selectedFontSize: 10,
+        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 10),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.layoutDashboard,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.layoutDashboard, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.layoutDashboard, size: 28),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.clipboardList,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.clipboardList, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.clipboardList, size: 28),
             label: 'Markings',
           ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.users,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.users, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.users, size: 28),
             label: 'Users',
+            
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(LucideIcons.bell,
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.bell, size: 28),
+            label: 'Notifications',
           ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.settings,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.settings, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.settings, size: 28),
             label: 'Settings',
           ),
         ],
