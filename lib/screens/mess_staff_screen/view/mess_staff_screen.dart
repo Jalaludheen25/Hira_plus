@@ -12,6 +12,7 @@ import 'package:pdf/widgets.dart' as pw;
 // ignore: depend_on_referenced_packages
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'dart:developer' as developer;
 import 'package:open_file/open_file.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:hira_plus/screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
@@ -245,22 +246,22 @@ class MessStaffScreen extends StatelessWidget {
                         return LogoutConfirmationBottomSheet(
                           onLogout: () async {
                             final logger = Logger();
-                            logger.i(
-                                '🔄 [LOGOUT] Mess Staff initiated logout process');
+                            logger.i('🔄 [LOGOUT] Mess Staff initiated logout process');
+                            developer.log('🔄 Mess Staff initiated logout process', name: 'MessStaffScreen');
 
                             // Reset bottom nav to initial index
                             Provider.of<BottomNavProvider>(
-                                    navigatorKey.currentContext!,
-                                    listen: false)
-                                .setIndex(0);
+                                navigatorKey.currentContext!,
+                                listen: false)
+                              .setIndex(0);
 
                             // Call the AuthProvider logout method to clear shared preferences
                             await Provider.of<AuthProvider>(
-                                    navigatorKey.currentContext!,
-                                    listen: false)
-                                .logout();
-                            logger.i(
-                                '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+                                navigatorKey.currentContext!,
+                                listen: false)
+                              .logout();
+                            logger.i('🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+                            developer.log('🟢 Successfully cleared auth token and preferences', name: 'MessStaffScreen');
 
                             toastification.show(
                               context: context,
@@ -269,10 +270,9 @@ class MessStaffScreen extends StatelessWidget {
                               autoCloseDuration: const Duration(seconds: 2),
                             );
 
-                            Future.delayed(const Duration(milliseconds: 500),
-                                () {
-                              logger.i(
-                                  '🧭 [NAVIGATION] Redirecting to login screen');
+                            Future.delayed(const Duration(milliseconds: 500), () {
+                              logger.i('🧭 [NAVIGATION] Redirecting to login screen');
+                              developer.log('🚀 Redirecting to login screen', name: 'MessStaffScreen');
                               // Using navigation helper
                               navigatePRToGlobal(
                                 route: Routes.login,
@@ -435,92 +435,15 @@ class MessStaffScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final logger = Logger();
+    logger.i('🏗️ [UI] Building Mess Staff screen');
+    developer.log('🏗️ Building Mess Staff screen interface', name: 'MessStaffScreen');
+    
     final navProvider = Provider.of<BottomNavProvider>(context);
     final tabTitles = ['Home', 'Settings']; // Updated names
 
     return Scaffold(
       backgroundColor: Colors.white,
-      // drawer: CustomDrawer(
-      //   userName: Provider.of<ProfileScreenProvider>(context).userName,
-      //   appVersion: GlobalVariables.appVersion,
-      //   onHome: () {
-      //     Provider.of<BottomNavProvider>(context, listen: false).setIndex(0);
-      //     // Using navigation helper
-      //     navigateBack(context);
-      //   },
-      //   onProfile: () {
-      //     // Now navigate to Settings tab instead of separate Profile tab
-      //     Provider.of<BottomNavProvider>(context, listen: false).setIndex(1);
-      //     // Using navigation helper
-      //     navigateBack(context);
-      //   },
-      //   onFeedback: () async {
-      //     final Uri emailLaunchUri = Uri(
-      //       scheme: 'mailto',
-      //       path: 'mail@d4dx.co',
-      //     );
-      //     await launchUrl(emailLaunchUri);
-      //   },
-      //   onPrivacy: () async {
-      //     final Uri url = Uri.parse('https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
-      //     await launchUrl(url, mode: LaunchMode.externalApplication);
-      //   },
-      //   onAbout: () {
-      //     showDialog(
-      //       context: context,
-      //       builder: (context) => AlertDialog(
-      //         title: const Text('About Us'),
-      //         content: const Text('This is dummy content for About Us.'),
-      //         actions: [
-      //           TextButton(
-      //             onPressed: () => navigateBack(context),
-      //             child: const Text('Close'),
-      //           ),
-      //         ],
-      //       ),
-      //     );
-      //   },
-      //   onContact: () {
-      //     // Using navigation helper
-      //     navigateBack(context);
-      //     navigateTo(
-      //       context: navigatorKey.currentContext!,
-      //       route: Routes.contactUs,
-      //     );
-      //   },
-      //   onRaiseBug: () {
-      //     // Using navigation helper
-      //     navigateBack(context);
-      //     Shake.show(ShakeScreen.home);
-      //   },
-      //   onLogout: () {
-      //     showModalBottomSheet(
-      //       context: context,
-      //       shape: RoundedRectangleBorder(
-      //         borderRadius: BorderRadius.circular(12),
-      //       ),
-      //       builder: (BuildContext context) {
-      //         return LogoutConfirmationBottomSheet(
-      //           onLogout: () {
-      //             Provider.of<BottomNavProvider>(navigatorKey.currentContext!, listen: false).setIndex(0);
-      //             toastification.show(
-      //               context: context,
-      //               title: Text('Logged out successfully'),
-      //               type: ToastificationType.success,
-      //               autoCloseDuration: const Duration(seconds: 2),
-      //             );
-      //             Future.delayed(const Duration(milliseconds: 500), () {
-      //               // Using navigation helper
-      //               navigatePRToGlobal(
-      //                 route: Routes.login,
-      //               );
-      //             });
-      //           },
-      //         );
-      //       },
-      //     );
-      //   },
-      // ),
       appBar: AppBar(
         backgroundColor: ColorClass.brandDarkGreen,
         iconTheme: const IconThemeData(color: Colors.white),
