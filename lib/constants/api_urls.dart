@@ -24,4 +24,10 @@ class ApiUrls {
   static String addMealForUser() {
     return '$baseUrl/api/meals/mark';
   }
+
+
+  // ################## MESS STAFF SCREEN ##################
+  static String getMessStaffMeals() {
+    return '$baseUrl/api/mess-staff/meals';
+  }
 }

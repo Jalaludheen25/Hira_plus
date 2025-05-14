@@ -1,14 +1,276 @@
+import 'dart:convert';
+import 'dart:developer';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hira_plus/screens/mess_staff_screen/models/mess_staff_screen_model.dart';
+import 'package:hira_plus/screens/mess_staff_screen/services/mess_staff_meal_service.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
+import 'package:logger/logger.dart';
 
 class MessStaffMealProvider extends ChangeNotifier {
+  final MessStaffMealService _mealService = MessStaffMealService();
+  final Logger _logger = Logger();
+  
+  // Existing property for selected meal
   int _selectedMeal = 0; // 0: Breakfast, 1: Lunch, 2: Dinner
 
+  // New properties for API data
+  MessStaffScreenModel? _messStaffMealData;
+  bool _isLoading = false;
+  String _errorMessage = '';
+  DateTime _lastFetchTime = DateTime(2000); // Initial value
+  
+  // Getters
   int get selectedMeal => _selectedMeal;
+  MessStaffScreenModel? get messStaffMealData => _messStaffMealData;
+  bool get isLoading => _isLoading;
+  String get errorMessage => _errorMessage;
+  DateTime get lastFetchTime => _lastFetchTime;
 
+  // Existing method to select a meal type
   void selectMeal(int index) {
     if (_selectedMeal != index) {
       _selectedMeal = index;
       notifyListeners();
     }
   }
-} 
+
+  // New method to fetch mess staff meals - always fetch fresh data first
+  Future<void> fetchMessStaffMeals(BuildContext context) async {
+    try {
+      if (_isLoading) {
+        log('🔄 Already fetching meals, ignoring new request', name: 'MessStaffMealProvider');
+        return;
+      }
+
+      _isLoading = true;
+      _errorMessage = '';
+      notifyListeners();
+
+      // Try to load cached data first for immediate display
+      await _loadMealsFromCache();
+      
+      // Then fetch fresh data from API
+      _logger.i('🔄 [API] Fetching fresh mess staff meals');
+      log('🔄 Fetching fresh mess staff meals data', name: 'MessStaffMealProvider');
+      
+      final meals = await _mealService.getMessStaffMeals();
+
+      _messStaffMealData = meals;
+      _isLoading = false;
+      _lastFetchTime = DateTime.now();
+
+      // Save meal data to shared preferences for offline access
+      await _saveMealsToCache();
+
+      _logger.i('✅ [API] Successfully updated mess staff meals with fresh data');
+      log('✅ Successfully updated mess staff meals with fresh data', name: 'MessStaffMealProvider');
+      notifyListeners();
+    } on HttpException catch (e) {
+      _logger.e('🚨 [API] HTTP error fetching mess staff meals: $e');
+      log('🚨 HTTP error in meal provider: $e', name: 'MessStaffMealProvider');
+      _isLoading = false;
+
+      if (e.toString().contains('401')) {
+        _errorMessage = 'Authentication error. Please login again.';
+      } else {
+        _errorMessage = 'Failed to load meals. Please check your connection and try again.';
+      }
+
+      notifyListeners();
+    } catch (e) {
+      _logger.e('❌ [API] Error fetching mess staff meals: $e');
+      log('❌ Error in meal provider: $e', name: 'MessStaffMealProvider');
+      _isLoading = false;
+      _errorMessage = 'Failed to load meals. Please try again.';
+
+      notifyListeners();
+    }
+  }
+
+  Future<void> _saveMealsToCache() async {
+    try {
+      if (_messStaffMealData != null) {
+        final mealJsonString = jsonEncode(_messStaffMealData!.toJson());
+        await SharedUtils.setString('cached_mess_staff_meals', mealJsonString);
+        log('💾 Saved mess staff meals to cache', name: 'MessStaffMealProvider');
+      }
+    } catch (e) {
+      log('❌ Error saving mess staff meals to cache: $e', name: 'MessStaffMealProvider');
+    }
+  }
+
+  Future<void> _loadMealsFromCache() async {
+    try {
+      final cachedMealsJson = await SharedUtils.getString('cached_mess_staff_meals');
+      if (cachedMealsJson.isNotEmpty) {
+        final cachedMeals = MessStaffScreenModel.fromJson(jsonDecode(cachedMealsJson));
+        _messStaffMealData = cachedMeals;
+        log('📂 Loaded mess staff meals from cache', name: 'MessStaffMealProvider');
+      }
+    } catch (e) {
+      log('❌ Error loading meals from cache: $e', name: 'MessStaffMealProvider');
+    }
+  }
+
+  // Helper methods to access meal data
+
+  /// Get meal counts for today
+  Map<String, int> getTodayMealCounts() {
+    if (_messStaffMealData == null || _messStaffMealData!.meals == null) {
+      log('⚠️ No meal data available yet', name: 'MessStaffMealProvider');
+      return {'breakfast': 0, 'lunch': 0, 'dinner': 0};
+    }
+
+    // Get today's date
+    final today = DateTime.now();
+    final dateStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    log('🔍 Looking for meal counts for today: $dateStr', name: 'MessStaffMealProvider');
+    
+    try {
+      // Find today's meals
+      final mealsMap = _messStaffMealData!.meals!.toJson();
+      
+      for (var key in mealsMap.keys) {
+        if (key.contains(dateStr)) {
+          final dayMeals = The202.fromJson(mealsMap[key]);
+          log('✅ Found meal data for today!', name: 'MessStaffMealProvider');
+          
+          // Get the counts for today
+          final breakfastCount = dayMeals.breakfast?.length ?? 0;
+          final lunchCount = dayMeals.lunch?.length ?? 0;
+          final dinnerCount = dayMeals.dinner?.length ?? 0;
+          
+          log('🍳 Today\'s breakfast count: $breakfastCount', name: 'MessStaffMealProvider');
+          log('🍲 Today\'s lunch count: $lunchCount', name: 'MessStaffMealProvider');
+          log('🍽️ Today\'s dinner count: $dinnerCount', name: 'MessStaffMealProvider');
+          
+          return {
+            'breakfast': breakfastCount,
+            'lunch': lunchCount,
+            'dinner': dinnerCount
+          };
+        }
+      }
+      
+      // If today's data not found, return zeros
+      log('⚠️ No meal data found for today, returning zeros', name: 'MessStaffMealProvider');
+      return {'breakfast': 0, 'lunch': 0, 'dinner': 0};
+      
+    } catch (e) {
+      log('❌ Error getting today meal counts: $e', name: 'MessStaffMealProvider');
+      return {'breakfast': 0, 'lunch': 0, 'dinner': 0};
+    }
+  }
+
+  /// Get detailed list of users for a specific meal type on current day
+  List<Map<String, String>> getMealDetailsList(int mealType) {
+    if (_messStaffMealData == null || _messStaffMealData!.meals == null) {
+      log('⚠️ No meal data available yet', name: 'MessStaffMealProvider');
+      return [];
+    }
+
+    // Get today's date
+    final today = DateTime.now();
+    final dateStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
+    log('🔍 Looking for meal details for today: $dateStr', name: 'MessStaffMealProvider');
+    
+    try {
+      // Find today's meals
+      final mealsMap = _messStaffMealData!.meals!.toJson();
+      log('📊 Available meal dates: ${mealsMap.keys.join(", ")}', name: 'MessStaffMealProvider');
+      
+      for (var key in mealsMap.keys) {
+        if (key.contains(dateStr)) {
+          final dayMeals = The202.fromJson(mealsMap[key]);
+          log('✅ Found meal data for today!', name: 'MessStaffMealProvider');
+          
+          // Get the appropriate meal list based on selected type
+          List<Breakfast> mealList = [];
+          String mealTypeName = "";
+          
+          switch (mealType) {
+            case 0: // Breakfast
+              mealList = dayMeals.breakfast ?? [];
+              mealTypeName = "Breakfast";
+              break;
+            case 1: // Lunch
+              mealList = dayMeals.lunch ?? [];
+              mealTypeName = "Lunch";
+              break;
+            case 2: // Dinner
+              mealList = dayMeals.dinner ?? [];
+              mealTypeName = "Dinner";
+              break;
+          }
+          
+          log('🍽️ Found ${mealList.length} users for $mealTypeName today', name: 'MessStaffMealProvider');
+          
+          // Format for UI and log some details
+          final detailsList = mealList.map((meal) {
+            final name = meal.userId?.phoneNumber ?? 'User ${meal.userId?.id?.substring(0, 4) ?? ''}';
+            
+            return {
+              'name': name,
+              'type': _getMealTypeLabel(mealType),
+              'room': 'User ID: ${meal.userId?.id?.substring(0, 8) ?? 'N/A'}',
+            };
+          }).toList();
+          
+          return detailsList;
+        }
+      }
+      
+      // If today's data not found, return empty list
+      log('⚠️ No meal data found for today, returning empty list', name: 'MessStaffMealProvider');
+      return [];
+      
+    } catch (e) {
+      log('❌ Error getting meal details: $e', name: 'MessStaffMealProvider');
+      return [];
+    }
+  }
+
+  String _getMealTypeLabel(int mealType) {
+    switch (mealType) {
+      case 0:
+        return 'Breakfast';
+      case 1:
+        return 'Lunch';
+      case 2:
+        return 'Dinner';
+      default:
+        return 'Unknown';
+    }
+  }
+
+  // Clear all data
+  Future<void> clearData() async {
+    try {
+      _logger.i('🧹 [LOGOUT] Clearing mess staff meal data');
+      log('🧹 Clearing all mess staff meal data', name: 'MessStaffMealProvider');
+      
+      // Clear the data in memory
+      _messStaffMealData = null;
+      _selectedMeal = 0;
+      _isLoading = false;
+      _errorMessage = '';
+      
+      // Clear the cached data
+      await SharedUtils.setString('cached_mess_staff_meals', '');
+      
+      log('✅ Successfully cleared all mess staff meal data', name: 'MessStaffMealProvider');
+      notifyListeners();
+    } catch (e) {
+      log('❌ Error clearing mess staff meal data: $e', name: 'MessStaffMealProvider');
+    }
+  }
+
+  // Reset provider state - less drastic than clear
+  void reset() {
+    _isLoading = false;
+    _errorMessage = '';
+    _selectedMeal = 0;
+    notifyListeners();
+  }
+}
