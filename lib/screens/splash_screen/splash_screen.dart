@@ -61,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
         navigatePRTo(context: context, route: Routes.forceUpdate);
       } else {
         // Navigate to the login screen or home screen if no update is needed
-        navigatePRTo(context: context, route: Routes.login);
+        navigatePRTo(context: context, route: Routes.manager);
       }
     });
   }

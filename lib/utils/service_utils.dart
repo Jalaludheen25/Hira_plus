@@ -7,11 +7,11 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:Hira_Plus/constants/app_utils.dart';
 import 'package:Hira_Plus/constants/global_variables.dart';
-import 'package:Hira_Plus/providers/auth_provider.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +21,7 @@ class HttpServiceUtils {
   static final Map<String, String> _headers = {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Authorization': 'Bearer ${GlobalVariables.dummyToken}',
   };
 
   // Enhanced logging function
@@ -47,12 +48,7 @@ class HttpServiceUtils {
         'Accept': 'application/json',
       };
       if (token) {
-        final prefs = await SharedPreferences.getInstance();
-        final authToken = GlobalVariables.dummyToken;
-        if (authToken == null) {
-          throw Exception('No auth token found. Please login.');
-        }
-        headers['Authorization'] = 'Bearer $authToken';
+        headers['Authorization'] = 'Bearer ${GlobalVariables.dummyToken}';
       }
       final response = await http
           .get(
@@ -60,8 +56,7 @@ class HttpServiceUtils {
             headers: headers,
           )
           .timeout(
-            const Duration(
-                minutes: 2), // Increased from 30 seconds to 2 minutes
+            const Duration(minutes: 2),
           );
       log('URL: $url');
       log('Response: ${response.body}');
@@ -82,8 +77,7 @@ class HttpServiceUtils {
   }
 
   // Enhanced response handler with logging
-  static String _handleResponse(
-      http.Response response, BuildContext context, String url) {
+  static String _handleResponse(String url, http.Response response, [BuildContext? context]) {
     developer.log(
       'Response received from $url',
       error: 'Status Code: ${response.statusCode}',
@@ -92,10 +86,13 @@ class HttpServiceUtils {
 
     switch (response.statusCode) {
       case 200:
+      case 201:
         return response.body;
 
       case 401:
-        _handleUnauthorized(context);
+        if (context != null) {
+          _handleUnauthorized(context);
+        }
         throw NetworkException('Authentication failed', response.statusCode);
 
       case 500:
@@ -136,23 +133,19 @@ class HttpServiceUtils {
   }
 
   // POST request method
-  static Future<dynamic> postData(String url, dynamic data, BuildContext context) async {
+  static Future<dynamic> postData(String url, dynamic data, [BuildContext? context]) async {
     debugPrint('[log] Making POST request to: $url');
     debugPrint('[log] Request body: $data');
 
     try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final response = await http.post(
         Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${GlobalVariables.dummyToken}',
-        },
+        headers: _headers,
         body: jsonEncode(data),
       );
 
       debugPrint('[log] Response: ${response.body}');
-      return _handleResponse(response, context, url);
+      return _handleResponse(url, response, context);
     } catch (e) {
       debugPrint('ERROR: Error in POST request');
       debugPrint('Error details: $e');
@@ -163,37 +156,27 @@ class HttpServiceUtils {
 
   // PUT request method
   static Future<String> putData(
-      String url, dynamic body, BuildContext context) async {
+      String url, dynamic body, [BuildContext? context]) async {
     try {
       await _checkConnectivity();
 
       developer.log('Making PUT request to: $url', time: DateTime.now());
       developer.log('Request body: $body', time: DateTime.now());
 
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final token = GlobalVariables.dummyToken;
-      if (token == null) {
-        throw Exception('User is not authenticated');
-      }
-      final headers = {
-        ..._headers,
-        'Authorization': 'Bearer $token',
-      };
-
       final response = await http
           .put(
             Uri.parse(url),
-            headers: headers,
+            headers: _headers,
             body: jsonEncode(body),
           )
           .timeout(timeoutDuration);
 
       developer.log('Response: ${response.body}', time: DateTime.now());
 
-      return _handleResponse(response, context, url);
+      return _handleResponse(url, response, context);
     } catch (e, stackTrace) {
       _logError('Error in PUT request', e, stackTrace);
-      if (context.mounted) {
+      if (context != null && context.mounted) {
         AppUtils.showInSnackBarNormal('Error updating data', context);
       }
       rethrow;
@@ -201,7 +184,7 @@ class HttpServiceUtils {
   }
 
   // DELETE request method
-  static Future<String> deleteData(String url, BuildContext context) async {
+  static Future<String> deleteData(String url, [BuildContext? context]) async {
     try {
       await _checkConnectivity();
 
@@ -216,10 +199,10 @@ class HttpServiceUtils {
 
       developer.log('Response: ${response.body}', time: DateTime.now());
 
-      return _handleResponse(response, context, url);
+      return _handleResponse(url, response, context);
     } catch (e, stackTrace) {
       _logError('Error in DELETE request', e, stackTrace);
-      if (context.mounted) {
+      if (context != null && context.mounted) {
         AppUtils.showInSnackBarNormal('Error deleting data', context);
       }
       rethrow;

@@ -8,17 +8,7 @@ import 'package:Hira_Plus/providers/canteen_home_page_provider.dart';
 import 'widgets/month_calendar_view.dart';
 import 'widgets/home_list_view.dart';
 import 'widgets/today_fab.dart';
-import 'widgets/custom_drawer.dart';
-import 'package:Hira_Plus/providers/bottom_nav_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:Hira_Plus/utils/navigation_helper.dart';
-import 'package:Hira_Plus/routes/app_routes.dart';
-import 'package:Hira_Plus/constants/global_variables.dart';
-import 'package:Hira_Plus/providers/profile_screen_provider.dart';
-import 'package:toastification/toastification.dart';
-import 'package:Hira_Plus/screens/user_screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
-import 'package:shake_flutter/shake_flutter.dart';
-import 'package:shake_flutter/enums/shake_screen.dart';
+
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});

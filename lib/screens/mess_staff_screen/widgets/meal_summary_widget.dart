@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:Hira_Plus/constants/color_class.dart';
 import 'package:Hira_Plus/constants/textstyle_class.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+
 
 class MealSummaryWidget extends StatelessWidget {
   final IconData icon;

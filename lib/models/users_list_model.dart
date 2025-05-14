@@ -1,0 +1,49 @@
+// To parse this JSON data, do
+//
+//     final usersListModel = usersListModelFromJson(jsonString);
+
+import 'dart:convert';
+
+List<UsersListModel> usersListModelFromJson(String str) => List<UsersListModel>.from(json.decode(str).map((x) => UsersListModel.fromJson(x)));
+
+String usersListModelToJson(List<UsersListModel> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class UsersListModel {
+    String? id;
+    String? name;
+    String? phoneNumber;
+    String? department;
+    String? designation;
+    bool? isVerified;
+    DateTime? createdAt;
+
+    UsersListModel({
+        this.id,
+        this.name,
+        this.phoneNumber,
+        this.department,
+        this.designation,
+        this.isVerified,
+        this.createdAt,
+    });
+
+    factory UsersListModel.fromJson(Map<String, dynamic> json) => UsersListModel(
+        id: json["_id"],
+        name: json["name"],
+        phoneNumber: json["phoneNumber"],
+        department: json["department"],
+        designation: json["designation"],
+        isVerified: json["isVerified"],
+        createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+    );
+
+    Map<String, dynamic> toJson() => {
+        "_id": id,
+        "name": name,
+        "phoneNumber": phoneNumber,
+        "department": department,
+        "designation": designation,
+        "isVerified": isVerified,
+        "createdAt": createdAt?.toIso8601String(),
+    };
+}
