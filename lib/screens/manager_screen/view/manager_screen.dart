@@ -234,7 +234,7 @@ class ManagerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = ['Dashboard', 'Markings', 'Users', 'Notifications', 'Settings'];
+    final tabTitles = ['Dashboard', 'Markings', 'Users', 'Settings'];
     return Scaffold(
       backgroundColor: ColorClass.bgWhite0,
       appBar: AppBar(
@@ -284,12 +284,12 @@ class ManagerScreen extends StatelessWidget {
             label: 'Users',
             
           ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.bell,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.bell, size: 28),
-            label: 'Notifications',
-          ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(LucideIcons.bell,
+          //       size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+          //   activeIcon: Icon(LucideIcons.bell, size: 28),
+          //   label: 'Notifications',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.settings,
                 size: 20, color: Color.fromARGB(255, 63, 94, 43)),

@@ -451,15 +451,52 @@ class _LoginScreenState extends State<LoginScreen> {
                                 if (authProvider.selectedRole == 'Mess Staff') {
                                   // For Mess Staff, use specific authentication method
                                   await authProvider.authenticateMessStaff();
+                                  if (!mounted) return;
                                   developer.log('✅ Mess Staff authentication successful', 
                                       name: 'LoginScreen');
+                                } else if (authProvider.selectedRole == 'Manager') {
+                                  // For Manager role, use proper manager authentication
+                                  await authProvider.authenticateManager();
+                                  if (!mounted) return;
+                                  developer.log('✅ Manager authentication successful', 
+                                      name: 'LoginScreen');
                                 } else {
-                                  // For other roles (like Manager), use simulation
+                                  // For other roles, use simulation
                                   await authProvider.simulateSuccessfulAuth();
+                                  if (!mounted) return;
                                   developer.log('✅ Authentication successful for ${authProvider.selectedRole}', 
                                       name: 'LoginScreen');
                                 }
+
+                                if (!mounted) return;
+
+                                _logger.i('🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
+                                developer.log('🚀 Redirecting to ${authProvider.selectedRole} screen', 
+                                    name: 'LoginScreen');
+
+                                // Save user type to shared preferences
+                                await SharedUtils.setString('user_type', authProvider.selectedRole);
+
+                                if (!mounted) return;
+
+                                // Navigate to appropriate screen based on role
+                                if (authProvider.selectedRole == 'Mess Staff') {
+                                  navigatePRToGlobal(route: Routes.messStaff);
+                                } else if (authProvider.selectedRole == 'Manager') {
+                                  navigatePRToGlobal(route: Routes.manager);
+                                } else {
+                                  navigatePRToGlobal(route: Routes.bottomNav);
+                                }
+
+                                // Reset the verification state
+                                if (mounted) {
+                                  authProvider.setShowOTPField(false);
+                                }
+                                _logger.i('🔄 [STATE] Login flow completed');
+                                developer.log('✅ Login flow completed successfully', name: 'LoginScreen');
                               } catch (e) {
+                                if (!mounted) return;
+                                
                                 developer.log('❌ Authentication error: $e', 
                                     name: 'LoginScreen', error: e);
                                 
@@ -473,27 +510,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return;
                               }
                             }
-
-                            _logger.i('🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
-                            developer.log('🚀 Redirecting to ${authProvider.selectedRole} screen', 
-                                name: 'LoginScreen');
-
-                            // Save user type to shared preferences
-                            await SharedUtils.setString('user_type', authProvider.selectedRole);
-
-                            // Navigate to appropriate screen based on role
-                            if (authProvider.selectedRole == 'Mess Staff') {
-                              navigatePRToGlobal(route: Routes.messStaff);
-                            } else if (authProvider.selectedRole == 'Manager') {
-                              navigatePRToGlobal(route: Routes.manager);
-                            } else {
-                              navigatePRToGlobal(route: Routes.bottomNav);
-                            }
-
-                            // Reset the verification state
-                            authProvider.setShowOTPField(false);
-                            _logger.i('🔄 [STATE] Login flow completed');
-                            developer.log('✅ Login flow completed successfully', name: 'LoginScreen');
                           },
                           child: Text(
                             useOtpAuth ? 'Validate' : 'Login',

@@ -6,14 +6,30 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
 
 class MealService {
-  /// Fetches meals for the current user
+  /// Fetches meals based on user role
   /// Returns a list of MealModel
   Future<List<MealModel>> getUserMeals(BuildContext context) async {
     try {
-      log('🍽️ Fetching meals for user');
-      final url = ApiUrls.getMealsForUser();
+      log('🔍 Checking user role for meal fetch');
+      final userType = await SharedUtils.getString('user_type');
+      log('👤 User type: $userType');
+
+      String url;
+      if (userType == 'Manager') {
+        url = '${ApiUrls.baseUrl}/admin/users/meals';
+        log('🎯 Using manager' );
+      } else if (userType == 'Mess Staff') {
+        url = '${ApiUrls.baseUrl}/mess-staff/meals';
+        log('🎯 Using mess staff' );
+      } else {
+        url = ApiUrls.getMealsForUser();
+        log('🎯 Using regular user endpoint: $url');
+      }
+
+      log('🍽️ Fetching meals for $userType');
       log('API URL: $url');
 
       // Make API request
@@ -31,8 +47,7 @@ class MealService {
       log('Number of meals received: ${mealsList.length}');
 
       // Convert each JSON object to MealModel
-      final meals =
-          mealsList.map((mealJson) => MealModel.fromJson(mealJson)).toList();
+      final meals = mealsList.map((mealJson) => MealModel.fromJson(mealJson)).toList();
       log('✅ Meals parsed successfully: ${meals.length} meals');
 
       // Sort meals by date (most recent first)
@@ -51,7 +66,7 @@ class MealService {
     }
   }
 
-  /// Adds or updates a meal for the current user
+  /// Adds or updates a meal based on user role
   /// Returns the updated MealModel
   ///
   /// Example usage:
@@ -71,53 +86,68 @@ class MealService {
   /// }
   /// ```
   Future<MealModel> addMealForUser(
-  BuildContext context, {
-  required DateTime date,
-  required bool breakfast,
-  required bool lunch,
-  required bool dinner,
-}) async {
-  try {
-    log('🍽️ Starting meal update process', name: 'MealService');
-    final url = ApiUrls.addMealForUser();
-    log('API URL: $url', name: 'MealService');
+    BuildContext context, {
+    required DateTime date,
+    required bool breakfast,
+    required bool lunch,
+    required bool dinner,
+  }) async {
+    try {
+      log('🔍 Checking user role for meal update');
+      final userType = await SharedUtils.getString('user_type');
+      log('👤 User type: $userType');
 
-    // Prepare request body
-    final requestBody = {
-      'date': date.toIso8601String().split('T')[0], // Format as YYYY-MM-DD
-      'breakfast': breakfast,
-      'lunch': lunch,
-      'dinner': dinner,
-    };
+      String url;
+      if (userType == 'Manager') {
+        url = '${ApiUrls.baseUrl}/admin/meals/mark';
+        log('🎯 Using manager endpoint for marking: $url');
+      } else if (userType == 'Mess Staff') {
+        url = '${ApiUrls.baseUrl}/mess-staff/meals/mark';
+        log('🎯 Using mess staff endpoint for marking: $url');
+      } else {
+        url = ApiUrls.addMealForUser();
+        log('🎯 Using regular user endpoint for marking: $url');
+      }
 
-    log('Request body: $requestBody', name: 'MealService');
+      log('🍽️ Starting meal update process', name: 'MealService');
+      log('API URL: $url', name: 'MealService');
 
-    // Make API request
-    log('Sending POST request to server...', name: 'MealService');
-    final response = await HttpServiceUtils.postData(url, requestBody, context);
-    log('Response received from server', name: 'MealService');
-    
-    if (response == null) {
-      log('❌ Error: Empty response from meals API', name: 'MealService');
-      throw HttpException('Failed to add meal: Empty response');
+      // Prepare request body
+      final requestBody = {
+        'date': date.toIso8601String().split('T')[0], // Format as YYYY-MM-DD
+        'breakfast': breakfast,
+        'lunch': lunch,
+        'dinner': dinner,
+      };
+
+      log('Request body: $requestBody', name: 'MealService');
+
+      // Make API request
+      log('Sending POST request to server...', name: 'MealService');
+      final response = await HttpServiceUtils.postData(url, requestBody, context);
+      log('Response received from server', name: 'MealService');
+      
+      if (response == null) {
+        log('❌ Error: Empty response from meals API', name: 'MealService');
+        throw HttpException('Failed to add meal: Empty response');
+      }
+
+      // Parse response into MealModel
+      log('Parsing response data', name: 'MealService');
+      final mealData = response is String ? jsonDecode(response) : response;
+      final meal = MealModel.fromJson(mealData);
+      log('✅ Meal added/updated successfully: ${meal.id}', name: 'MealService');
+      log('Response meal data: ${meal.toJson()}', name: 'MealService');
+
+      return meal;
+    } on HttpException catch (e) {
+      // Handle HTTP exceptions specifically
+      log('❌ HTTP Error adding meal: $e', name: 'MealService');
+      rethrow;
+    } catch (e) {
+      // Handle all other exceptions
+      log('❌ Error adding meal: $e', name: 'MealService');
+      rethrow;
     }
-
-    // Parse response into MealModel
-    log('Parsing response data', name: 'MealService');
-    final mealData = response is String ? jsonDecode(response) : response;
-    final meal = MealModel.fromJson(mealData);
-    log('✅ Meal added/updated successfully: ${meal.id}', name: 'MealService');
-    log('Response meal data: ${meal.toJson()}', name: 'MealService');
-
-    return meal;
-  } on HttpException catch (e) {
-    // Handle HTTP exceptions specifically
-    log('❌ HTTP Error adding meal: $e', name: 'MealService');
-    rethrow;
-  } catch (e) {
-    // Handle all other exceptions
-    log('❌ Error adding meal: $e', name: 'MealService');
-    rethrow;
   }
-}
 }
