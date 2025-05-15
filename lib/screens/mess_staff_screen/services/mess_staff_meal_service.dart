@@ -39,27 +39,23 @@ class MessStaffMealService {
       
       // Log daily counts
       if (meals.dailyCounts != null) {
-        final dailyCountsJson = meals.dailyCounts!.toJson();
-        log('Daily counts available for dates: ${dailyCountsJson.keys.join(", ")}', name: 'MessStaffMealService');
+        final dailyCountsMap = meals.dailyCounts!;
+        log('Daily counts available for dates: ${dailyCountsMap.keys.join(", ")}', name: 'MessStaffMealService');
       }
       
       // Log meals details
       if (meals.meals != null) {
-        final mealsJson = meals.meals!.toJson();
-        log('Meal details available for dates: ${mealsJson.keys.join(", ")}', name: 'MessStaffMealService');
+        final mealsMap = meals.meals!;
+        log('Meal details available for dates: ${mealsMap.keys.join(", ")}', name: 'MessStaffMealService');
         
         // Log counts for today
         final today = DateTime.now();
         final dateStr = "${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}";
-        
-        for (var key in mealsJson.keys) {
-          if (key.contains(dateStr)) {
-            final dayMeals = The202.fromJson(mealsJson[key]);
-            log('Today\'s breakfast count: ${dayMeals.breakfast?.length ?? 0}', name: 'MessStaffMealService');
-            log('Today\'s lunch count: ${dayMeals.lunch?.length ?? 0}', name: 'MessStaffMealService');
-            log('Today\'s dinner count: ${dayMeals.dinner?.length ?? 0}', name: 'MessStaffMealService');
-            break;
-          }
+        if (mealsMap.containsKey(dateStr)) {
+          final dayMeals = mealsMap[dateStr]!;
+          log('Today\'s breakfast count: \\${dayMeals.breakfast?.length ?? 0}', name: 'MessStaffMealService');
+          log('Today\'s lunch count: \\${dayMeals.lunch?.length ?? 0}', name: 'MessStaffMealService');
+          log('Today\'s dinner count: \\${dayMeals.dinner?.length ?? 0}', name: 'MessStaffMealService');
         }
       }
 

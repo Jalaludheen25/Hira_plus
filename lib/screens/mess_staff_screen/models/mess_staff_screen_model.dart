@@ -10,8 +10,8 @@ String messStaffScreenModelToJson(MessStaffScreenModel data) => json.encode(data
 
 class MessStaffScreenModel {
     TotalCounts? totalCounts;
-    DailyCounts? dailyCounts;
-    Meals? meals;
+    Map<String, TotalCounts>? dailyCounts;
+    Map<String, The202>? meals;
 
     MessStaffScreenModel({
         this.totalCounts,
@@ -21,98 +21,14 @@ class MessStaffScreenModel {
 
     factory MessStaffScreenModel.fromJson(Map<String, dynamic> json) => MessStaffScreenModel(
         totalCounts: json["totalCounts"] == null ? null : TotalCounts.fromJson(json["totalCounts"]),
-        dailyCounts: json["dailyCounts"] == null ? null : DailyCounts.fromJson(json["dailyCounts"]),
-        meals: json["meals"] == null ? null : Meals.fromJson(json["meals"]),
+        dailyCounts: json["dailyCounts"] == null ? null : Map.from(json["dailyCounts"]).map((k, v) => MapEntry<String, TotalCounts>(k, TotalCounts.fromJson(v))),
+        meals: json["meals"] == null ? null : Map.from(json["meals"]).map((k, v) => MapEntry<String, The202>(k, The202.fromJson(v))),
     );
 
     Map<String, dynamic> toJson() => {
         "totalCounts": totalCounts?.toJson(),
-        "dailyCounts": dailyCounts?.toJson(),
-        "meals": meals?.toJson(),
-    };
-}
-
-class DailyCounts {
-    TotalCounts? the20240315;
-    TotalCounts? the20250315;
-    TotalCounts? the20250326;
-    TotalCounts? the20250426;
-    TotalCounts? the20250427;
-    TotalCounts? the20250428;
-    TotalCounts? the20250508;
-    TotalCounts? the20250509;
-    TotalCounts? the20250512;
-    TotalCounts? the20250513;
-    TotalCounts? the20250514;
-    TotalCounts? the20250515;
-    TotalCounts? the20250516;
-    TotalCounts? the20250517;
-    TotalCounts? the20250518;
-    TotalCounts? the20250523;
-    TotalCounts? the20250603;
-    TotalCounts? the20250604;
-
-    DailyCounts({
-        this.the20240315,
-        this.the20250315,
-        this.the20250326,
-        this.the20250426,
-        this.the20250427,
-        this.the20250428,
-        this.the20250508,
-        this.the20250509,
-        this.the20250512,
-        this.the20250513,
-        this.the20250514,
-        this.the20250515,
-        this.the20250516,
-        this.the20250517,
-        this.the20250518,
-        this.the20250523,
-        this.the20250603,
-        this.the20250604,
-    });
-
-    factory DailyCounts.fromJson(Map<String, dynamic> json) => DailyCounts(
-        the20240315: json["2024-03-15"] == null ? null : TotalCounts.fromJson(json["2024-03-15"]),
-        the20250315: json["2025-03-15"] == null ? null : TotalCounts.fromJson(json["2025-03-15"]),
-        the20250326: json["2025-03-26"] == null ? null : TotalCounts.fromJson(json["2025-03-26"]),
-        the20250426: json["2025-04-26"] == null ? null : TotalCounts.fromJson(json["2025-04-26"]),
-        the20250427: json["2025-04-27"] == null ? null : TotalCounts.fromJson(json["2025-04-27"]),
-        the20250428: json["2025-04-28"] == null ? null : TotalCounts.fromJson(json["2025-04-28"]),
-        the20250508: json["2025-05-08"] == null ? null : TotalCounts.fromJson(json["2025-05-08"]),
-        the20250509: json["2025-05-09"] == null ? null : TotalCounts.fromJson(json["2025-05-09"]),
-        the20250512: json["2025-05-12"] == null ? null : TotalCounts.fromJson(json["2025-05-12"]),
-        the20250513: json["2025-05-13"] == null ? null : TotalCounts.fromJson(json["2025-05-13"]),
-        the20250514: json["2025-05-14"] == null ? null : TotalCounts.fromJson(json["2025-05-14"]),
-        the20250515: json["2025-05-15"] == null ? null : TotalCounts.fromJson(json["2025-05-15"]),
-        the20250516: json["2025-05-16"] == null ? null : TotalCounts.fromJson(json["2025-05-16"]),
-        the20250517: json["2025-05-17"] == null ? null : TotalCounts.fromJson(json["2025-05-17"]),
-        the20250518: json["2025-05-18"] == null ? null : TotalCounts.fromJson(json["2025-05-18"]),
-        the20250523: json["2025-05-23"] == null ? null : TotalCounts.fromJson(json["2025-05-23"]),
-        the20250603: json["2025-06-03"] == null ? null : TotalCounts.fromJson(json["2025-06-03"]),
-        the20250604: json["2025-06-04"] == null ? null : TotalCounts.fromJson(json["2025-06-04"]),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "2024-03-15": the20240315?.toJson(),
-        "2025-03-15": the20250315?.toJson(),
-        "2025-03-26": the20250326?.toJson(),
-        "2025-04-26": the20250426?.toJson(),
-        "2025-04-27": the20250427?.toJson(),
-        "2025-04-28": the20250428?.toJson(),
-        "2025-05-08": the20250508?.toJson(),
-        "2025-05-09": the20250509?.toJson(),
-        "2025-05-12": the20250512?.toJson(),
-        "2025-05-13": the20250513?.toJson(),
-        "2025-05-14": the20250514?.toJson(),
-        "2025-05-15": the20250515?.toJson(),
-        "2025-05-16": the20250516?.toJson(),
-        "2025-05-17": the20250517?.toJson(),
-        "2025-05-18": the20250518?.toJson(),
-        "2025-05-23": the20250523?.toJson(),
-        "2025-06-03": the20250603?.toJson(),
-        "2025-06-04": the20250604?.toJson(),
+        "dailyCounts": dailyCounts == null ? null : Map.from(dailyCounts!).map((k, v) => MapEntry<String, dynamic>(k, v.toJson())),
+        "meals": meals == null ? null : Map.from(meals!).map((k, v) => MapEntry<String, dynamic>(k, v.toJson())),
     };
 }
 
@@ -141,90 +57,6 @@ class TotalCounts {
         "lunch": lunch,
         "dinner": dinner,
         "total": total,
-    };
-}
-
-class Meals {
-    The202? the20240315;
-    The202? the20250315;
-    The202? the20250326;
-    The202? the20250426;
-    The202? the20250427;
-    The202? the20250428;
-    The202? the20250508;
-    The202? the20250509;
-    The202? the20250512;
-    The202? the20250513;
-    The202? the20250514;
-    The202? the20250515;
-    The202? the20250516;
-    The202? the20250517;
-    The202? the20250518;
-    The202? the20250523;
-    The202? the20250603;
-    The202? the20250604;
-
-    Meals({
-        this.the20240315,
-        this.the20250315,
-        this.the20250326,
-        this.the20250426,
-        this.the20250427,
-        this.the20250428,
-        this.the20250508,
-        this.the20250509,
-        this.the20250512,
-        this.the20250513,
-        this.the20250514,
-        this.the20250515,
-        this.the20250516,
-        this.the20250517,
-        this.the20250518,
-        this.the20250523,
-        this.the20250603,
-        this.the20250604,
-    });
-
-    factory Meals.fromJson(Map<String, dynamic> json) => Meals(
-        the20240315: json["2024-03-15"] == null ? null : The202.fromJson(json["2024-03-15"]),
-        the20250315: json["2025-03-15"] == null ? null : The202.fromJson(json["2025-03-15"]),
-        the20250326: json["2025-03-26"] == null ? null : The202.fromJson(json["2025-03-26"]),
-        the20250426: json["2025-04-26"] == null ? null : The202.fromJson(json["2025-04-26"]),
-        the20250427: json["2025-04-27"] == null ? null : The202.fromJson(json["2025-04-27"]),
-        the20250428: json["2025-04-28"] == null ? null : The202.fromJson(json["2025-04-28"]),
-        the20250508: json["2025-05-08"] == null ? null : The202.fromJson(json["2025-05-08"]),
-        the20250509: json["2025-05-09"] == null ? null : The202.fromJson(json["2025-05-09"]),
-        the20250512: json["2025-05-12"] == null ? null : The202.fromJson(json["2025-05-12"]),
-        the20250513: json["2025-05-13"] == null ? null : The202.fromJson(json["2025-05-13"]),
-        the20250514: json["2025-05-14"] == null ? null : The202.fromJson(json["2025-05-14"]),
-        the20250515: json["2025-05-15"] == null ? null : The202.fromJson(json["2025-05-15"]),
-        the20250516: json["2025-05-16"] == null ? null : The202.fromJson(json["2025-05-16"]),
-        the20250517: json["2025-05-17"] == null ? null : The202.fromJson(json["2025-05-17"]),
-        the20250518: json["2025-05-18"] == null ? null : The202.fromJson(json["2025-05-18"]),
-        the20250523: json["2025-05-23"] == null ? null : The202.fromJson(json["2025-05-23"]),
-        the20250603: json["2025-06-03"] == null ? null : The202.fromJson(json["2025-06-03"]),
-        the20250604: json["2025-06-04"] == null ? null : The202.fromJson(json["2025-06-04"]),
-    );
-
-    Map<String, dynamic> toJson() => {
-        "2024-03-15": the20240315?.toJson(),
-        "2025-03-15": the20250315?.toJson(),
-        "2025-03-26": the20250326?.toJson(),
-        "2025-04-26": the20250426?.toJson(),
-        "2025-04-27": the20250427?.toJson(),
-        "2025-04-28": the20250428?.toJson(),
-        "2025-05-08": the20250508?.toJson(),
-        "2025-05-09": the20250509?.toJson(),
-        "2025-05-12": the20250512?.toJson(),
-        "2025-05-13": the20250513?.toJson(),
-        "2025-05-14": the20250514?.toJson(),
-        "2025-05-15": the20250515?.toJson(),
-        "2025-05-16": the20250516?.toJson(),
-        "2025-05-17": the20250517?.toJson(),
-        "2025-05-18": the20250518?.toJson(),
-        "2025-05-23": the20250523?.toJson(),
-        "2025-06-03": the20250603?.toJson(),
-        "2025-06-04": the20250604?.toJson(),
     };
 }
 

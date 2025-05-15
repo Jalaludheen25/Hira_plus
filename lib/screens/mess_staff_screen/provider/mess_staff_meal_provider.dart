@@ -129,34 +129,26 @@ class MessStaffMealProvider extends ChangeNotifier {
     
     try {
       // Find today's meals
-      final mealsMap = _messStaffMealData!.meals!.toJson();
-      
-      for (var key in mealsMap.keys) {
-        if (key.contains(dateStr)) {
-          final dayMeals = The202.fromJson(mealsMap[key]);
-          log('✅ Found meal data for today!', name: 'MessStaffMealProvider');
-          
-          // Get the counts for today
-          final breakfastCount = dayMeals.breakfast?.length ?? 0;
-          final lunchCount = dayMeals.lunch?.length ?? 0;
-          final dinnerCount = dayMeals.dinner?.length ?? 0;
-          
-          log('🍳 Today\'s breakfast count: $breakfastCount', name: 'MessStaffMealProvider');
-          log('🍲 Today\'s lunch count: $lunchCount', name: 'MessStaffMealProvider');
-          log('🍽️ Today\'s dinner count: $dinnerCount', name: 'MessStaffMealProvider');
-          
-          return {
-            'breakfast': breakfastCount,
-            'lunch': lunchCount,
-            'dinner': dinnerCount
-          };
-        }
+      final mealsMap = _messStaffMealData!.meals!;
+      if (mealsMap.containsKey(dateStr)) {
+        final dayMeals = mealsMap[dateStr]!;
+        log('✅ Found meal data for today!', name: 'MessStaffMealProvider');
+        // Get the counts for today
+        final breakfastCount = dayMeals.breakfast?.length ?? 0;
+        final lunchCount = dayMeals.lunch?.length ?? 0;
+        final dinnerCount = dayMeals.dinner?.length ?? 0;
+        log('🍳 Today\'s breakfast count: $breakfastCount', name: 'MessStaffMealProvider');
+        log('🍲 Today\'s lunch count: $lunchCount', name: 'MessStaffMealProvider');
+        log('🍽️ Today\'s dinner count: $dinnerCount', name: 'MessStaffMealProvider');
+        return {
+          'breakfast': breakfastCount,
+          'lunch': lunchCount,
+          'dinner': dinnerCount
+        };
       }
-      
       // If today's data not found, return zeros
       log('⚠️ No meal data found for today, returning zeros', name: 'MessStaffMealProvider');
       return {'breakfast': 0, 'lunch': 0, 'dinner': 0};
-      
     } catch (e) {
       log('❌ Error getting today meal counts: $e', name: 'MessStaffMealProvider');
       return {'breakfast': 0, 'lunch': 0, 'dinner': 0};
@@ -176,55 +168,40 @@ class MessStaffMealProvider extends ChangeNotifier {
     log('🔍 Looking for meal details for today: $dateStr', name: 'MessStaffMealProvider');
     
     try {
-      // Find today's meals
-      final mealsMap = _messStaffMealData!.meals!.toJson();
+      final mealsMap = _messStaffMealData!.meals!;
       log('📊 Available meal dates: ${mealsMap.keys.join(", ")}', name: 'MessStaffMealProvider');
-      
-      for (var key in mealsMap.keys) {
-        if (key.contains(dateStr)) {
-          final dayMeals = The202.fromJson(mealsMap[key]);
-          log('✅ Found meal data for today!', name: 'MessStaffMealProvider');
-          
-          // Get the appropriate meal list based on selected type
-          List<Breakfast> mealList = [];
-          String mealTypeName = "";
-          
-          switch (mealType) {
-            case 0: // Breakfast
-              mealList = dayMeals.breakfast ?? [];
-              mealTypeName = "Breakfast";
-              break;
-            case 1: // Lunch
-              mealList = dayMeals.lunch ?? [];
-              mealTypeName = "Lunch";
-              break;
-            case 2: // Dinner
-              mealList = dayMeals.dinner ?? [];
-              mealTypeName = "Dinner";
-              break;
-          }
-          
-          log('🍽️ Found ${mealList.length} users for $mealTypeName today', name: 'MessStaffMealProvider');
-          
-          // Format for UI and log some details
-          final detailsList = mealList.map((meal) {
-            final name = meal.userId?.phoneNumber ?? 'User ${meal.userId?.id?.substring(0, 4) ?? ''}';
-            
-            return {
-              'name': name,
-              'type': _getMealTypeLabel(mealType),
-              'room': 'User ID: ${meal.userId?.id?.substring(0, 8) ?? 'N/A'}',
-            };
-          }).toList();
-          
-          return detailsList;
+      if (mealsMap.containsKey(dateStr)) {
+        final dayMeals = mealsMap[dateStr]!;
+        log('✅ Found meal data for today!', name: 'MessStaffMealProvider');
+        List<Breakfast> mealList = [];
+        String mealTypeName = "";
+        switch (mealType) {
+          case 0:
+            mealList = dayMeals.breakfast ?? [];
+            mealTypeName = "Breakfast";
+            break;
+          case 1:
+            mealList = dayMeals.lunch ?? [];
+            mealTypeName = "Lunch";
+            break;
+          case 2:
+            mealList = dayMeals.dinner ?? [];
+            mealTypeName = "Dinner";
+            break;
         }
+        log('🍽️ Found \\${mealList.length} users for $mealTypeName today', name: 'MessStaffMealProvider');
+        final detailsList = mealList.map((meal) {
+          final name = meal.userId?.phoneNumber ?? 'User \\${meal.userId?.id?.substring(0, 4) ?? ''}';
+          return {
+            'name': name,
+            'type': _getMealTypeLabel(mealType),
+            'room': 'User ID: \\${meal.userId?.id?.substring(0, 8) ?? 'N/A'}',
+          };
+        }).toList();
+        return detailsList;
       }
-      
-      // If today's data not found, return empty list
       log('⚠️ No meal data found for today, returning empty list', name: 'MessStaffMealProvider');
       return [];
-      
     } catch (e) {
       log('❌ Error getting meal details: $e', name: 'MessStaffMealProvider');
       return [];
