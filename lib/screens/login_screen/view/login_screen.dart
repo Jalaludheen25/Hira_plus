@@ -345,8 +345,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          onPressed: () {
-                            // Validate based on role
+                          onPressed: () async {
                             if (useOtpAuth) {
                               if (!isValidPhoneNumber(_phoneController.text.trim())) {
                                 developer.log('❌ Invalid phone number', name: 'LoginScreen');
@@ -359,6 +358,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 return;
                               }
                               authProvider.setPhone(_phoneController.text.trim());
+                              try {
+                                await authProvider.requestOtp(_phoneController.text.trim());
+                                toastification.show(
+                                  context: context,
+                                  title: const Text('OTP sent successfully'),
+                                  type: ToastificationType.success,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                );
+                              } catch (e) {
+                                toastification.show(
+                                  context: context,
+                                  title: Text('Failed to send OTP: ${e.toString()}'),
+                                  type: ToastificationType.error,
+                                  autoCloseDuration: const Duration(seconds: 2),
+                                );
+                                return;
+                              }
                             } else {
                               if (!isValidUsername(_usernameController.text.trim())) {
                                 developer.log('❌ Invalid username', name: 'LoginScreen');
@@ -417,7 +433,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               }
                               
                               try {
-                                await authProvider.fetchTestLoginToken();
+                                await authProvider.fetchVerifyOtpToken();
                                 developer.log('✅ User authentication successful', 
                                     name: 'LoginScreen');
                               } catch (e) {

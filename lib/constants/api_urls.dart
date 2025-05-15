@@ -6,11 +6,14 @@ class ApiUrls {
     return '$directUsUrl/items/hira_plus_force_update';
   }
 
-  static String getTestUser() {
-    return '$baseUrl/api/auth/test-login';
+  static String getVerifyOtp() {
+    return '$baseUrl/api/auth/verify-otp';
   }
-  
- 
+
+  static String getRequestOtp() {
+    return '$baseUrl/api/auth/request-otp';
+  }
+
   static String getMessStaffLogin() {
     return '$baseUrl/api/mess-staff/login';
   }
