@@ -21,6 +21,9 @@ class ApiUrls {
   static String getTestUser() {
     return '$baseUrl/auth/test-login';
   }
+  static String adminLogin() {
+    return '$baseUrl/admin/login';
+  }
   
  
   static String getMessStaffLogin() {
