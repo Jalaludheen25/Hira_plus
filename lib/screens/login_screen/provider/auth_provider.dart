@@ -253,12 +253,9 @@ class AuthProvider extends ChangeNotifier {
         _logger.i('🔵 [TEST] Using test user credentials...');
         developer.log('🔵 Using test user credentials', name: 'AuthProvider');
 
-        // Create a dummy token for demo login
-        final dummyToken =
-            'demo_user_token_${DateTime.now().millisecondsSinceEpoch}';
-
+   
         // Store token and update login status
-        await SharedUtils.setString('auth_token', dummyToken);
+        
         await SharedUtils.setString('user_type', _selectedRole);
         _isLoggedIn = true;
         _userType = _selectedRole;

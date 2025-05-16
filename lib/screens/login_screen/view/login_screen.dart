@@ -143,7 +143,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             onChanged: (value) {
               authProvider.setPassword(value);
-              developer.log('Password field updated (length: ${value.length})', name: 'LoginScreen');
+              developer.log('Password field updated (length: ${value.length})',
+                  name: 'LoginScreen');
             },
           ),
         ),
@@ -157,7 +158,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool isValidUsername(String? value) {
-    return value != null && value.isNotEmpty && value.length >= 3; // Basic validation
+    return value != null &&
+        value.isNotEmpty &&
+        value.length >= 3; // Basic validation
   }
 
   bool isValidPassword(String? value) {
@@ -170,10 +173,11 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (context, authProvider, _) {
         // Determine if we should use OTP-based or username-based authentication
         final bool useOtpAuth = authProvider.selectedRole == 'User';
-        
-        developer.log('🔍 Building login screen: role=${authProvider.selectedRole}, useOtpAuth=$useOtpAuth', 
+
+        developer.log(
+            '🔍 Building login screen: role=${authProvider.selectedRole}, useOtpAuth=$useOtpAuth',
             name: 'LoginScreen');
-        
+
         return Scaffold(
           backgroundColor: ColorClass.brandDarkGreen,
           body: SafeArea(
@@ -245,21 +249,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           );
                           if (selected != null &&
                               selected != authProvider.selectedRole) {
-                            developer.log('👤 Role selection changed: $selected', name: 'LoginScreen');
-                            
+                            developer.log(
+                                '👤 Role selection changed: $selected',
+                                name: 'LoginScreen');
+
                             // Clear text fields when role changes
-                            bool wasOtpAuth = authProvider.selectedRole == 'User';
+                            bool wasOtpAuth =
+                                authProvider.selectedRole == 'User';
                             bool willBeOtpAuth = selected == 'User';
-                            
+
                             if (wasOtpAuth != willBeOtpAuth) {
                               _phoneController.clear();
                               _usernameController.clear();
                               _passwordController.clear();
-                              
-                              developer.log('🧹 Cleared input fields due to auth type change', 
+
+                              developer.log(
+                                  '🧹 Cleared input fields due to auth type change',
                                   name: 'LoginScreen');
                             }
-                            
+
                             // Update the role
                             authProvider.setSelectedRole(selected);
                           }
@@ -302,7 +310,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      
+
                     // Conditionally show phone number or username field
                     if (!authProvider.showOTPField)
                       Container(
@@ -323,12 +331,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? _buildPhoneField(authProvider)
                             : _buildUsernameField(authProvider),
                       ),
-                    
+
                     // Show either OTP or password field on the second screen
                     if (authProvider.showOTPField)
-                      useOtpAuth 
-                        ? _buildOTPField(context, authProvider)
-                        : _buildPasswordField(context, authProvider),
+                      useOtpAuth
+                          ? _buildOTPField(context, authProvider)
+                          : _buildPasswordField(context, authProvider),
 
                     const SizedBox(height: 32),
 
@@ -347,19 +355,24 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           onPressed: () async {
                             if (useOtpAuth) {
-                              if (!isValidPhoneNumber(_phoneController.text.trim())) {
-                                developer.log('❌ Invalid phone number', name: 'LoginScreen');
+                              if (!isValidPhoneNumber(
+                                  _phoneController.text.trim())) {
+                                developer.log('❌ Invalid phone number',
+                                    name: 'LoginScreen');
                                 toastification.show(
                                   context: context,
-                                  title: const Text('Please enter a valid 10-digit phone number'),
+                                  title: const Text(
+                                      'Please enter a valid 10-digit phone number'),
                                   type: ToastificationType.error,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
                                 return;
                               }
-                              authProvider.setPhone(_phoneController.text.trim());
+                              authProvider
+                                  .setPhone(_phoneController.text.trim());
                               try {
-                                await authProvider.requestOtp(_phoneController.text.trim());
+                                await authProvider
+                                    .requestOtp(_phoneController.text.trim());
                                 toastification.show(
                                   context: context,
                                   title: const Text('OTP sent successfully'),
@@ -369,30 +382,36 @@ class _LoginScreenState extends State<LoginScreen> {
                               } catch (e) {
                                 toastification.show(
                                   context: context,
-                                  title: Text('Failed to send OTP: ${e.toString()}'),
+                                  title: Text(
+                                      'Failed to send OTP: ${e.toString()}'),
                                   type: ToastificationType.error,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
                                 return;
                               }
                             } else {
-                              if (!isValidUsername(_usernameController.text.trim())) {
-                                developer.log('❌ Invalid username', name: 'LoginScreen');
+                              if (!isValidUsername(
+                                  _usernameController.text.trim())) {
+                                developer.log('❌ Invalid username',
+                                    name: 'LoginScreen');
                                 toastification.show(
                                   context: context,
-                                  title: const Text('Please enter a valid username (at least 3 characters)'),
+                                  title: const Text(
+                                      'Please enter a valid username (at least 3 characters)'),
                                   type: ToastificationType.error,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
                                 return;
                               }
-                              authProvider.setUsername(_usernameController.text.trim());
+                              authProvider
+                                  .setUsername(_usernameController.text.trim());
                             }
-                            
+
                             // Log the transition
-                            developer.log('➡️ Moving to ${useOtpAuth ? "OTP" : "password"} entry screen', 
+                            developer.log(
+                                '➡️ Moving to ${useOtpAuth ? "OTP" : "password"} entry screen',
                                 name: 'LoginScreen');
-                            
+
                             authProvider.setShowOTPField(true);
                           },
                           child: const Text('Continue',
@@ -419,31 +438,56 @@ class _LoginScreenState extends State<LoginScreen> {
                             if (useOtpAuth) {
                               // Handle OTP validation
                               if (authProvider.otp.length != 6) {
-                                _logger.w('🟠 [VALIDATION] Invalid OTP length: ${authProvider.otp.length}');
-                                developer.log('❌ Invalid OTP length: ${authProvider.otp.length}', 
+                                _logger.w(
+                                    '🟠 [VALIDATION] Invalid OTP length: ${authProvider.otp.length}');
+                                developer.log(
+                                    '❌ Invalid OTP length: ${authProvider.otp.length}',
                                     name: 'LoginScreen');
-                                
+
                                 toastification.show(
                                   context: context,
-                                  title: const Text('Please enter a valid 6-digit OTP'),
+                                  title: const Text(
+                                      'Please enter a valid 6-digit OTP'),
                                   type: ToastificationType.error,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
                                 return;
                               }
-                              
+
                               try {
                                 await authProvider.fetchVerifyOtpToken();
-                                developer.log('✅ User authentication successful', 
+                                developer.log(
+                                    '✅ User authentication successful',
+                                    name: 'LoginScreen');
+
+                                if (!mounted) return;
+
+                                // Save user type to shared preferences
+                                await SharedUtils.setString(
+                                    'user_type', authProvider.selectedRole);
+
+                                if (!mounted) return;
+
+                                // Navigate to bottom nav for User role
+                                navigatePRToGlobal(route: Routes.bottomNav);
+
+                                // Reset the verification state
+                                if (mounted) {
+                                  authProvider.setShowOTPField(false);
+                                }
+
+                                _logger.i('🔄 [STATE] Login flow completed');
+                                developer.log(
+                                    '✅ Login flow completed successfully',
                                     name: 'LoginScreen');
                               } catch (e) {
-                                developer.log('❌ User authentication error: $e', 
+                                developer.log('❌ User authentication error: $e',
                                     name: 'LoginScreen', error: e);
-                                
+
                                 toastification.show(
                                   context: context,
-                                  title: Text('Authentication failed: ${e.toString().contains('Exception:') ? 
-                                    e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
+                                  title: Text(
+                                      'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
                                   type: ToastificationType.error,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
@@ -452,53 +496,63 @@ class _LoginScreenState extends State<LoginScreen> {
                             } else {
                               // Handle password validation
                               if (!isValidPassword(_passwordController.text)) {
-                                developer.log('❌ Invalid password format', name: 'LoginScreen');
-                                
+                                developer.log('❌ Invalid password format',
+                                    name: 'LoginScreen');
+
                                 toastification.show(
                                   context: context,
-                                  title: const Text('Password must be at least 4 characters'),
+                                  title: const Text(
+                                      'Password must be at least 4 characters'),
                                   type: ToastificationType.error,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
                                 return;
                               }
-                              
+
                               try {
                                 if (authProvider.selectedRole == 'Mess Staff') {
                                   // For Mess Staff, use specific authentication method
                                   await authProvider.authenticateMessStaff();
                                   if (!mounted) return;
-                                  developer.log('✅ Mess Staff authentication successful', 
+                                  developer.log(
+                                      '✅ Mess Staff authentication successful',
                                       name: 'LoginScreen');
-                                } else if (authProvider.selectedRole == 'Manager') {
+                                } else if (authProvider.selectedRole ==
+                                    'Manager') {
                                   // For Manager role, use proper manager authentication
                                   await authProvider.authenticateManager();
                                   if (!mounted) return;
-                                  developer.log('✅ Manager authentication successful', 
+                                  developer.log(
+                                      '✅ Manager authentication successful',
                                       name: 'LoginScreen');
                                 } else {
                                   // For other roles, use simulation
                                   await authProvider.simulateSuccessfulAuth();
                                   if (!mounted) return;
-                                  developer.log('✅ Authentication successful for ${authProvider.selectedRole}', 
+                                  developer.log(
+                                      '✅ Authentication successful for ${authProvider.selectedRole}',
                                       name: 'LoginScreen');
                                 }
 
                                 if (!mounted) return;
 
-                                _logger.i('🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
-                                developer.log('🚀 Redirecting to ${authProvider.selectedRole} screen', 
+                                _logger.i(
+                                    '🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
+                                developer.log(
+                                    '🚀 Redirecting to ${authProvider.selectedRole} screen',
                                     name: 'LoginScreen');
 
                                 // Save user type to shared preferences
-                                await SharedUtils.setString('user_type', authProvider.selectedRole);
+                                await SharedUtils.setString(
+                                    'user_type', authProvider.selectedRole);
 
                                 if (!mounted) return;
 
                                 // Navigate to appropriate screen based on role
                                 if (authProvider.selectedRole == 'Mess Staff') {
                                   navigatePRToGlobal(route: Routes.messStaff);
-                                } else if (authProvider.selectedRole == 'Manager') {
+                                } else if (authProvider.selectedRole ==
+                                    'Manager') {
                                   navigatePRToGlobal(route: Routes.manager);
                                 } else {
                                   navigatePRToGlobal(route: Routes.bottomNav);
@@ -509,17 +563,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                   authProvider.setShowOTPField(false);
                                 }
                                 _logger.i('🔄 [STATE] Login flow completed');
-                                developer.log('✅ Login flow completed successfully', name: 'LoginScreen');
+                                developer.log(
+                                    '✅ Login flow completed successfully',
+                                    name: 'LoginScreen');
                               } catch (e) {
                                 if (!mounted) return;
-                                
-                                developer.log('❌ Authentication error: $e', 
+
+                                developer.log('❌ Authentication error: $e',
                                     name: 'LoginScreen', error: e);
-                                
+
                                 toastification.show(
                                   context: context,
-                                  title: Text('Authentication failed: ${e.toString().contains('Exception:') ? 
-                                    e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
+                                  title: Text(
+                                      'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
                                   type: ToastificationType.error,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
@@ -527,13 +583,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               }
                             }
                           },
-                          child: Text(
-                            useOtpAuth ? 'Validate' : 'Login',
-                            style: const TextStyle(
-                              fontSize: 18, 
-                              fontWeight: FontWeight.bold
-                            )
-                          ),
+                          child: Text(useOtpAuth ? 'Validate' : 'Login',
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
                       ),
 
@@ -580,7 +632,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
-  
+
   // Helper method to build the phone field
   Widget _buildPhoneField(AuthProvider authProvider) {
     return TextFormField(
@@ -641,7 +693,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
     );
   }
-  
+
   // Helper method to build the username field
   Widget _buildUsernameField(AuthProvider authProvider) {
     return TextFormField(
@@ -729,9 +781,10 @@ class _RoleSelectionSheet extends StatelessWidget {
       {'label': 'Manager', 'icon': LucideIcons.shieldCheck},
       {'label': 'Mess Staff', 'icon': LucideIcons.utensils},
     ];
-    
-    developer.log('📋 Building role selection sheet, current: $selectedRole', name: 'RoleSheet');
-    
+
+    developer.log('📋 Building role selection sheet, current: $selectedRole',
+        name: 'RoleSheet');
+
     return SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -749,7 +802,8 @@ class _RoleSelectionSheet extends StatelessWidget {
                     ? const Icon(Icons.check, color: ColorClass.brandLightGreen)
                     : null,
                 onTap: () {
-                  developer.log('👆 Role selected: ${role['label']}', name: 'RoleSheet');
+                  developer.log('👆 Role selected: ${role['label']}',
+                      name: 'RoleSheet');
                   Navigator.of(context).pop(role['label']);
                 },
               )),
