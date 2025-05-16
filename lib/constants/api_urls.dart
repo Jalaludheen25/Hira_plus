@@ -20,14 +20,14 @@ class ApiUrls {
 
 
  static String getVerifyOtp() {
-    return '$baseUrl/api/auth/verify-otp';
+    return '$baseUrl/auth/verify-otp';
  }
   static String adminLogin() {
     return '$baseUrl/admin/login';
   }
 
   static String getRequestOtp() {
-    return '$baseUrl/api/auth/request-otp';
+    return '$baseUrl/auth/request-otp';
   }
 
   static String getMessStaffLogin() {
@@ -47,7 +47,7 @@ class ApiUrls {
 
   // ################## MESS STAFF SCREEN ##################
   static String getMessStaffMeals() {
-    return '$baseUrl/api/mess-staff/meals';
+    return '$baseUrl/mess-staff/meals';
   }
 }
 
