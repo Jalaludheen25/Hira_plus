@@ -4,7 +4,8 @@ import 'package:hira_plus/constants/color_class.dart';
 
 class DetailedList extends StatelessWidget {
   final List<Map<String, String>> details;
-  const DetailedList({required this.details, Key? key}) : super(key: key);
+
+  const DetailedList({Key? key, required this.details}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

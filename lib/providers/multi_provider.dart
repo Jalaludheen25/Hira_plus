@@ -1,3 +1,4 @@
+import 'package:hira_plus/providers/user_marking_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
 import 'package:hira_plus/providers/date_provider.dart';
@@ -19,5 +20,6 @@ List<SingleChildWidget> getProviders() {
     ChangeNotifierProvider(create: (context) => UsersProvider()),
     ChangeNotifierProvider(create: (context) => MessStaffMealProvider()),
     ChangeNotifierProvider(create: (context) => VersionCheckProvider()),
+    ChangeNotifierProvider(create: (context) => UserMarkingProvider()),
   ];
 }

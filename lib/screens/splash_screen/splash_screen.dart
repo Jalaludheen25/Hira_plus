@@ -7,6 +7,7 @@ import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/icons_class.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer' as developer;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -50,43 +51,87 @@ class _SplashScreenState extends State<SplashScreen>
     _animationController.forward();
 
     // Check for version update and login status
-    Future.delayed(const Duration(seconds: 3), () async {
+    _checkVersionAndAuth();
+  }
+
+  // Separate method to handle version and auth checks
+  Future<void> _checkVersionAndAuth() async {
+    try {
+      await Future.delayed(const Duration(seconds: 3));
+      
+      if (!mounted) return;
+
       // First check if app needs update
-      final versionProvider =
-          Provider.of<VersionCheckProvider>(context, listen: false);
+      final versionProvider = Provider.of<VersionCheckProvider>(context, listen: false);
       await versionProvider.checkVersion();
 
+      if (!mounted) return;
+
       if (versionProvider.needsUpdate) {
-        _logger
-            .i('🔄 [VERSION] Update needed, navigating to force update screen');
-        navigatePRTo(context: context, route: Routes.forceUpdate);
+        _logger.i('🔄 [VERSION] Update needed, navigating to force update screen');
+        if (mounted) {
+          navigatePRTo(context: context, route: Routes.forceUpdate);
+        }
         return;
       }
+
+      if (!mounted) return;
 
       // Check login status if no update is needed
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final isLoggedIn = await authProvider.checkLoginStatus();
 
+      if (!mounted) return;
+
       if (isLoggedIn) {
-        _logger.i(
-            '🔑 [AUTH] User is logged in, user type: ${authProvider.userType}');
+        _logger.i('🔑 [AUTH] User is logged in, user type: ${authProvider.userType}');
 
         // Navigate to appropriate screen based on user type
-        if (authProvider.userType == 'Mess Staff') {
+        if (!mounted) return;
+        
+        if (authProvider.userType == 'Manager') {
+          _logger.i('🔍 [AUTH] Starting manager validation...');
+          developer.log('🔍 Starting manager validation...');
+          
+          final isManagerValid = await authProvider.checkManagerLoginStatus();
+          
+          if (!mounted) return;
+
+          if (isManagerValid) {
+            _logger.i('✅ [AUTH] Manager validation successful');
+            developer.log('✅ Manager validation successful');
+            _logger.i('🧭 [NAVIGATION] Directing to Manager screen');
+            navigatePRToGlobal(route: Routes.manager);
+          } else {
+            _logger.w('❌ [AUTH] Manager validation failed');
+            developer.log('❌ Manager validation failed');
+            _logger.w('🔄 [NAVIGATION] Redirecting to login screen');
+            if (mounted) {
+              navigatePRTo(context: context, route: Routes.login);
+            }
+          }
+        } else if (authProvider.userType == 'Mess Staff') {
           _logger.i('🧭 [NAVIGATION] Directing to Mess Staff screen');
           navigatePRToGlobal(route: Routes.messStaff);
-        } else if (authProvider.userType == 'Manager') {
-          _logger.i('🧭 [NAVIGATION] Directing to Manager screen');
-          navigatePRToGlobal(route: Routes.manager);
         } else {
           _logger.i('🧭 [NAVIGATION] Directing to User screen');
           navigatePRToGlobal(route: Routes.bottomNav);
         }
       } else {
-        _logger.i('🔒 [AUTH] User not logged in, navigating to login screen');
+        _logger.i('🔒 [AUTH] User not logged in');
+        developer.log('🔒 User not logged in');
+        _logger.i('🧭 [NAVIGATION] Navigating to login screen');
+        if (mounted) {
+          navigatePRTo(context: context, route: Routes.login);
+        }
+      }
+    } catch (e) {
+      _logger.e('🔴 [ERROR] Error in splash screen: $e');
+      developer.log('🔴 Error in splash screen: $e');
+      if (mounted) {
         navigatePRTo(context: context, route: Routes.login);
       }
-    });
+    }
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:hira_plus/screens/mess_staff_screen/widgets/detailed_list.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:hira_plus/constants/color_class.dart';
@@ -19,96 +20,197 @@ import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:logger/logger.dart';
-import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/providers/users_by_meals.dart';
+import 'package:hira_plus/models/meal_users_model.dart';
+import 'package:intl/intl.dart';
+import 'package:flutter/cupertino.dart';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
 
-  static final List<Map<String, dynamic>> mealSummary = [
-    {'label': 'Breakfast', 'icon': LucideIcons.sunMedium, 'count': 45},
-    {'label': 'Lunch', 'icon': LucideIcons.sun, 'count': 60},
-    {'label': 'Dinner', 'icon': LucideIcons.moon, 'count': 50},
-  ];
+  // Meal summary list with dynamic icon mapping
+  List<Map<String, dynamic>> getMealSummary(UsersByMealsProvider provider) => [
+        {
+          'label': 'Breakfast',
+          'icon': LucideIcons.sunMedium,
+          'count': provider.breakfastCount
+        },
+        {
+          'label': 'Lunch',
+          'icon': LucideIcons.sun,
+          'count': provider.lunchCount
+        },
+        {
+          'label': 'Dinner',
+          'icon': LucideIcons.moon,
+          'count': provider.dinnerCount
+        },
+      ];
 
-  static final List<List<Map<String, String>>> detailedLists = [
-    [
-      {'name': 'Jenny Miller', 'type': 'Vegetarian', 'room': 'Room 102'},
-      {'name': 'Lisa Smith', 'type': 'Regular', 'room': 'Room 103'},
-    ],
-    [
-      {'name': 'Sara Johnson', 'type': 'Vegan', 'room': 'Room 104'},
-      {'name': 'Tom Brown', 'type': 'Vegetarian', 'room': 'Room 105'},
-    ],
-    [
-      {'name': 'Emily White', 'type': 'Regular', 'room': 'Room 106'},
-      {'name': 'John Doe', 'type': 'Vegan', 'room': 'Room 107'},
-    ],
-  ];
+  // Convert MealUserModel list to detailed list format
+  List<Map<String, String>> _convertToDetailedList(
+      List<UsersByMealModel> users) {
+    return users
+        .map((user) => {
+              'name': user.name ?? 'No Name',
+              'type': user.designation ?? ' ',
+              'room': user.department != null ? '${user.department}' : '',
+            })
+        .toList();
+  }
+
+  // Get detailed lists based on selected meal
+  List<Map<String, String>> getDetailedList(
+      int selectedMeal, UsersByMealsProvider provider) {
+    switch (selectedMeal) {
+      case 0:
+        return _convertToDetailedList(provider.breakfastUsers);
+      case 1:
+        return _convertToDetailedList(provider.lunchUsers);
+      case 2:
+        return _convertToDetailedList(provider.dinnerUsers);
+      default:
+        return [];
+    }
+  }
 
   Widget _buildDashboardTab(BuildContext context) {
-    // Use a manager meal provider similar to the MessStaffMealProvider
-    // For this example, we'll use a ValueNotifier
     final selectedMealNotifier = ValueNotifier<int>(0);
+    final dateSelectNotifier = DateTimeNotifier(DateTime.now());
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Meal Summary',
-                style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-            const SizedBox(height: 12),
-            ValueListenableBuilder<int>(
-              valueListenable: selectedMealNotifier,
-              builder: (context, selectedMeal, _) => Wrap(
-                spacing: 12.0,
-                runSpacing: 12.0,
-                children: List.generate(
-                    mealSummary.length,
-                    (index) => GestureDetector(
-                          onTap: () {
-                            selectedMealNotifier.value = index;
-                          },
-                          child: MealSummaryWidget(
-                            icon: mealSummary[index]['icon'] as IconData,
-                            label: mealSummary[index]['label'] as String,
-                            count: mealSummary[index]['count'] as int,
-                            isSelected: selectedMeal == index,
-                          ),
-                        )),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ValueListenableBuilder<int>(
-              valueListenable: selectedMealNotifier,
-              builder: (context, selectedMeal, _) {
-                final details = detailedLists[selectedMeal];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Detailed List',
-                        style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Total: ${details.length}',
-                          style: TextStyleClass.poppinsBold(
-                              fontSize: 18, color: ColorClass.brandDarkGreen),
+    // Fetch meal data for current date
+    void selectDate(BuildContext context, DateTimeNotifier notifier) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: notifier.value,
+        firstDate: DateTime(2022),
+        lastDate: DateTime(2030),
+      );
+      if (picked != null && picked != notifier.value) {
+        notifier.value = picked;
+        final formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+        Provider.of<UsersByMealsProvider>(context, listen: false)
+            .setDate(formattedDate);
+      }
+    }
+
+    return ChangeNotifierProvider(
+      create: (_) => UsersByMealsProvider()..fetchAllMeals(),
+      child: Consumer<UsersByMealsProvider>(
+        builder: (context, mealProvider, _) {
+          final mealSummary = getMealSummary(mealProvider);
+
+          return SafeArea(
+            child: mealProvider.isLoading
+                ? const Center(child: CupertinoActivityIndicator())
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Date selection row
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Meal Summary',
+                                style: TextStyleClass.poppinsSemiBold(
+                                    fontSize: 18)),
+                            GestureDetector(
+                              onTap: () =>
+                                  selectDate(context, dateSelectNotifier),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    DateFormat('dd MMM yyyy').format(
+                                        DateTime.parse(
+                                            mealProvider.currentDate)),
+                                    style: TextStyleClass.poppinsMedium(
+                                        fontSize: 14),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.calendar_today, size: 16),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    DetailedList(details: details),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Meal summary widgets
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: ValueListenableBuilder<int>(
+                          valueListenable: selectedMealNotifier,
+                          builder: (context, selectedMeal, _) => Wrap(
+                            spacing: 12.0,
+                            runSpacing: 12.0,
+                            children: List.generate(
+                                mealSummary.length,
+                                (index) => GestureDetector(
+                                      onTap: () {
+                                        selectedMealNotifier.value = index;
+                                      },
+                                      child: MealSummaryWidget(
+                                        icon: mealSummary[index]['icon']
+                                            as IconData,
+                                        label: mealSummary[index]['label']
+                                            as String,
+                                        count:
+                                            mealSummary[index]['count'] as int,
+                                        isSelected: selectedMeal == index,
+                                      ),
+                                    )),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Detailed list section
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: selectedMealNotifier,
+                            builder: (context, selectedMeal, _) {
+                              final details =
+                                  getDetailedList(selectedMeal, mealProvider);
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Detailed List',
+                                          style: TextStyleClass.poppinsSemiBold(
+                                              fontSize: 18)),
+                                      
+                                      Text(
+                                        'Total: ${details.length}',
+                                        style: TextStyleClass.poppinsBold(
+                                            fontSize: 18,
+                                            color: ColorClass.brandDarkGreen),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 15),
+                                  Expanded(
+                                    child: details.isEmpty
+                                        ? const Center(
+                                            child: Text(
+                                                'No users found for this meal'),
+                                          )
+                                        : DetailedList(details: details),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }
@@ -117,7 +219,7 @@ class ManagerScreen extends StatelessWidget {
         // Dashboard tab with selectable meals
         Builder(
             builder: (context) =>
-                ((ManagerScreen()._buildDashboardTab(context)))),
+                ((const ManagerScreen()._buildDashboardTab(context)))),
         // Markings tab
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -126,7 +228,7 @@ class ManagerScreen extends StatelessWidget {
         // Users tab
         UsersListScreen(),
         // Settings tab
-        SettingsScreen(),
+         SettingsScreen(),
       ];
 
   @override
@@ -158,33 +260,40 @@ class ManagerScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         backgroundColor: ColorClass.brandWhite,
         selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
-        unselectedFontSize: 14,
-        selectedFontSize: 14,
-        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 14),
+        unselectedItemColor: const Color.fromARGB(255, 63, 94, 43),
+        unselectedFontSize: 10,
+        selectedFontSize: 10,
+        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 10),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.layoutDashboard,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.layoutDashboard, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.layoutDashboard, size: 28),
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.clipboardList,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.clipboardList, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.clipboardList, size: 28),
             label: 'Markings',
           ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.users,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.users, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.users, size: 28),
             label: 'Users',
+            
           ),
+          // BottomNavigationBarItem(
+          //   icon: Icon(LucideIcons.bell,
+          //       size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+          //   activeIcon: Icon(LucideIcons.bell, size: 28),
+          //   label: 'Notifications',
+          // ),
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.settings,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.settings, size: 32),
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.settings, size: 28),
             label: 'Settings',
           ),
         ],
@@ -193,6 +302,10 @@ class ManagerScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class DateTimeNotifier extends ValueNotifier<DateTime> {
+  DateTimeNotifier(DateTime value) : super(value);
 }
 
 class SettingsScreen extends StatelessWidget {
@@ -284,24 +397,11 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     builder: (BuildContext context) {
                       return LogoutConfirmationBottomSheet(
-                        onLogout: () async {
-                          _logger.i(
-                              '🔄 [LOGOUT] Manager initiated logout process');
-
-                          // Reset bottom nav to initial index
+                        onLogout: () {
                           Provider.of<BottomNavProvider>(
                                   navigatorKey.currentContext!,
                                   listen: false)
                               .setIndex(0);
-
-                          // Call the AuthProvider logout method to clear shared preferences
-                          await Provider.of<AuthProvider>(
-                                  navigatorKey.currentContext!,
-                                  listen: false)
-                              .logout();
-                          _logger.i(
-                              '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
-
                           toastification.show(
                             context: context,
                             title: const Text('Logged out successfully'),
