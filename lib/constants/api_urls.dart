@@ -21,7 +21,7 @@ class ApiUrls {
 
  static String getVerifyOtp() {
     return '$baseUrl/api/auth/verify-otp';
-  
+ }
   static String adminLogin() {
     return '$baseUrl/admin/login';
   }

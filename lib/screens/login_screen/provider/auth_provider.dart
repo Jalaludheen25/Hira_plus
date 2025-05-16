@@ -395,7 +395,7 @@ class AuthProvider extends ChangeNotifier {
       
       try {
         // Try a test API endpoint that works without authentication
-        final testUrl = ApiUrls.getTestUser();
+        final testUrl = ApiUrls.getMealsForUser();
         final testResponse = await http.get(Uri.parse(testUrl));
         
         if (testResponse.statusCode == 200) {
@@ -541,7 +541,7 @@ class AuthProvider extends ChangeNotifier {
         String token = '';
         try {
           // Try a test API endpoint that works without authentication
-          final testUrl = ApiUrls.getTestUser();
+          final testUrl = ApiUrls.getMealsForUser();
           final testResponse = await http.get(Uri.parse(testUrl));
           
           if (testResponse.statusCode == 200) {
