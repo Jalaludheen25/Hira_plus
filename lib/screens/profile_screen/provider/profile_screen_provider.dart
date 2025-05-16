@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 
 class ProfileScreenProvider extends ChangeNotifier {
-  String _userName = 'John Doe';
-  String _phone = '+1 234567890';
+  String _userName = '';
+  String _phone = '';
+  String _userType = '';
 
-  String get userName => _userName;
-  String get phone => _phone;
-
-  set userName(String value) {
-    if (_userName != value) {
-      _userName = value;
-      notifyListeners();
+  String get userName {
+    if (_userType == 'manager') {
+      return 'Manager';
+    } else if (_userType == 'mess_staff') {
+      return 'Mess Staff';
+    } else {
+      return _userName;
     }
+  }
+
+  String get phone => _phone;
+  String get userType => _userType;
+
+  void setUserInfo({required String userType, String userName = '', String phone = ''}) {
+    _userType = userType;
+    _userName = userName;
+    _phone = phone;
+    notifyListeners();
   }
 
   set phone(String value) {

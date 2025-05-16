@@ -55,11 +55,13 @@ class ProfileCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  phone,
-                  style: const TextStyle(fontSize: 16, color: Colors.white70),
-                ),
+                if (phone.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    phone,
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
+                  ),
+                ],
               ],
             ),
           ),

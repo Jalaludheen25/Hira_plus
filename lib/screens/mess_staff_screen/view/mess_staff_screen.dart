@@ -43,22 +43,25 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   @override
   void initState() {
     super.initState();
+    // Set mess staff info for profile card
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+      profileProvider.setUserInfo(
+        userType: 'mess_staff',
+        userName: '',
+        phone: '',
+      );
+    });
     // Fetch data when screen is initialized
     _logger.i('🏗️ [UI] Initializing Mess Staff screen');
     developer.log('🏗️ Initializing Mess Staff screen',
         name: 'MessStaffScreen');
-
-    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       developer.log('🔄 Fetching fresh meal data on screen load',
           name: 'MessStaffScreen');
-
-      
       final mealProvider =
           Provider.of<MessStaffMealProvider>(context, listen: false);
       mealProvider.reset(); // Reset the state without clearing cache
-
-      
       mealProvider.fetchMessStaffMeals(context);
     });
   }
@@ -152,10 +155,17 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          Text(
-                            'Total: ${detailedLists.length}',
-                            style: TextStyleClass.poppinsBold(
-                                fontSize: 18, color: ColorClass.brandDarkGreen),
+                          Expanded(
+                          // Show all user mobile numbers as a comma-separated list
+                            child: Text(
+                              detailedLists.isNotEmpty
+                                  ? 'Users: ' + detailedLists.map((e) => e['name']).join(', ')
+                                  : 'No users',
+                              style: TextStyleClass.poppinsBold(
+                                  fontSize: 16, color: ColorClass.brandDarkGreen),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
                           ),
                         ],
                       ),
@@ -211,15 +221,14 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   Widget _buildSettingsTab(BuildContext context) {
-    final profileProvider = Provider.of<ProfileScreenProvider>(context);
     return SafeArea(
       child: Column(
         children: [
           const SizedBox(height: 24),
           // Profile card at the top of settings
           ProfileCard(
-            userName: profileProvider.userName,
-            phone: profileProvider.phone,
+            userName: Provider.of<ProfileScreenProvider>(context).userName,
+            phone: Provider.of<ProfileScreenProvider>(context).phone,
           ),
           const SizedBox(height: 32),
           Expanded(
@@ -347,7 +356,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                               route: Routes.login,
                             );
                           });
-                        });
+                        }
+                        );
                       },
                     );
                   },
@@ -397,10 +407,14 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               pw.Text('$mealLabel - Detailed List',
                   style: pw.TextStyle(
                       fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 12),
+              pw.SizedBox(height: 8),
+              pw.Text('Date: ' +
+                  DateTime.now().toString().substring(0, 10),
+                  style: pw.TextStyle(fontSize: 14)),
+              pw.SizedBox(height: 8),
               pw.Align(
                 alignment: pw.Alignment.centerRight,
-                child: pw.Text('Total: ${details.length}',
+                child: pw.Text('Total: \\${details.length}',
                     style: pw.TextStyle(
                         fontSize: 18, fontWeight: pw.FontWeight.bold)),
               ),

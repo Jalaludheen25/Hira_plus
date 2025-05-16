@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
@@ -27,6 +26,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -307,8 +307,26 @@ class DateTimeNotifier extends ValueNotifier<DateTime> {
   DateTimeNotifier(DateTime value) : super(value);
 }
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+      profileProvider.setUserInfo(
+        userType: 'manager',
+        userName: '',
+        phone: '',
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

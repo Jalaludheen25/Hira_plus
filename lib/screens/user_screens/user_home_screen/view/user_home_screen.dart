@@ -6,6 +6,8 @@ import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen
 import '../widgets/month_calendar_view.dart';
 import '../widgets/home_list_view.dart';
 import '../widgets/today_fab.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -61,6 +63,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       final canteenProvider =
           Provider.of<CanteenHomeProvider>(context, listen: false);
       _scrollToToday(canteenProvider);
+      // Set user info for profile card
+      final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      profileProvider.setUserInfo(
+        userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'),
+        userName: authProvider.username,
+        phone: authProvider.phone,
+      );
     });
   }
 
