@@ -30,32 +30,38 @@ import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:logger/logger.dart';
 
-class MessStaffScreen extends StatelessWidget {
+class MessStaffScreen extends StatefulWidget {
   const MessStaffScreen({super.key});
 
-  final List<Map<String, dynamic>> mealSummary = const [
-    {'label': 'Breakfast', 'icon': LucideIcons.sunMedium, 'count': 45},
-    {'label': 'Lunch', 'icon': LucideIcons.sun, 'count': 60},
-    {'label': 'Dinner', 'icon': LucideIcons.moon, 'count': 50},
-  ];
+  @override
+  State<MessStaffScreen> createState() => _MessStaffScreenState();
+}
 
-  final List<List<Map<String, String>>> detailedLists = const [
-    // Breakfast
-    [
-      {'name': 'Jenny Miller', 'type': 'Vegetarian', 'room': 'Room 102'},
-      {'name': 'Lisa Smith', 'type': 'Regular', 'room': 'Room 103'},
-    ],
-    // Lunch
-    [
-      {'name': 'Sara Johnson', 'type': 'Vegan', 'room': 'Room 104'},
-      {'name': 'Tom Brown', 'type': 'Vegetarian', 'room': 'Room 105'},
-    ],
-    // Dinner
-    [
-      {'name': 'Emily White', 'type': 'Regular', 'room': 'Room 106'},
-      {'name': 'John Doe', 'type': 'Vegan', 'room': 'Room 107'},
-    ],
-  ];
+class _MessStaffScreenState extends State<MessStaffScreen> {
+  final Logger _logger = Logger();
+
+  @override
+  void initState() {
+    super.initState();
+    // Fetch data when screen is initialized
+    _logger.i('🏗️ [UI] Initializing Mess Staff screen');
+    developer.log('🏗️ Initializing Mess Staff screen',
+        name: 'MessStaffScreen');
+
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      developer.log('🔄 Fetching fresh meal data on screen load',
+          name: 'MessStaffScreen');
+
+      
+      final mealProvider =
+          Provider.of<MessStaffMealProvider>(context, listen: false);
+      mealProvider.reset(); // Reset the state without clearing cache
+
+      
+      mealProvider.fetchMessStaffMeals(context);
+    });
+  }
 
   // Define the pages for the bottom navigation - now just 2 tabs
   List<Widget> _pages(BuildContext context) => [
@@ -66,94 +72,141 @@ class MessStaffScreen extends StatelessWidget {
       ];
 
   Widget _buildHomeTab(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Meal Summary',
-                style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-            const SizedBox(height: 12),
-            Consumer<MessStaffMealProvider>(
-              builder: (context, mealProvider, _) => Wrap(
-                spacing: 12.0,
-                runSpacing: 12.0,
-                children: List.generate(
-                    mealSummary.length,
-                    (index) => GestureDetector(
-                          onTap: () {
-                            mealProvider.selectMeal(index);
-                          },
-                          child: MealSummaryWidget(
-                            icon: mealSummary[index]['icon'] as IconData,
-                            label: mealSummary[index]['label'] as String,
-                            count: mealSummary[index]['count'] as int,
-                            isSelected: mealProvider.selectedMeal == index,
+    return Consumer<MessStaffMealProvider>(
+      builder: (context, mealProvider, _) {
+        // Get meal counts from provider
+        final mealCounts = mealProvider.getTodayMealCounts();
+
+        // Use the counts from API but keep existing structure
+        final List<Map<String, dynamic>> mealSummary = [
+          {
+            'label': 'Breakfast',
+            'icon': LucideIcons.sunMedium,
+            'count': mealCounts['breakfast'] ?? 0
+          },
+          {
+            'label': 'Lunch',
+            'icon': LucideIcons.sun,
+            'count': mealCounts['lunch'] ?? 0
+          },
+          {
+            'label': 'Dinner',
+            'icon': LucideIcons.moon,
+            'count': mealCounts['dinner'] ?? 0
+          },
+        ];
+
+        // Get the selected meal details
+        final detailedLists =
+            mealProvider.getMealDetailsList(mealProvider.selectedMeal);
+
+        if (mealProvider.isLoading) {
+          return const SafeArea(
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        
+        final screenHeight = MediaQuery.of(context).size.height;
+        final detailedListHeight = screenHeight * 0.35; // 35% of screen height
+
+        return SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0, vertical: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Meal Summary',
+                          style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 12.0,
+                        runSpacing: 12.0,
+                        children: List.generate(
+                            mealSummary.length,
+                            (index) => GestureDetector(
+                                  onTap: () {
+                                    mealProvider.selectMeal(index);
+                                  },
+                                  child: MealSummaryWidget(
+                                    icon:
+                                        mealSummary[index]['icon'] as IconData,
+                                    label:
+                                        mealSummary[index]['label'] as String,
+                                    count: mealSummary[index]['count'] as int,
+                                    isSelected:
+                                        mealProvider.selectedMeal == index,
+                                  ),
+                                )),
+                      ),
+                      const SizedBox(height: 24),
+                      Text('Detailed List',
+                          style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Total: ${detailedLists.length}',
+                            style: TextStyleClass.poppinsBold(
+                                fontSize: 18, color: ColorClass.brandDarkGreen),
                           ),
-                        )),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text('Detailed List',
-                style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-            const SizedBox(height: 8),
-            Consumer<MessStaffMealProvider>(
-              builder: (context, mealProvider, _) {
-                final details = detailedLists[mealProvider.selectedMeal];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Total: ${details.length}',
-                          style: TextStyleClass.poppinsBold(
-                              fontSize: 18, color: ColorClass.brandDarkGreen),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Container with fixed height for detailed list
+                      Container(
+                        height: detailedListHeight,
+                        child: SingleChildScrollView(
+                          child: DetailedList(details: detailedLists),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    DetailedList(details: details),
-                  ],
-                );
-              },
-            ),
-            const Spacer(),
-            Consumer<MessStaffMealProvider>(
-              builder: (context, mealProvider, _) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  BottomButton(
-                    label: 'Share',
-                    onTap: () {
-                      final selectedIndex = mealProvider.selectedMeal;
-                      final mealLabel =
-                          mealSummary[selectedIndex]['label'] as String;
-                      final details = detailedLists[selectedIndex];
-                      generateAndSharePdf(context, mealLabel, details,
-                          shareInsteadOfOpen: true);
-                    },
+                      ),
+
+                      const Spacer(),
+
+                      // Bottom buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          BottomButton(
+                            label: 'Share',
+                            onTap: () {
+                              final selectedIndex = mealProvider.selectedMeal;
+                              final mealLabel =
+                                  mealSummary[selectedIndex]['label'] as String;
+                              generateAndSharePdf(
+                                  context, mealLabel, detailedLists,
+                                  shareInsteadOfOpen: true);
+                            },
+                          ),
+                          BottomButton(
+                            label: 'Print',
+                            onTap: () {
+                              final selectedIndex = mealProvider.selectedMeal;
+                              final mealLabel =
+                                  mealSummary[selectedIndex]['label'] as String;
+                              generateAndSharePdf(
+                                  context, mealLabel, detailedLists,
+                                  shareInsteadOfOpen: false);
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  BottomButton(
-                    label: 'Print',
-                    onTap: () {
-                      final selectedIndex = mealProvider.selectedMeal;
-                      final mealLabel =
-                          mealSummary[selectedIndex]['label'] as String;
-                      final details = detailedLists[selectedIndex];
-                      generateAndSharePdf(context, mealLabel, details,
-                          shareInsteadOfOpen: false);
-                    },
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -244,42 +297,57 @@ class MessStaffScreen extends StatelessWidget {
                       ),
                       builder: (BuildContext context) {
                         return LogoutConfirmationBottomSheet(
-                          onLogout: () async {
-                            final logger = Logger();
-                            logger.i('🔄 [LOGOUT] Mess Staff initiated logout process');
-                            developer.log('🔄 Mess Staff initiated logout process', name: 'MessStaffScreen');
+                            // In the logout confirmation bottom sheet
+                            onLogout: () async {
+                          final logger = Logger();
+                          logger.i(
+                              '🔄 [LOGOUT] Mess Staff initiated logout process');
+                          developer.log(
+                              '🔄 Mess Staff initiated logout process',
+                              name: 'MessStaffScreen');
 
-                            // Reset bottom nav to initial index
-                            Provider.of<BottomNavProvider>(
-                                navigatorKey.currentContext!,
-                                listen: false)
+                          // First clear all provider data
+                          await Provider.of<MessStaffMealProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .clearData();
+
+                          // Reset bottom nav to initial index
+                          Provider.of<BottomNavProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
                               .setIndex(0);
 
-                            // Call the AuthProvider logout method to clear shared preferences
-                            await Provider.of<AuthProvider>(
-                                navigatorKey.currentContext!,
-                                listen: false)
+                          // Call the AuthProvider logout method to clear shared preferences
+                          await Provider.of<AuthProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
                               .logout();
-                            logger.i('🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
-                            developer.log('🟢 Successfully cleared auth token and preferences', name: 'MessStaffScreen');
 
-                            toastification.show(
-                              context: context,
-                              title: const Text('Logged out successfully'),
-                              type: ToastificationType.success,
-                              autoCloseDuration: const Duration(seconds: 2),
+                          logger.i(
+                              '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+                          developer.log(
+                              '🟢 Successfully cleared auth token and preferences',
+                              name: 'MessStaffScreen');
+
+                          toastification.show(
+                            context: context,
+                            title: const Text('Logged out successfully'),
+                            type: ToastificationType.success,
+                            autoCloseDuration: const Duration(seconds: 2),
+                          );
+
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            logger.i(
+                                '🧭 [NAVIGATION] Redirecting to login screen');
+                            developer.log('🚀 Redirecting to login screen',
+                                name: 'MessStaffScreen');
+                            // Using navigation helper
+                            navigatePRToGlobal(
+                              route: Routes.login,
                             );
-
-                            Future.delayed(const Duration(milliseconds: 500), () {
-                              logger.i('🧭 [NAVIGATION] Redirecting to login screen');
-                              developer.log('🚀 Redirecting to login screen', name: 'MessStaffScreen');
-                              // Using navigation helper
-                              navigatePRToGlobal(
-                                route: Routes.login,
-                              );
-                            });
-                          },
-                        );
+                          });
+                        });
                       },
                     );
                   },
@@ -437,8 +505,9 @@ class MessStaffScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final logger = Logger();
     logger.i('🏗️ [UI] Building Mess Staff screen');
-    developer.log('🏗️ Building Mess Staff screen interface', name: 'MessStaffScreen');
-    
+    developer.log('🏗️ Building Mess Staff screen interface',
+        name: 'MessStaffScreen');
+
     final navProvider = Provider.of<BottomNavProvider>(context);
     final tabTitles = ['Home', 'Settings']; // Updated names
 

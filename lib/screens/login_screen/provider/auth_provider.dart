@@ -243,7 +243,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // For User authentication with phone/OTP
-  Future<void> fetchTestLoginToken() async {
+  Future<void> fetchVerifyOtpToken() async {
     try {
       developer.log('🔵 Fetching login token...', name: 'AuthProvider');
       _logger.i('🔵 [API] Fetching login token...');
@@ -273,7 +273,7 @@ class AuthProvider extends ChangeNotifier {
         return;
       }
 
-      final url = ApiUrls.getTestUser();
+      final url = ApiUrls.getVerifyOtp();
 
       // Prepare request body based on authentication type
       final requestBody = {
@@ -357,7 +357,37 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // Method for simulating successful auth (for testing/demo only)
+  // New method to request OTP for a phone number
+  Future<void> requestOtp(String phoneNumber) async {
+    try {
+      final url = ApiUrls.getRequestOtp();
+      developer.log('📡 Requesting OTP for $phoneNumber at $url', name: 'AuthProvider');
+      final requestBody = {'phoneNumber': phoneNumber};
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+      developer.log('📥 OTP request response status: ${response.statusCode}', name: 'AuthProvider');
+      if (response.statusCode == 200) {
+        developer.log('🟢 OTP sent successfully to $phoneNumber', name: 'AuthProvider');
+      } else {
+        String errorMessage = 'Failed to send OTP';
+        try {
+          final errorData = jsonDecode(response.body);
+          if (errorData != null && errorData['message'] != null) {
+            errorMessage = errorData['message'];
+          }
+        } catch (e) {}
+        throw Exception('$errorMessage (Status: ${response.statusCode})');
+      }
+    } catch (e) {
+      developer.log('❌ Error requesting OTP: $e', name: 'AuthProvider');
+      throw Exception('Failed to request OTP. Please try again.');
+    }
+  }
+
+
   Future<bool> simulateSuccessfulAuth() async {
     try {
       // For simulation purposes, we'll make a real API call to get a token if possible

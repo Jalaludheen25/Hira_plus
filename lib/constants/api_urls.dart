@@ -18,14 +18,18 @@ class ApiUrls {
     return '$baseUrl/admin/meals/$mealType?date=$date';
   }
 
-  static String getTestUser() {
-    return '$baseUrl/auth/test-login';
-  }
+
+ static String getVerifyOtp() {
+    return '$baseUrl/api/auth/verify-otp';
+  
   static String adminLogin() {
     return '$baseUrl/admin/login';
   }
-  
- 
+
+  static String getRequestOtp() {
+    return '$baseUrl/api/auth/request-otp';
+  }
+
   static String getMessStaffLogin() {
     return '$baseUrl/mess-staff/login';
   }
@@ -39,4 +43,11 @@ class ApiUrls {
   static String addMealForUser() {
     return '$baseUrl/meals/mark';
   }
+
+
+  // ################## MESS STAFF SCREEN ##################
+  static String getMessStaffMeals() {
+    return '$baseUrl/api/mess-staff/meals';
+  }
 }
+
