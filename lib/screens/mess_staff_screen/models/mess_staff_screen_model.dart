@@ -135,19 +135,27 @@ class Breakfast {
 class UserId {
     String? id;
     String? phoneNumber;
+    String? name;
+    String? department;
 
     UserId({
         this.id,
         this.phoneNumber,
+        this.name,
+        this.department,
     });
 
     factory UserId.fromJson(Map<String, dynamic> json) => UserId(
         id: json["_id"],
         phoneNumber: json["phoneNumber"],
+        name: json["name"],
+        department: json["department"],
     );
 
     Map<String, dynamic> toJson() => {
         "_id": id,
         "phoneNumber": phoneNumber,
+        "name": name,
+        "department": department,
     };
 }

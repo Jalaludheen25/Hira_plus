@@ -18,9 +18,28 @@ import '../widgets/profile_card.dart';
 import '../widgets/powered_by_section.dart';
 import 'package:logger/logger.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   final Logger _logger = Logger();
   ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      profileProvider.setUserInfo(
+        userType: 'user',
+        userName: authProvider.username,
+        phone: authProvider.phone,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +142,7 @@ class ProfileScreen extends StatelessWidget {
                       builder: (BuildContext context) {
                         return LogoutConfirmationBottomSheet(
                           onLogout: () async {
-                            _logger
+                            widget._logger
                                 .i('🔄 [LOGOUT] User initiated logout process');
 
                             // Reset bottom nav to initial index
@@ -137,7 +156,7 @@ class ProfileScreen extends StatelessWidget {
                                     navigatorKey.currentContext!,
                                     listen: false)
                                 .logout();
-                            _logger.i(
+                            widget._logger.i(
                                 '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
 
                             toastification.show(
@@ -149,7 +168,7 @@ class ProfileScreen extends StatelessWidget {
 
                             Future.delayed(const Duration(milliseconds: 500),
                                 () {
-                              _logger.i(
+                              widget._logger.i(
                                   '🧭 [NAVIGATION] Redirecting to login screen');
                               navigatePRTo(
                                 context: navigatorKey.currentContext!,

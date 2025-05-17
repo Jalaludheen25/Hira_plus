@@ -169,33 +169,31 @@ class MessStaffMealProvider extends ChangeNotifier {
     
     try {
       final mealsMap = _messStaffMealData!.meals!;
-      log('📊 Available meal dates: ${mealsMap.keys.join(", ")}', name: 'MessStaffMealProvider');
+      log('📊 Available meal dates: \\${mealsMap.keys.join(", ")}', name: 'MessStaffMealProvider');
       if (mealsMap.containsKey(dateStr)) {
         final dayMeals = mealsMap[dateStr]!;
         log('✅ Found meal data for today!', name: 'MessStaffMealProvider');
         List<Breakfast> mealList = [];
-        String mealTypeName = "";
         switch (mealType) {
           case 0:
             mealList = dayMeals.breakfast ?? [];
-            mealTypeName = "Breakfast";
             break;
           case 1:
             mealList = dayMeals.lunch ?? [];
-            mealTypeName = "Lunch";
             break;
           case 2:
             mealList = dayMeals.dinner ?? [];
-            mealTypeName = "Dinner";
             break;
         }
-        log('🍽️ Found \\${mealList.length} users for $mealTypeName today', name: 'MessStaffMealProvider');
+        log('🍽️ Found \\${mealList.length} users for mealType $mealType today', name: 'MessStaffMealProvider');
         final detailsList = mealList.map((meal) {
-          final name = meal.userId?.phoneNumber ?? 'User \\${meal.userId?.id?.substring(0, 4) ?? ''}';
+          final userName = meal.userId?.name ?? 'User';
+          final mobile = meal.userId?.phoneNumber ?? '';
+          final department = meal.userId?.department ?? '';
           return {
-            'name': name,
-            'type': _getMealTypeLabel(mealType),
-            'room': 'User ID: \\${meal.userId?.id?.substring(0, 8) ?? 'N/A'}',
+            'name': userName, // Show user name as name
+            'type': mobile,   // Show mobile number as type (second line)
+            'room': department, // Show department as third line
           };
         }).toList();
         return detailsList;
