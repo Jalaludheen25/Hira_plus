@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/manager_screen/models/message_model.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/utils/service_utils.dart';
+import 'dart:developer' as developer;
+import 'dart:convert';
 
 class MessagesProvider extends ChangeNotifier {
   List<MessageModel> _messages = [];
@@ -38,16 +40,28 @@ class MessagesProvider extends ChangeNotifier {
   Future<MessageModel?> createMessage(String title, String description) async {
     _isLoading = true;
     notifyListeners();
+    developer.log('[MessagesProvider] Creating message', name: 'MessagesProvider',
+      error: null, stackTrace: StackTrace.current, 
+      time: DateTime.now(),
+      sequenceNumber: 1,
+      level: 800,
+    );
+    developer.log('Title: $title, Description: $description', name: 'MessagesProvider.createMessage');
     debugPrint('[MessagesProvider] Creating message at: \\${ApiUrls.createMessage()}');
     try {
       final data = {'title': title, 'description': description};
+      developer.log('POST data: $data', name: 'MessagesProvider.createMessage');
       final response = await HttpServiceUtils.postData(ApiUrls.createMessage(), data);
+      developer.log('POST response: $response', name: 'MessagesProvider.createMessage');
       debugPrint('[MessagesProvider] Created message response: \\${response.toString()}');
-      final message = MessageModel.fromJson(response['data']);
+      final decoded = jsonDecode(response);
+      final message = MessageModel.fromJson(decoded['data']);
+      developer.log('Parsed MessageModel: \\${message.toString()}', name: 'MessagesProvider.createMessage');
       _isLoading = false;
       notifyListeners();
       return message;
-    } catch (e) {
+    } catch (e, stack) {
+      developer.log('Error creating message', name: 'MessagesProvider.createMessage', error: e, stackTrace: stack, level: 1000);
       debugPrint('[MessagesProvider] Error creating message: \\${e.toString()}');
       _error = e.toString();
       _isLoading = false;
@@ -59,12 +73,23 @@ class MessagesProvider extends ChangeNotifier {
   Future<bool> sendMessage(String id) async {
     _isLoading = true;
     notifyListeners();
+    developer.log('[MessagesProvider] Sending message', name: 'MessagesProvider',
+      error: null, stackTrace: StackTrace.current, 
+      time: DateTime.now(),
+      sequenceNumber: 1,
+      level: 800,
+    );
+    developer.log('Message ID: $id', name: 'MessagesProvider.sendMessage');
     debugPrint('[MessagesProvider] Sending message at: \\${ApiUrls.sendMessage(id)}');
     try {
-      await HttpServiceUtils.postData(ApiUrls.sendMessage(id), {});
-      debugPrint('[MessagesProvider] Message sent for id: $id');
+      developer.log('POST to: \\${ApiUrls.sendMessage(id)}', name: 'MessagesProvider.sendMessage');
+      final response = await HttpServiceUtils.postData(ApiUrls.sendMessage(id), {});
+      final decoded = jsonDecode(response);
+      developer.log('Send message response: $decoded', name: 'MessagesProvider.sendMessage');
+      debugPrint('[MessagesProvider] Send message response: $decoded');
       // Update sentToUsers for the message
       final idx = _messages.indexWhere((m) => m.id == id);
+      developer.log('Index of message in list: $idx', name: 'MessagesProvider.sendMessage');
       if (idx != -1) {
         _messages[idx] = MessageModel(
           id: _messages[idx].id,
@@ -77,11 +102,13 @@ class MessagesProvider extends ChangeNotifier {
         // Move the sent message to the top
         final sentMsg = _messages.removeAt(idx);
         _messages.insert(0, sentMsg);
+        developer.log('Moved sent message to top', name: 'MessagesProvider.sendMessage');
       }
       _isLoading = false;
       notifyListeners();
       return true;
-    } catch (e) {
+    } catch (e, stack) {
+      developer.log('Error sending message', name: 'MessagesProvider.sendMessage', error: e, stackTrace: stack, level: 1000);
       debugPrint('[MessagesProvider] Error sending message: \\${e.toString()}');
       _error = e.toString();
       _isLoading = false;
