@@ -15,6 +15,7 @@ class BottomNavigationBarScreen extends StatelessWidget {
     final int selectedIndex = bottomNavProvider.selectedIndex;
     final List<String> pageRoutes = [
       Routes.home,
+      Routes.notifications,
       Routes.profile,
     ];
     final routes = getRoutes();
@@ -48,6 +49,11 @@ class BottomNavigationBarScreen extends StatelessWidget {
             icon: Icon(Icons.home_outlined, size: 28),
             activeIcon: Icon(Icons.home, size: 34),
             label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications_none, size: 28),
+            activeIcon: Icon(Icons.notifications, size: 34),
+            label: 'Notifications',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline, size: 28),

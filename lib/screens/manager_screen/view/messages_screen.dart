@@ -58,7 +58,7 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
                 ),
                 onPressed: () async {
                   final title = titleController.text.trim();
-                  final desc = descController.text.trim();
+                  final desc = descController.text.trim(); 
                   if (title.isEmpty || desc.isEmpty) return;
                   final created = await provider.createMessage(title, desc);
                   
