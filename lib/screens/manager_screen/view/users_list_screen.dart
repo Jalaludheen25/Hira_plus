@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
-import 'package:hira_plus/models/users_list_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/users_list_model.dart';
 import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:lucide_icons/lucide_icons.dart';

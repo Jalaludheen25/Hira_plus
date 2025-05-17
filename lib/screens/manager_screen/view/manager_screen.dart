@@ -1,3 +1,5 @@
+import 'package:hira_plus/screens/manager_screen/provider/users_by_meals_provider.dart';
+import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/mess_staff_screen/widgets/detailed_list.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
@@ -20,8 +22,7 @@ import 'package:shake_flutter/shake_flutter.dart';
 import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:hira_plus/providers/users_by_meals.dart';
-import 'package:hira_plus/models/meal_users_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 
@@ -225,8 +226,12 @@ class ManagerScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: MarkingListScreen(showAppBar: false),
         ),
+
+        ManagerMessagesScreen(),
+
         // Users tab
         UsersListScreen(),
+        
         // Settings tab
          SettingsScreen(),
       ];
@@ -234,7 +239,7 @@ class ManagerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = ['Dashboard', 'Markings', 'Users', 'Settings'];
+    final tabTitles = ['Dashboard', 'Markings', 'Notifications', 'Users', 'Settings'];
     return Scaffold(
       backgroundColor: ColorClass.bgWhite0,
       appBar: AppBar(
@@ -277,6 +282,14 @@ class ManagerScreen extends StatelessWidget {
             activeIcon: Icon(LucideIcons.clipboardList, size: 28),
             label: 'Markings',
           ),
+
+           BottomNavigationBarItem(
+            icon: Icon(LucideIcons.bell,
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.bell, size: 28),
+            label: 'Notifications',
+          ),
+
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.users,
                 size: 20, color: Color.fromARGB(255, 63, 94, 43)),
@@ -284,12 +297,7 @@ class ManagerScreen extends StatelessWidget {
             label: 'Users',
             
           ),
-          // BottomNavigationBarItem(
-          //   icon: Icon(LucideIcons.bell,
-          //       size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-          //   activeIcon: Icon(LucideIcons.bell, size: 28),
-          //   label: 'Notifications',
-          // ),
+         
           BottomNavigationBarItem(
             icon: Icon(LucideIcons.settings,
                 size: 20, color: Color.fromARGB(255, 63, 94, 43)),
