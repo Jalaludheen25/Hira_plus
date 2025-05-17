@@ -152,24 +152,6 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                       Text('Detailed List',
                           style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
                       const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Expanded(
-                          // Show all user mobile numbers as a comma-separated list
-                            child: Text(
-                              detailedLists.isNotEmpty
-                                  ? 'Users: ' + detailedLists.map((e) => e['name']).join(', ')
-                                  : 'No users',
-                              style: TextStyleClass.poppinsBold(
-                                  fontSize: 16, color: ColorClass.brandDarkGreen),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 2,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
 
                       // Container with fixed height for detailed list
                       Container(

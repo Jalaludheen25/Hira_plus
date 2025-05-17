@@ -137,12 +137,16 @@ class UserId {
     String? phoneNumber;
     String? name;
     String? department;
+    String? designation;
+    bool? isVerified;
 
     UserId({
         this.id,
         this.phoneNumber,
         this.name,
         this.department,
+        this.designation,
+        this.isVerified,
     });
 
     factory UserId.fromJson(Map<String, dynamic> json) => UserId(
@@ -150,6 +154,8 @@ class UserId {
         phoneNumber: json["phoneNumber"],
         name: json["name"],
         department: json["department"],
+        designation: json["designation"],
+        isVerified: json["isVerified"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -157,5 +163,7 @@ class UserId {
         "phoneNumber": phoneNumber,
         "name": name,
         "department": department,
+        "designation": designation,
+        "isVerified": isVerified,
     };
 }
