@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hira_plus/models/user_marking_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/user_marking_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 

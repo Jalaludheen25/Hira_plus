@@ -14,4 +14,5 @@ class Routes {
   static const String markingList = '/manager/marking_list';
   static const String usersList = '/manager/users_list';
   static const forceUpdate = '/force_update';
+  static const String messages = '/manager/messages';
 }

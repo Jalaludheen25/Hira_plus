@@ -1,4 +1,4 @@
-import 'package:hira_plus/providers/user_marking_provider.dart';
+import 'package:hira_plus/screens/manager_screen/provider/user_marking_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
 import 'package:hira_plus/providers/date_provider.dart';

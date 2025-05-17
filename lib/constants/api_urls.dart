@@ -49,5 +49,16 @@ class ApiUrls {
   static String getMessStaffMeals() {
     return '$baseUrl/mess-staff/meals';
   }
+
+  // ################## ADMIN MESSAGES ##################
+  static String getMessages() {
+    return '$baseUrl/admin/messages';
+  }
+  static String createMessage() {
+    return '$baseUrl/admin/messages';
+  }
+  static String sendMessage(String id) {
+    return '$baseUrl/admin/messages/$id/send';
+  }
 }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hira_plus/models/meal_users_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:intl/intl.dart';

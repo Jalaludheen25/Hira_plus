@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
-import 'package:hira_plus/models/meal_users_model.dart';
-import 'package:hira_plus/providers/users_by_meals.dart';
+import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
+import 'package:hira_plus/screens/manager_screen/provider/users_by_meals_provider.dart';
 import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
@@ -27,6 +27,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:hira_plus/screens/manager_screen/provider/messages_provider.dart';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -219,17 +222,19 @@ class ManagerScreen extends StatelessWidget {
   }
 
   static List<Widget> _pages(BuildContext context) => [
-        // Dashboard tab with selectable meals
+        // Dashboard tab
         Builder(
             builder: (context) =>
                 ((const ManagerScreen()._buildDashboardTab(context)))),
+        // Users tab
+        UsersListScreen(),
+        // Messages tab (center)
+        ManagerMessagesScreen(),
         // Markings tab
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: MarkingListScreen(showAppBar: false),
         ),
-        // Users tab
-        UsersListScreen(),
         // Settings tab
         const SettingsScreen(),
       ];
@@ -237,7 +242,7 @@ class ManagerScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = ['Dashboard', 'Markings', 'Users',  'Settings'];
+    final tabTitles = ['Dashboard', 'Users', 'Messages', 'Markings', 'Settings'];
     return Scaffold(
       backgroundColor: ColorClass.bgWhite0,
       appBar: AppBar(
@@ -275,26 +280,29 @@ class ManagerScreen extends StatelessWidget {
             label: 'Dashboard',
           ),
           BottomNavigationBarItem(
+            icon: Icon(LucideIcons.users,
+                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: Icon(LucideIcons.users, size: 28),
+            label: 'Users',
+          ),
+          // Messages tab (center)
+          BottomNavigationBarItem(
+            icon: FaIcon(FontAwesomeIcons.whatsapp, size: 24, color: Color.fromARGB(255, 63, 94, 43)),
+            activeIcon: FaIcon(FontAwesomeIcons.whatsapp, size: 28),
+            label: 'Messages',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(LucideIcons.clipboardList,
                 size: 20, color: Color.fromARGB(255, 63, 94, 43)),
             activeIcon: Icon(LucideIcons.clipboardList, size: 28),
             label: 'Markings',
           ),
           BottomNavigationBarItem(
-            icon: Icon(LucideIcons.users,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.users, size: 28),
-            label: 'Users',
-            
-          ),
-        
-          BottomNavigationBarItem(
             icon: Icon(LucideIcons.settings,
                 size: 20, color: Color.fromARGB(255, 63, 94, 43)),
             activeIcon: Icon(LucideIcons.settings, size: 28),
             label: 'Settings',
           ),
-           
         ],
         currentIndex: navProvider.selectedIndex,
         onTap: navProvider.setIndex,

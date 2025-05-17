@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:hira_plus/models/user_marking_model.dart';
-import 'package:hira_plus/providers/user_marking_provider.dart';
+import 'package:hira_plus/screens/manager_screen/models/user_marking_model.dart';
+import 'package:hira_plus/screens/manager_screen/provider/user_marking_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/constants/color_class.dart';
