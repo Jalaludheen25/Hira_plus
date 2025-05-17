@@ -49,8 +49,8 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
-                label: const Text('Send'),
+                icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white,size: 24,),
+                label: const Text('Send',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.white),),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF25D366),
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -89,14 +89,11 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
             return Center(child: Text('Error: ${provider.error}'));
           }
           return Scaffold(
-            appBar: AppBar(
-             
-              
-            ),
+            
             body: provider.messages.isEmpty
                 ? const Center(child: Text('No messages found.'))
                 : ListView.separated(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16,vertical:  14),
                     itemCount: provider.messages.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
@@ -116,7 +113,7 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
             floatingActionButton: FloatingActionButton(
               onPressed: () => _showAddMessageSheet(context),
               backgroundColor: const Color(0xFF25D366),
-              child: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white),
+              child: const Icon(Icons.add, color: Colors.white),
             ),
           );
         },
