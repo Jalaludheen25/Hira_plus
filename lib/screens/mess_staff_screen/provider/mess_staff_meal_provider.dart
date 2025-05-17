@@ -187,13 +187,13 @@ class MessStaffMealProvider extends ChangeNotifier {
         }
         log('🍽️ Found \\${mealList.length} users for mealType $mealType today', name: 'MessStaffMealProvider');
         final detailsList = mealList.map((meal) {
-          final userName = meal.userId?.name ?? 'User';
-          final mobile = meal.userId?.phoneNumber ?? '';
+          final userName = meal.userId?.name ?? 'No Name';
           final department = meal.userId?.department ?? '';
+          final mobile = meal.userId?.phoneNumber ?? '';
           return {
             'name': userName, // Show user name as name
-            'type': mobile,   // Show mobile number as type (second line)
-            'room': department, // Show department as third line
+            'type': department, // Show department as second line
+            'room': mobile, // Show mobile number as third line
           };
         }).toList();
         return detailsList;

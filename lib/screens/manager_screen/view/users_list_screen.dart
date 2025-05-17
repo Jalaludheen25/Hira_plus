@@ -172,8 +172,10 @@ class _UsersListScreenState extends State<UsersListScreen> {
                   },
                 ),
               ),
+              SizedBox(height: 54,)
             ],
           ),
+          
           floatingActionButton: MediaQuery.of(context).viewInsets.bottom == 0
               ? FloatingActionButton(
                   onPressed: () {
