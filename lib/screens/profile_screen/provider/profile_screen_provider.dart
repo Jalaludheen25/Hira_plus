@@ -5,8 +5,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer' as developer;
 
-
-
 class ProfileScreenProvider extends ChangeNotifier {
   String _userName = '';
   String _phone = '';
@@ -15,12 +13,14 @@ class ProfileScreenProvider extends ChangeNotifier {
   String _designation = '';
 
   String get userName {
-    if (_userType == 'manager') {
-      return 'Manager';
-    } else if (_userType == 'mess_staff') {
+    // Case-insensitive comparison and handle different formats
+    final userTypeLower = _userType.toLowerCase().replaceAll(' ', '_');
+    if (userTypeLower == 'manager') {
+      return 'Administrator';
+    } else if (userTypeLower == 'mess_staff') {
       return 'Mess Staff';
     } else {
-      return _userName;
+      return _userName.isNotEmpty ? _userName : 'User';
     }
   }
 
@@ -41,6 +41,8 @@ class ProfileScreenProvider extends ChangeNotifier {
     _phone = phone;
     _department = department;
     _designation = designation;
+    developer.log('ProfileScreenProvider: Set user info - userType=$userType, userName=$userName, phone=$phone', 
+        name: 'ProfileProvider');
     notifyListeners();
   }
 
@@ -52,30 +54,72 @@ class ProfileScreenProvider extends ChangeNotifier {
   }
 
   Future<void> fetchAndSetProfile({required String token, required String userType}) async {
-    final url = ApiUrls.getProfileMe();
-    developer.log('[PROFILE] Fetching profile from: $url', name: 'ProfileScreenProvider');
-    final response = await http.get(
-      Uri.parse(url),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-    developer.log('[PROFILE] Response status: \\${response.statusCode}', name: 'ProfileScreenProvider');
-    developer.log('[PROFILE] Response body: \\${response.body}', name: 'ProfileScreenProvider');
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      developer.log('[PROFILE] Decoded data: \\${data.toString()}', name: 'ProfileScreenProvider');
-      final profile = ProfileModel.fromJson(data['user']);
-      developer.log('[PROFILE] Parsed profile: name=\\${profile.name}, phone=\\${profile.phoneNumber}, dept=\\${profile.department}, desig=\\${profile.designation}', name: 'ProfileScreenProvider');
+    try {
+      final url = ApiUrls.getProfileMe();
+      developer.log('[PROFILE] Fetching profile from: $url', name: 'ProfileScreenProvider');
+      
+      // Set the userType immediately to ensure correct display even if API fails
+      _userType = userType;
+      notifyListeners();
+      
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      
+      developer.log('[PROFILE] Response status: ${response.statusCode}', name: 'ProfileScreenProvider');
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        developer.log('[PROFILE] Decoded data: ${data.toString()}', name: 'ProfileScreenProvider');
+        
+        final profile = ProfileModel.fromJson(data['user']);
+        developer.log('[PROFILE] Parsed profile: name=${profile.name}, phone=${profile.phoneNumber}', 
+            name: 'ProfileScreenProvider');
+        
+        setUserInfo(
+          userType: userType,
+          userName: profile.name,
+          phone: profile.phoneNumber,
+          department: profile.department,
+          designation: profile.designation,
+        );
+        
+        developer.log('[PROFILE] Profile info set successfully', name: 'ProfileScreenProvider');
+      } else {
+        // Even if API fails, keep the user type for correct display
+        developer.log('[PROFILE] API call failed: ${response.statusCode}, falling back to userType only',
+            name: 'ProfileScreenProvider');
+        
+        // For failed API calls, set default values based on userType
+        String defaultName = 'User';
+        if (userType.toLowerCase().contains('manager')) {
+          defaultName = 'Administrator';
+        } else if (userType.toLowerCase().contains('mess')) {
+          defaultName = 'Mess Staff';
+        }
+        
+        setUserInfo(
+          userType: userType,
+          userName: defaultName,
+          phone: '',
+        );
+      }
+    } catch (e) {
+      developer.log('[PROFILE] Error fetching profile: $e', name: 'ProfileScreenProvider');
+      // Handle error by setting default values
+      String defaultName = 'User';
+      if (userType.toLowerCase().contains('manager')) {
+        defaultName = 'Administrator';
+      } else if (userType.toLowerCase().contains('mess')) {
+        defaultName = 'Mess Staff';
+      }
+      
       setUserInfo(
         userType: userType,
-        userName: profile.name,
-        phone: profile.phoneNumber,
-        department: profile.department,
-        designation: profile.designation,
+        userName: defaultName,
+        phone: '',
       );
-      developer.log('[PROFILE] Set user info: userType=\\${userType}, name=\\${profile.name}', name: 'ProfileScreenProvider');
-    } else {
-      developer.log('[PROFILE] Failed to fetch profile: status=\\${response.statusCode}', name: 'ProfileScreenProvider');
-      throw Exception('Failed to fetch profile');
     }
   }
-} 
+}
