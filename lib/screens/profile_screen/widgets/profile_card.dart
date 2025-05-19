@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
+import 'dart:developer' as developer;
 
 class ProfileCard extends StatelessWidget {
   final String userName;
   final String phone;
   final String? department;
   final String? designation;
+  
   const ProfileCard({
     super.key,
     required this.userName,
@@ -16,7 +18,10 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('ProfileCard: userName=$userName, designation=$designation');
+    // Add debug logging to verify the props being passed
+    developer.log('ProfileCard: userName=$userName, phone=$phone, designation=$designation', 
+        name: 'ProfileCard');
+    
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -41,7 +46,7 @@ class ProfileCard extends StatelessWidget {
                   ? userName
                       .trim()
                       .split(' ')
-                      .map((e) => e[0])
+                      .map((e) => e.isNotEmpty ? e[0] : '')
                       .take(2)
                       .join()
                       .toUpperCase()
@@ -64,6 +69,13 @@ class ProfileCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
+                if (phone.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    phone,
+                    style: const TextStyle(fontSize: 16, color: Colors.white70),
+                  ),
+                ],
                 if (designation != null && designation!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(

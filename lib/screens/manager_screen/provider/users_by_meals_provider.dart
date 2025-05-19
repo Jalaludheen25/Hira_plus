@@ -82,4 +82,7 @@ class UsersByMealsProvider extends ChangeNotifier {
       // Don't rethrow, we'll handle the error in fetchAllMeals
     }
   }
+
+
+  
 } 

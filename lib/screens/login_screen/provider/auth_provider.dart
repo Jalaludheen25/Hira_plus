@@ -113,22 +113,40 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // Helper method to get the appropriate token
-  Future<String?> getAuthToken() async {
-    try {
-      final userType = await SharedUtils.getString('user_type') ?? '';
-      switch (userType) {
-        case 'Manager':
-          return await SharedUtils.getString('manager_token');
-        case 'Mess Staff':
-          return await SharedUtils.getString('staff_token');
-        default:
-          return await SharedUtils.getString('auth_token');
-      }
-    } catch (e) {
-      _logger.e('🔴 [AUTH] Error getting token: $e');
-      return null;
-    }
-  }
+  // Future<String?> getAuthToken() async {
+  //   try {
+  //     final userType = await SharedUtils.getString('user_type') ?? '';
+  //     switch (userType) {
+  //       case 'Manager':
+  //         return await SharedUtils.getString('manager_token');
+  //       case 'Mess Staff':
+  //         return await SharedUtils.getString('staff_token');
+  //       default:
+  //         return await SharedUtils.getString('auth_token');
+  //     }
+  //   } catch (e) {
+  //     _logger.e('🔴 [AUTH] Error getting token: $e');
+  //     return null;
+  //   }
+  // }
+
+  // Add these methods to your AuthProvider class
+Future<String?> getAuthToken() async {
+  return await SharedUtils.getString('auth_token');
+}
+
+Future<String?> getUserType() async {
+  return await SharedUtils.getString('user_type');
+}
+
+// Make sure these methods are used during login to set user type
+Future<void> handleSuccessfulLogin(String token, String userType) async {
+  await SharedUtils.setString('auth_token', token);
+  await SharedUtils.setString('user_type', userType);
+  _isLoggedIn = true;
+  _userType = userType;
+  notifyListeners();
+}
 
   // Updated checkLoginStatus method for AuthProvider class
   Future<bool> checkLoginStatus() async {

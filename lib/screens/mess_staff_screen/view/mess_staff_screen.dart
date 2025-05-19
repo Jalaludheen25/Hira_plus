@@ -44,23 +44,38 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _logger.i('🏗️ [INIT] Initializing Mess Staff screen');
+      developer.log('🏗️ Initializing Mess Staff screen and profile data', name: 'MessStaffScreen');
+      
       final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Get auth token
       final token = await authProvider.getAuthToken();
+      final userType = await authProvider.getUserType() ?? 'Mess Staff';
+      
       if (token != null && token.isNotEmpty) {
-        await profileProvider.fetchAndSetProfile(token: token, userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'));
+        // Make sure to set the user type first for immediate display
+        profileProvider.setUserInfo(userType: userType);
+        
+        // Then fetch full profile
+        try {
+          await profileProvider.fetchAndSetProfile(token: token, userType: userType);
+          _logger.i('✅ [PROFILE] Profile data fetched successfully');
+          developer.log('✅ Profile data fetched for Mess Staff', name: 'MessStaffScreen');
+        } catch (e) {
+          _logger.e('❌ [PROFILE] Failed to fetch profile: $e');
+          developer.log('❌ Failed to fetch profile: $e', name: 'MessStaffScreen');
+        }
+      } else {
+        // Just set user type if no token
+        profileProvider.setUserInfo(userType: userType);
+        _logger.w('⚠️ [PROFILE] No token available, using default profile');
       }
-    });
-    // Fetch data when screen is initialized
-    _logger.i('🏗️ [UI] Initializing Mess Staff screen');
-    developer.log('🏗️ Initializing Mess Staff screen',
-        name: 'MessStaffScreen');
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      developer.log('🔄 Fetching fresh meal data on screen load',
-          name: 'MessStaffScreen');
-      final mealProvider =
-          Provider.of<MessStaffMealProvider>(context, listen: false);
-      mealProvider.reset(); // Reset the state without clearing cache
+      
+      // Fetch meal data
+      final mealProvider = Provider.of<MessStaffMealProvider>(context, listen: false);
+      mealProvider.reset();
       mealProvider.fetchMessStaffMeals(context);
     });
   }
@@ -74,6 +89,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       ];
 
   Widget _buildHomeTab(BuildContext context) {
+    // Home tab implementation remains unchanged
+    // ...existing _buildHomeTab code...
     return Consumer<MessStaffMealProvider>(
       builder: (context, mealProvider, _) {
         // Get meal counts from provider
@@ -202,16 +219,18 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   Widget _buildSettingsTab(BuildContext context) {
+    final profileProvider = Provider.of<ProfileScreenProvider>(context);
+    
     return SafeArea(
       child: Column(
         children: [
           const SizedBox(height: 24),
-          // Profile card at the top of settings
+          // Use ProfileScreenProvider values for the profile card
           ProfileCard(
-            userName: 'Mess Staff',
-            phone: '',
-            department: null,
-            designation: null,
+            userName: profileProvider.userName,
+            phone: profileProvider.phone,
+            department: profileProvider.department,
+            designation: profileProvider.designation,
           ),
           const SizedBox(height: 32),
           Expanded(
@@ -289,7 +308,6 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                       ),
                       builder: (BuildContext context) {
                         return LogoutConfirmationBottomSheet(
-                            // In the logout confirmation bottom sheet
                             onLogout: () async {
                           final logger = Logger();
                           logger.i(
@@ -356,6 +374,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
+  // Other methods like showProgressDialog and generateAndSharePdf remain unchanged
   Future<void> showProgressDialog(
       BuildContext context, ValueNotifier<double> progress) async {
     return showDialog(
@@ -371,6 +390,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     List<Map<String, String>> details, {
     bool shareInsteadOfOpen = false,
   }) async {
+    // Existing PDF generation code...
     final progress = ValueNotifier<double>(0.0);
     showProgressDialog(context, progress);
 
@@ -397,7 +417,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               pw.SizedBox(height: 8),
               pw.Align(
                 alignment: pw.Alignment.centerRight,
-                child: pw.Text('Total: \\${details.length}',
+                child: pw.Text('Total: ${details.length}',
                     style: pw.TextStyle(
                         fontSize: 18, fontWeight: pw.FontWeight.bold)),
               ),

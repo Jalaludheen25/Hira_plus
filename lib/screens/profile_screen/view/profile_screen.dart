@@ -53,14 +53,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 24),
+          const SizedBox(height: 14),
           ProfileCard(
             userName: profileProvider.userName,
             phone: profileProvider.phone,
             department: profileProvider.department,
             designation: profileProvider.designation,
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 12),
           Expanded(
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
