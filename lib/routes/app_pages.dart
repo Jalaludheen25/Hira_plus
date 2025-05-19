@@ -13,7 +13,7 @@ import 'package:hira_plus/screens/forced_update_screen/view/force_update_screen.
 import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/view/user_home_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
-import 'package:hira_plus/screens/user_screens/notifications/user_notifications_screen.dart';
+import 'package:hira_plus/screens/user_screens/notifications/view/user_notifications_screen.dart';
 
 Map<String, WidgetBuilder> getRoutes() {
   return {
