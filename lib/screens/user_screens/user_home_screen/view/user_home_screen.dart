@@ -70,6 +70,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'),
         userName: authProvider.username,
         phone: authProvider.phone,
+        department: authProvider.department,
+        designation: authProvider.designation,
       );
     });
   }

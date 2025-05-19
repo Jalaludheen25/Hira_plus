@@ -16,6 +16,8 @@ class AuthProvider extends ChangeNotifier {
   bool _showOTPField = false;
   bool _isLoggedIn = false;
   String _userType = '';
+  String _department = '';
+  String _designation = '';
 
   String get phone => _phone;
   String get username => _username;
@@ -25,6 +27,8 @@ class AuthProvider extends ChangeNotifier {
   bool get showOTPField => _showOTPField;
   bool get isLoggedIn => _isLoggedIn;
   String get userType => _userType;
+  String get department => _department;
+  String get designation => _designation;
 
   // Helper method to determine if current role uses OTP or password
   bool get isOtpBasedAuth => _selectedRole == 'User';
@@ -81,6 +85,20 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  void setDepartment(String value) {
+    if (_department != value) {
+      _department = value;
+      notifyListeners();
+    }
+  }
+
+  void setDesignation(String value) {
+    if (_designation != value) {
+      _designation = value;
+      notifyListeners();
+    }
+  }
+
   void reset() {
     _phone = '';
     _username = '';
@@ -88,6 +106,8 @@ class AuthProvider extends ChangeNotifier {
     _password = '';
     _selectedRole = 'User';
     _showOTPField = false;
+    _department = '';
+    _designation = '';
     developer.log('🧹 Auth provider state reset', name: 'AuthProvider');
     notifyListeners();
   }

@@ -326,13 +326,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
-      profileProvider.setUserInfo(
-        userType: 'manager',
-        userName: '',
-        phone: '',
-      );
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final token = await authProvider.getAuthToken();
+      if (token != null && token.isNotEmpty) {
+        await profileProvider.fetchAndSetProfile(token: token, userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'));
+      }
     });
   }
 
@@ -343,8 +343,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       children: [
         const SizedBox(height: 24),
         ProfileCard(
-          userName: profileProvider.userName,
-          phone: profileProvider.phone,
+          userName: 'Administrator',
+          phone: '',
+          department: null,
+          designation: null,
         ),
         const SizedBox(height: 32),
         Expanded(
