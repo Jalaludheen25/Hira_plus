@@ -4,10 +4,19 @@ import 'package:hira_plus/constants/color_class.dart';
 class ProfileCard extends StatelessWidget {
   final String userName;
   final String phone;
-  const ProfileCard({super.key, required this.userName, required this.phone});
+  final String? department;
+  final String? designation;
+  const ProfileCard({
+    super.key,
+    required this.userName,
+    required this.phone,
+    this.department,
+    this.designation,
+  });
 
   @override
   Widget build(BuildContext context) {
+    print('ProfileCard: userName=$userName, designation=$designation');
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(20),
@@ -55,10 +64,10 @@ class ProfileCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
-                if (phone.isNotEmpty) ...[
-                  const SizedBox(height: 6),
+                if (designation != null && designation!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
                   Text(
-                    phone,
+                    designation!,
                     style: const TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                 ],

@@ -43,14 +43,13 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   @override
   void initState() {
     super.initState();
-    // Set mess staff info for profile card
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
-      profileProvider.setUserInfo(
-        userType: 'mess_staff',
-        userName: '',
-        phone: '',
-      );
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final token = await authProvider.getAuthToken();
+      if (token != null && token.isNotEmpty) {
+        await profileProvider.fetchAndSetProfile(token: token, userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'));
+      }
     });
     // Fetch data when screen is initialized
     _logger.i('🏗️ [UI] Initializing Mess Staff screen');
@@ -209,8 +208,10 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
           const SizedBox(height: 24),
           // Profile card at the top of settings
           ProfileCard(
-            userName: Provider.of<ProfileScreenProvider>(context).userName,
-            phone: Provider.of<ProfileScreenProvider>(context).phone,
+            userName: 'Mess Staff',
+            phone: '',
+            department: null,
+            designation: null,
           ),
           const SizedBox(height: 32),
           Expanded(

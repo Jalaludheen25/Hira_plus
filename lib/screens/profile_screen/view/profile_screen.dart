@@ -30,14 +30,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      profileProvider.setUserInfo(
-        userType: 'user',
-        userName: authProvider.username,
-        phone: authProvider.phone,
-      );
+      final token = await authProvider.getAuthToken();
+      if (token != null && token.isNotEmpty) {
+        await profileProvider.fetchAndSetProfile(token: token, userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'));
+      }
     });
   }
 
@@ -58,6 +57,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ProfileCard(
             userName: profileProvider.userName,
             phone: profileProvider.phone,
+            department: profileProvider.department,
+            designation: profileProvider.designation,
           ),
           const SizedBox(height: 32),
           Expanded(

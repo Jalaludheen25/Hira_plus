@@ -60,5 +60,9 @@ class ApiUrls {
   static String sendMessage(String id) {
     return '$baseUrl/admin/messages/$id/send';
   }
+
+  static String getProfileMe() {
+    return '$baseUrl/auth/me';
+  }
 }
 
