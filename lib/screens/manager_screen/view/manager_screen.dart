@@ -222,104 +222,95 @@ class ManagerScreen extends StatelessWidget {
   }
 
   static List<Widget> _pages(BuildContext context) => [
-        // Dashboard tab
-        Builder(
-            builder: (context) =>
-                ((const ManagerScreen()._buildDashboardTab(context)))),
-        // Markings tab
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-          child: MarkingListScreen(showAppBar: false),
-        ),
+  // Dashboard tab
+  Builder(
+      builder: (context) =>
+          ((const ManagerScreen()._buildDashboardTab(context)))),
+  // Markings tab (changed position)
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+    child: MarkingListScreen(showAppBar: false),
+  ),
+  // Messages tab (center)
+  ManagerMessagesScreen(),
+  // Users tab (changed position)
+  UsersListScreen(),
+  // Settings tab
+  const SettingsScreen(),
+];
 
+@override
+Widget build(BuildContext context) {
+  final navProvider = Provider.of<BottomNavProvider>(context);
+  final tabTitles = [
+    'Dashboard',
+    'Markings',
+    'Messages',
+    'Users',
+    'Settings'
+  ];
+  return Scaffold(
+    backgroundColor: ColorClass.bgWhite0,
+    appBar: AppBar(
+      backgroundColor: ColorClass.brandDarkGreen,
+      iconTheme: const IconThemeData(color: Colors.white),
+      centerTitle: true,
+      title: Text(
+        tabTitles[navProvider.selectedIndex],
+        style: TextStyleClass.poppinsSemiBold(
+          fontSize: 20,
+          color: ColorClass.white,
+        ),
+      ),
+    ),
+    // Remove the conditional that's causing the issue
+    body: _pages(context)[navProvider.selectedIndex],
+    bottomNavigationBar: BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: ColorClass.brandWhite,
+      selectedItemColor: ColorClass.brandDarkGreen,
+      unselectedItemColor: const Color.fromARGB(255, 63, 94, 43),
+      unselectedFontSize: 10,
+      selectedFontSize: 10,
+      selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 10),
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          icon: Icon(LucideIcons.layoutDashboard,
+              size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+          activeIcon: Icon(LucideIcons.layoutDashboard, size: 28),
+          label: 'Dashboard',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(LucideIcons.clipboardList,
+              size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+          activeIcon: Icon(LucideIcons.clipboardList, size: 28),
+          label: 'Markings',
+        ),
         // Messages tab (center)
-        ManagerMessagesScreen(),
-
-        // Users tab
-        UsersListScreen(),
-
-        // Settings tab
-        const SettingsScreen(),
-      ];
-
-  @override
-  Widget build(BuildContext context) {
-    final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = [
-      'Dashboard',
-      'Users',
-      'Messages',
-      'Markings',
-      'Settings'
-    ];
-    return Scaffold(
-      backgroundColor: ColorClass.bgWhite0,
-      appBar: AppBar(
-        backgroundColor: ColorClass.brandDarkGreen,
-        iconTheme: const IconThemeData(color: Colors.white),
-        centerTitle: true,
-        title: Text(
-          tabTitles[navProvider.selectedIndex],
-          style: TextStyleClass.poppinsSemiBold(
-            fontSize: 20,
-            color: ColorClass.white,
-          ),
+        BottomNavigationBarItem(
+          icon: Icon(LucideIcons.messageCircle,
+              size: 24, color: Color.fromARGB(255, 63, 94, 43)),
+          activeIcon: Icon(LucideIcons.messageCircle, size: 28),
+          label: 'Messages',
         ),
-      ),
-      body: navProvider.selectedIndex == 1
-          ? Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: MarkingListScreen(showAppBar: false),
-            )
-          : _pages(context)[navProvider.selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: ColorClass.brandWhite,
-        selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor: const Color.fromARGB(255, 63, 94, 43),
-        unselectedFontSize: 10,
-        selectedFontSize: 10,
-        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 10),
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.layoutDashboard,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.layoutDashboard, size: 28),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.clipboardList,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.clipboardList, size: 28),
-            label: 'Markings',
-          ),
-          // Messages tab (center)
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.messageCircle,
-                size: 24, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.messageCircle, size: 28),
-            label: 'Messages',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.users,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.users, size: 28),
-            label: 'Users',
-          ),
-
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.settings,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.settings, size: 28),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: navProvider.selectedIndex,
-        onTap: navProvider.setIndex,
-      ),
-    );
-  }
+        BottomNavigationBarItem(
+          icon: Icon(LucideIcons.users,
+              size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+          activeIcon: Icon(LucideIcons.users, size: 28),
+          label: 'Users',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(LucideIcons.settings,
+              size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+          activeIcon: Icon(LucideIcons.settings, size: 28),
+          label: 'Settings',
+        ),
+      ],
+      currentIndex: navProvider.selectedIndex,
+      onTap: navProvider.setIndex,
+    ),
+  );
+}
 }
 
 class DateTimeNotifier extends ValueNotifier<DateTime> {
