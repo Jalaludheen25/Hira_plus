@@ -1,0 +1,175 @@
+import 'dart:developer' as developer;
+
+import 'package:flutter/material.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/profile_card.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:shake_flutter/enums/shake_screen.dart';
+import 'package:shake_flutter/shake_flutter.dart';
+import 'package:toastification/toastification.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final profileProvider =
+          Provider.of<ProfileScreenProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      // Get auth token
+      final token = await authProvider.getAuthToken();
+      final userType = await authProvider.getUserType() ?? 'Manager';
+
+      // Set user type immediately for display
+      profileProvider.setUserInfo(userType: userType);
+
+      if (token != null && token.isNotEmpty) {
+        try {
+          await profileProvider.fetchAndSetProfile(
+              token: token, userType: userType);
+          developer.log('✅ Profile data fetched for Manager',
+              name: 'ManagerScreen');
+        } catch (e) {
+          developer.log('❌ Failed to fetch manager profile: $e',
+              name: 'ManagerScreen');
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileScreenProvider>(context);
+
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        ProfileCard(
+          userName: profileProvider.userName,
+          phone: profileProvider.phone,
+          department: profileProvider.department,
+          designation: profileProvider.designation,
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              // Rest of settings items remain unchanged
+              CustomDrawerItem(
+                title: 'Feedback',
+                icon: LucideIcons.messageCircle,
+                onTap: () async {
+                  final Uri emailLaunchUri = Uri(
+                    scheme: 'mailto',
+                    path: 'mail@d4dx.co',
+                  );
+                  await launchUrl(emailLaunchUri);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Privacy Policy',
+                icon: LucideIcons.shieldCheck,
+                onTap: () async {
+                  final Uri url = Uri.parse(
+                      'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Contact Us',
+                icon: LucideIcons.phone,
+                onTap: () {
+                  navigatorKey.currentState!.pushNamed(Routes.contactUs);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'About Us',
+                icon: LucideIcons.info,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('About Us'),
+                      content:
+                          const Text('This is dummy content for About Us.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Raise a bug',
+                icon: LucideIcons.bug,
+                onTap: () {
+                  Shake.show(ShakeScreen.home);
+                },
+              ),
+              const Divider(),
+              CustomDrawerItem(
+                title: 'Logout',
+                icon: LucideIcons.logOut,
+                isDestructive: true,
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    builder: (BuildContext context) {
+                      return LogoutConfirmationBottomSheet(
+                        onLogout: () {
+                          Provider.of<BottomNavProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .setIndex(0);
+                          toastification.show(
+                            context: context,
+                            title: Text('Logged out successfully'),
+                            type: ToastificationType.success,
+                            autoCloseDuration: const Duration(seconds: 2),
+                          );
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            navigatePRTo(
+                              context: navigatorKey.currentContext!,
+                              route: Routes.login,
+                            );
+                          });
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        PoweredBySection(),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+}
