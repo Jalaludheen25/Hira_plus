@@ -89,8 +89,6 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       ];
 
   Widget _buildHomeTab(BuildContext context) {
-    // Home tab implementation remains unchanged
-    // ...existing _buildHomeTab code...
     return Consumer<MessStaffMealProvider>(
       builder: (context, mealProvider, _) {
         // Get meal counts from provider
@@ -127,88 +125,83 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
           );
         }
 
-        
-        final screenHeight = MediaQuery.of(context).size.height;
-        final detailedListHeight = screenHeight * 0.35; // 35% of screen height
-
         return SafeArea(
           child: Column(
             children: [
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Meal Summary',
-                          style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 12.0,
-                        runSpacing: 12.0,
-                        children: List.generate(
-                            mealSummary.length,
-                            (index) => GestureDetector(
-                                  onTap: () {
-                                    mealProvider.selectMeal(index);
-                                  },
-                                  child: MealSummaryWidget(
-                                    icon:
-                                        mealSummary[index]['icon'] as IconData,
-                                    label:
-                                        mealSummary[index]['label'] as String,
-                                    count: mealSummary[index]['count'] as int,
-                                    isSelected:
-                                        mealProvider.selectedMeal == index,
-                                  ),
-                                )),
-                      ),
-                      const SizedBox(height: 24),
-                      Text('Detailed List',
-                          style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                      const SizedBox(height: 8),
-
-                      // Container with fixed height for detailed list
-                      Container(
-                        height: detailedListHeight,
-                        child: SingleChildScrollView(
-                          child: DetailedList(details: detailedLists),
-                        ),
-                      ),
-
-                      const Spacer(),
-
-                      // Bottom buttons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          BottomButton(
-                            label: 'Share',
-                            onTap: () {
-                              final selectedIndex = mealProvider.selectedMeal;
-                              final mealLabel =
-                                  mealSummary[selectedIndex]['label'] as String;
-                              generateAndSharePdf(
-                                  context, mealLabel, detailedLists,
-                                  shareInsteadOfOpen: true);
-                            },
+                child: CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20.0, vertical: 16.0),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          Text('Meal Summary',
+                              style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 12.0,
+                            runSpacing: 12.0,
+                            children: List.generate(
+                              mealSummary.length,
+                              (index) => GestureDetector(
+                                onTap: () {
+                                  mealProvider.selectMeal(index);
+                                },
+                                child: MealSummaryWidget(
+                                  icon: mealSummary[index]['icon'] as IconData,
+                                  label: mealSummary[index]['label'] as String,
+                                  count: mealSummary[index]['count'] as int,
+                                  isSelected: mealProvider.selectedMeal == index,
+                                ),
+                              ),
+                            ),
                           ),
-                          BottomButton(
-                            label: 'Print',
-                            onTap: () {
-                              final selectedIndex = mealProvider.selectedMeal;
-                              final mealLabel =
-                                  mealSummary[selectedIndex]['label'] as String;
-                              generateAndSharePdf(
-                                  context, mealLabel, detailedLists,
-                                  shareInsteadOfOpen: false);
-                            },
-                          ),
-                        ],
+                          const SizedBox(height: 24),
+                          Text('Detailed List',
+                              style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                          const SizedBox(height: 8),
+                          DetailedList(details: detailedLists),
+                        ]),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    BottomButton(
+                      label: 'Share',
+                      onTap: () {
+                        final selectedIndex = mealProvider.selectedMeal;
+                        final mealLabel =
+                            mealSummary[selectedIndex]['label'] as String;
+                        generateAndSharePdf(
+                          context, 
+                          mealLabel, 
+                          detailedLists,
+                          shareInsteadOfOpen: true
+                        );
+                      },
+                    ),
+                    BottomButton(
+                      label: 'Print',
+                      onTap: () {
+                        final selectedIndex = mealProvider.selectedMeal;
+                        final mealLabel =
+                            mealSummary[selectedIndex]['label'] as String;
+                        generateAndSharePdf(
+                          context, 
+                          mealLabel, 
+                          detailedLists,
+                          shareInsteadOfOpen: false
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
