@@ -239,16 +239,6 @@ class CanteenHomeProvider extends ChangeNotifier {
     bool? dinner,
   }) async {
     try {
-      // Show loading state
-      _isLoading = true;
-      _errorMessage = '';
-      notifyListeners();
-
-      log('🔄 Updating meal for date: ${date.toIso8601String().split('T')[0]}',
-          name: 'CanteenHomeProvider');
-      log('Meal options - Breakfast: $breakfast, Lunch: $lunch, Dinner: $dinner',
-          name: 'CanteenHomeProvider');
-
       // Get current meal values for the date
       final currentMeal = getMealForDate(date);
       log('Current meal state: ${currentMeal?.toJson()}',
@@ -276,7 +266,7 @@ class CanteenHomeProvider extends ChangeNotifier {
       log('Updated meal details: ${updatedMeal.toJson()}',
           name: 'CanteenHomeProvider');
 
-      // Update local meals list
+      // Update local meals list without triggering a full rebuild
       if (currentMeal != null && currentMeal.id.isNotEmpty) {
         // Replace existing meal
         final index = _meals.indexWhere((meal) => meal.id == currentMeal.id);
@@ -300,13 +290,12 @@ class CanteenHomeProvider extends ChangeNotifier {
       await _saveMealsToCache();
       log('Meal cache updated', name: 'CanteenHomeProvider');
 
-      _isLoading = false;
+      // Only notify listeners once at the end
       notifyListeners();
 
       return updatedMeal;
     } catch (e) {
       log('❌ Error updating meal: $e', name: 'CanteenHomeProvider');
-      _isLoading = false;
       _errorMessage = 'Failed to update meal. Please try again.';
       notifyListeners();
       return null;

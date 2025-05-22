@@ -51,144 +51,146 @@ class _ProfileScreenState extends State<ProfileScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 14),
-          ProfileCard(
-            userName: profileProvider.userName,
-            phone: profileProvider.phone,
-            department: profileProvider.department,
-            designation: profileProvider.designation,
-          ),
-          const SizedBox(height: 12),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                CustomDrawerItem(
-                  title: 'Meal Marked Count',
-                  icon: LucideIcons.utensils,
-                  onTap: () {
-                    navigateTo(
-                        context: context,
-                        route: Routes.mealCount,
-                        useRootNavigator: true);
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'Feedback',
-                  icon: LucideIcons.messageCircle,
-                  onTap: () async {
-                    final Uri emailLaunchUri = Uri(
-                      scheme: 'mailto',
-                      path: 'mail@d4dx.co',
-                    );
-                    await launchUrl(emailLaunchUri);
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'Privacy Policy',
-                  icon: LucideIcons.shieldCheck,
-                  onTap: () async {
-                    final Uri url = Uri.parse(
-                        'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'Contact Us',
-                  icon: LucideIcons.phone,
-                  onTap: () {
-                    navigatorKey.currentState!.pushNamed(Routes.contactUs);
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'About Us',
-                  icon: LucideIcons.info,
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('About Us'),
-                        content:
-                            const Text('This is dummy content for About Us.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'Raise a bug',
-                  icon: LucideIcons.bug,
-                  onTap: () {
-                    Shake.show(ShakeScreen.home);
-                  },
-                ),
-                const Divider(),
-                CustomDrawerItem(
-                  title: 'Logout',
-                  icon: LucideIcons.logOut,
-                  isDestructive: true,
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      builder: (BuildContext context) {
-                        return LogoutConfirmationBottomSheet(
-                          onLogout: () async {
-                            widget._logger
-                                .i('🔄 [LOGOUT] User initiated logout process');
-
-                            // Reset bottom nav to initial index
-                            Provider.of<BottomNavProvider>(
-                                    navigatorKey.currentContext!,
-                                    listen: false)
-                                .setIndex(0);
-
-                            // Call the AuthProvider logout method to clear shared preferences
-                            await Provider.of<AuthProvider>(
-                                    navigatorKey.currentContext!,
-                                    listen: false)
-                                .logout();
-                            widget._logger.i(
-                                '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
-
-                            toastification.show(
-                              context: context,
-                              title: const Text('Logged out successfully'),
-                              type: ToastificationType.success,
-                              autoCloseDuration: const Duration(seconds: 2),
-                            );
-
-                            Future.delayed(const Duration(milliseconds: 500),
-                                () {
-                              widget._logger.i(
-                                  '🧭 [NAVIGATION] Redirecting to login screen');
-                              navigatePRTo(
-                                context: navigatorKey.currentContext!,
-                                route: Routes.login,
-                              );
-                            });
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 14),
+            ProfileCard(
+              userName: profileProvider.userName,
+              phone: profileProvider.phone,
+              department: profileProvider.department,
+              designation: profileProvider.designation,
             ),
-          ),
-          const SizedBox(height: 16),
-          PoweredBySection(),
-          const SizedBox(height: 16),
-        ],
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  CustomDrawerItem(
+                    title: 'Meal Marked Count',
+                    icon: LucideIcons.utensils,
+                    onTap: () {
+                      navigateTo(
+                          context: context,
+                          route: Routes.mealCount,
+                          useRootNavigator: true);
+                    },
+                  ),
+                  CustomDrawerItem(
+                    title: 'Feedback',
+                    icon: LucideIcons.messageCircle,
+                    onTap: () async {
+                      final Uri emailLaunchUri = Uri(
+                        scheme: 'mailto',
+                        path: 'mail@d4dx.co',
+                      );
+                      await launchUrl(emailLaunchUri);
+                    },
+                  ),
+                  CustomDrawerItem(
+                    title: 'Privacy Policy',
+                    icon: LucideIcons.shieldCheck,
+                    onTap: () async {
+                      final Uri url = Uri.parse(
+                          'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                  CustomDrawerItem(
+                    title: 'Contact Us',
+                    icon: LucideIcons.phone,
+                    onTap: () {
+                      navigatorKey.currentState!.pushNamed(Routes.contactUs);
+                    },
+                  ),
+                  CustomDrawerItem(
+                    title: 'About Us',
+                    icon: LucideIcons.info,
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('About Us'),
+                          content:
+                              const Text('This is dummy content for About Us.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  CustomDrawerItem(
+                    title: 'Raise a bug',
+                    icon: LucideIcons.bug,
+                    onTap: () {
+                      Shake.show(ShakeScreen.home);
+                    },
+                  ),
+                  const Divider(),
+                  CustomDrawerItem(
+                    title: 'Logout',
+                    icon: LucideIcons.logOut,
+                    isDestructive: true,
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        builder: (BuildContext context) {
+                          return LogoutConfirmationBottomSheet(
+                            onLogout: () async {
+                              widget._logger
+                                  .i('🔄 [LOGOUT] User initiated logout process');
+
+                              // Reset bottom nav to initial index
+                              Provider.of<BottomNavProvider>(
+                                      navigatorKey.currentContext!,
+                                      listen: false)
+                                  .setIndex(0);
+
+                              // Call the AuthProvider logout method to clear shared preferences
+                              await Provider.of<AuthProvider>(
+                                      navigatorKey.currentContext!,
+                                      listen: false)
+                                  .logout();
+                              widget._logger.i(
+                                  '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+
+                              toastification.show(
+                                context: context,
+                                title: const Text('Logged out successfully'),
+                                type: ToastificationType.success,
+                                autoCloseDuration: const Duration(seconds: 2),
+                              );
+
+                              Future.delayed(const Duration(milliseconds: 500),
+                                  () {
+                                widget._logger.i(
+                                    '🧭 [NAVIGATION] Redirecting to login screen');
+                                navigatePRTo(
+                                  context: navigatorKey.currentContext!,
+                                  route: Routes.login,
+                                );
+                              });
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            PoweredBySection(),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

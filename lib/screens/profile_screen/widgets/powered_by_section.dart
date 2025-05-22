@@ -13,7 +13,7 @@ class PoweredBySection extends StatelessWidget {
             style: TextStyleClass.poppinsMedium(
                 fontSize: 14, color: ColorClass.neutral400)),
         const SizedBox(height: 8),
-        Image.asset(IconClass.d4dxLogo, height: 76),
+        Image.asset(IconClass.d4dxLogo, height: 60),
       ],
     );
   }
