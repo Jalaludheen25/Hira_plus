@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
-import 'package:hira_plus/providers/date_provider.dart';
+
 
 class MarkingListScreen extends StatefulWidget {
   static const String routeName = '/manager/marking_list';

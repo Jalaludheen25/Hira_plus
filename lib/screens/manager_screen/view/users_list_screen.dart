@@ -27,7 +27,7 @@ class UsersListScreen extends StatefulWidget {
 class _UsersListScreenState extends State<UsersListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
-  int _realIndex = 0;
+ 
 
   @override
   void initState() {

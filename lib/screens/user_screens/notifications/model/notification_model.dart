@@ -1,5 +1,5 @@
 // Model for user notifications fetched from the API
-import 'package:flutter/foundation.dart';
+ 
 
 class NotificationModel {
   final String id;

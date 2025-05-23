@@ -215,154 +215,152 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     final profileProvider = Provider.of<ProfileScreenProvider>(context);
     
     return SafeArea(
-      child: Column(
-        children: [
-          const SizedBox(height: 24),
-          // Use ProfileScreenProvider values for the profile card
-          ProfileCard(
-            userName: profileProvider.userName,
-            phone: profileProvider.phone,
-            department: profileProvider.department,
-            designation: profileProvider.designation,
-          ),
-          const SizedBox(height: 32),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: [
-                CustomDrawerItem(
-                  title: 'Feedback',
-                  icon: LucideIcons.messageCircle,
-                  onTap: () async {
-                    final Uri emailLaunchUri = Uri(
-                      scheme: 'mailto',
-                      path: 'mail@d4dx.co',
-                    );
-                    await launchUrl(emailLaunchUri);
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'Privacy Policy',
-                  icon: LucideIcons.shieldCheck,
-                  onTap: () async {
-                    final Uri url = Uri.parse(
-                        'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
-                    await launchUrl(url, mode: LaunchMode.externalApplication);
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'Contact Us',
-                  icon: LucideIcons.phone,
-                  onTap: () {
-                    // Using navigation helper
-                    navigateTo(
-                      context: context,
-                      route: Routes.contactUs,
-                    );
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'About Us',
-                  icon: LucideIcons.info,
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('About Us'),
-                        content:
-                            const Text('This is dummy content for About Us.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => navigateBack(context),
-                            child: const Text('Close'),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-                CustomDrawerItem(
-                  title: 'Raise a bug',
-                  icon: LucideIcons.bug,
-                  onTap: () {
-                    Shake.show(ShakeScreen.home);
-                  },
-                ),
-                const Divider(),
-                CustomDrawerItem(
-                  title: 'Logout',
-                  icon: LucideIcons.logOut,
-                  isDestructive: true,
-                  onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      builder: (BuildContext context) {
-                        return LogoutConfirmationBottomSheet(
-                            onLogout: () async {
-                          final logger = Logger();
-                          logger.i(
-                              '🔄 [LOGOUT] Mess Staff initiated logout process');
-                          developer.log(
-                              '🔄 Mess Staff initiated logout process',
-                              name: 'MessStaffScreen');
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            children: [
+              const SizedBox(height: 24),
+              // Use ProfileScreenProvider values for the profile card
+              ProfileCard(
+                userName: profileProvider.userName,
+                phone: profileProvider.phone,
+                department: profileProvider.department,
+                designation: profileProvider.designation,
+              ),
+              const SizedBox(height: 32),
+              CustomDrawerItem(
+                title: 'Feedback',
+                icon: LucideIcons.messageCircle,
+                onTap: () async {
+                  final Uri emailLaunchUri = Uri(
+                    scheme: 'mailto',
+                    path: 'mail@d4dx.co',
+                  );
+                  await launchUrl(emailLaunchUri);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Privacy Policy',
+                icon: LucideIcons.shieldCheck,
+                onTap: () async {
+                  final Uri url = Uri.parse(
+                      'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Contact Us',
+                icon: LucideIcons.phone,
+                onTap: () {
+                  // Using navigation helper
+                  navigateTo(
+                    context: context,
+                    route: Routes.contactUs,
+                  );
+                },
+              ),
+              CustomDrawerItem(
+                title: 'About Us',
+                icon: LucideIcons.info,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('About Us'),
+                      content:
+                          const Text('This is dummy content for About Us.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => navigateBack(context),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Raise a bug',
+                icon: LucideIcons.bug,
+                onTap: () {
+                  Shake.show(ShakeScreen.home);
+                },
+              ),
+              const Divider(),
+              CustomDrawerItem(
+                title: 'Logout',
+                icon: LucideIcons.logOut,
+                isDestructive: true,
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    builder: (BuildContext context) {
+                      return LogoutConfirmationBottomSheet(
+                          onLogout: () async {
+                        final logger = Logger();
+                        logger.i(
+                            '🔄 [LOGOUT] Mess Staff initiated logout process');
+                        developer.log(
+                            '🔄 Mess Staff initiated logout process',
+                            name: 'MessStaffScreen');
 
-                          // First clear all provider data
-                          await Provider.of<MessStaffMealProvider>(
-                                  navigatorKey.currentContext!,
-                                  listen: false)
-                              .clearData();
+                        // First clear all provider data
+                        await Provider.of<MessStaffMealProvider>(
+                                navigatorKey.currentContext!,
+                                listen: false)
+                            .clearData();
 
-                          // Reset bottom nav to initial index
-                          Provider.of<BottomNavProvider>(
-                                  navigatorKey.currentContext!,
-                                  listen: false)
-                              .setIndex(0);
+                        // Reset bottom nav to initial index
+                        Provider.of<BottomNavProvider>(
+                                navigatorKey.currentContext!,
+                                listen: false)
+                            .setIndex(0);
 
-                          // Call the AuthProvider logout method to clear shared preferences
-                          await Provider.of<AuthProvider>(
-                                  navigatorKey.currentContext!,
-                                  listen: false)
-                              .logout();
+                        // Call the AuthProvider logout method to clear shared preferences
+                        await Provider.of<AuthProvider>(
+                                navigatorKey.currentContext!,
+                                listen: false)
+                            .logout();
 
-                          logger.i(
-                              '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
-                          developer.log(
-                              '🟢 Successfully cleared auth token and preferences',
-                              name: 'MessStaffScreen');
+                        logger.i(
+                            '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+                        developer.log(
+                            '🟢 Successfully cleared auth token and preferences',
+                            name: 'MessStaffScreen');
 
-                          toastification.show(
-                            context: context,
-                            title: const Text('Logged out successfully'),
-                            type: ToastificationType.success,
-                            autoCloseDuration: const Duration(seconds: 2),
-                          );
-
-                          Future.delayed(const Duration(milliseconds: 500), () {
-                            logger.i(
-                                '🧭 [NAVIGATION] Redirecting to login screen');
-                            developer.log('🚀 Redirecting to login screen',
-                                name: 'MessStaffScreen');
-                            // Using navigation helper
-                            navigatePRToGlobal(
-                              route: Routes.login,
-                            );
-                          });
-                        }
+                        toastification.show(
+                          context: context,
+                          title: const Text('Logged out successfully'),
+                          type: ToastificationType.success,
+                          autoCloseDuration: const Duration(seconds: 2),
                         );
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
+
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          logger.i(
+                              '🧭 [NAVIGATION] Redirecting to login screen');
+                          developer.log('🚀 Redirecting to login screen',
+                              name: 'MessStaffScreen');
+                          // Using navigation helper
+                          navigatePRToGlobal(
+                            route: Routes.login,
+                          );
+                        });
+                      }
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              PoweredBySection(),
+              const SizedBox(height: 16),
+            ],
           ),
-          const SizedBox(height: 16),
-          PoweredBySection(),
-          const SizedBox(height: 16),
-        ],
+        ),
       ),
     );
   }

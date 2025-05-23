@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../provider/messages_provider.dart';
-import '../models/message_model.dart';
+ 
 
 class ManagerMessagesScreen extends StatefulWidget {
   const ManagerMessagesScreen({Key? key}) : super(key: key);
