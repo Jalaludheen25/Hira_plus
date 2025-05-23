@@ -1,0 +1,2 @@
+/Users/junaidhhaneefa/Junaidh/D4DX works/hira_plus/android/app/.cxx/RelWithDebInfo/463w604f/x86_64/CMakeFiles/edit_cache.dir
+/Users/junaidhhaneefa/Junaidh/D4DX works/hira_plus/android/app/.cxx/RelWithDebInfo/463w604f/x86_64/CMakeFiles/rebuild_cache.dir
