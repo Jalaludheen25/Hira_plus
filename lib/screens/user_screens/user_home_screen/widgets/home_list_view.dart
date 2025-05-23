@@ -280,17 +280,60 @@ class HomeListView extends StatelessWidget {
     required String mealType,
     required bool isEnabled,
   }) {
-    final mealProvider =
-        Provider.of<CanteenHomeProvider>(context, listen: false);
+    final mealProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
+    final now = DateTime.now();
+    
+    // Set cutoff time to 6:00 AM today
+    final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
+    final checkDate = DateTime(date.year, date.month, date.day);
+    
+    // Check if the date is in the past or if it's today and past 6 AM
+    final isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
+    final isRestrictedToday = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && 
+                             now.isAfter(cutoffTime);
+    final isRestricted = isPast || isRestrictedToday;
 
     return Checkbox(
       value: isChecked,
-      onChanged: isEnabled
-          ? (newValue) {
-              _updateMeal(
-                  context, mealProvider, date, mealType, newValue ?? false);
-            }
-          : null,
+      onChanged: (newValue) {
+        if (isRestricted) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: Text(
+                'Cannot Modify Meals',
+                style: TextStyleClass.poppinsSemiBold(
+                  fontSize: 18,
+                  color: ColorClass.brandDarkGreen,
+                ),
+              ),
+              content: Text(
+                isRestrictedToday
+                    ? 'Meal preferences for today cannot be modified after 6:00 AM.'
+                    : 'Meal preferences for past dates cannot be modified.',
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 16,
+                  color: ColorClass.textMain900,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'OK',
+                    style: TextStyleClass.poppinsMedium(
+                      fontSize: 16,
+                      color: ColorClass.brandDarkGreen,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          _updateMeal(context, mealProvider, date, mealType, newValue ?? false);
+        }
+      },
       activeColor: ColorClass.brandLightGreen,
       checkColor: ColorClass.brandDarkGreen,
     );
