@@ -150,4 +150,24 @@ class MealService {
       rethrow;
     }
   }
+
+  /// Fetches the banner from the API
+  Future<BannerModel?> fetchBanner() async {
+    try {
+      final url = '${ApiUrls.baseUrl}/banner';
+      log('Fetching banner from: ' + url);
+      final response = await HttpServiceUtils.fetchData(url, true);
+      if (response == null || response is! List || response.isEmpty) {
+        log('No banner data received');
+        return null;
+      }
+      // Parse the first banner (if any)
+      final banner = BannerModel.fromJson(response[0]);
+      log('Banner fetched: ' + banner.bannerImage);
+      return banner;
+    } catch (e) {
+      log('Error fetching banner: $e');
+      return null;
+    }
+  }
 }

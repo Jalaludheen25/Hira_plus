@@ -18,7 +18,7 @@ class MealSummaryWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 170,
+      width: MediaQuery.of(context).size.width * 0.40,
       height: 80,
       decoration: BoxDecoration(
         color: isSelected ? ColorClass.brandLightGreen : Colors.white,
@@ -38,7 +38,7 @@ class MealSummaryWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+              Text(label, style: TextStyleClass.poppinsSemiBold(fontSize: 16)),
               Text(count.toString(),
                   style: TextStyleClass.poppinsBold(fontSize: 22)),
             ],

@@ -28,6 +28,10 @@ class CanteenHomeProvider extends ChangeNotifier {
   String _errorMessage = '';
   DateTime _lastFetchTime = DateTime(2000); // Initial value
 
+  // Banner state
+  BannerModel? _banner;
+  BannerModel? get banner => _banner;
+
   // Getters
   // View mode getters
   HomeViewMode get mode => _mode;
@@ -47,6 +51,7 @@ class CanteenHomeProvider extends ChangeNotifier {
   // Constructor
   CanteenHomeProvider(BuildContext context) {
     _updateAllDays(context);
+    fetchBanner();
   }
 
   // HomeViewModeProvider methods
@@ -340,7 +345,10 @@ Map<String, int> getCurrentMonthMealCounts() {
   };
 }
 
-
+  Future<void> fetchBanner() async {
+    _banner = await _mealService.fetchBanner();
+    notifyListeners();
+  }
 
   // Reset all provider state
   void reset() {

@@ -9,6 +9,8 @@ import '../widgets/today_fab.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:ui';
+import 'dart:async';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -178,7 +180,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           children: [
             // 1. Banner
             _buildBanner(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             // 2. Meal Count Card
             _buildMealCountCard(mealCounts),
             const SizedBox(height: 16),
@@ -195,29 +197,105 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildBanner() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ColorClass.primaryBase,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.campaign, color: ColorClass.white, size: 32),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Welcome to Hira+! (Banner placeholder)',
-              style: TextStyleClass.poppinsSemiBold(
-                fontSize: 16,
-                color: ColorClass.white,
-              ),
-            ),
+    final banner = Provider.of<CanteenHomeProvider>(context).banner;
+    if (banner == null || banner.bannerImage.isEmpty) {
+      // Placeholder if no banner
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        height: 120,
+        decoration: BoxDecoration(
+          color: ColorClass.brandDarkGreen,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          'No banner available',
+          style: TextStyleClass.poppinsSemiBold(
+            fontSize: 16,
+            color: ColorClass.white,
           ),
-        ],
-      ),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return FutureBuilder<Size>(
+          future: _getImageSize(banner.bannerImage),
+          builder: (context, snapshot) {
+            double aspectRatio = 16 / 9; // Default to landscape
+            if (snapshot.hasData) {
+              final size = snapshot.data!;
+              aspectRatio = size.width / size.height;
+            }
+            // If portrait, make it taller
+            final isPortrait = aspectRatio < 1.0;
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  children: [
+                    AspectRatio(
+                      aspectRatio: isPortrait ? 3 / 4 : aspectRatio,
+                      child: Image.network(
+                        banner.bannerImage,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: ColorClass.brandDarkGreen,
+                          alignment: Alignment.center,
+                          child: Icon(Icons.broken_image, color: ColorClass.white, size: 48),
+                        ),
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: ColorClass.brandDarkGreen,
+                            alignment: Alignment.center,
+                            child: CircularProgressIndicator(color: ColorClass.white),
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        color: Colors.black.withOpacity(0.4),
+                        child: Text(
+                          banner.title,
+                          style: TextStyleClass.poppinsSemiBold(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
+  }
+
+  Future<Size> _getImageSize(String url) async {
+    final Completer<Size> completer = Completer();
+    final Image image = Image.network(url);
+    image.image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo info, bool _) {
+        final myImage = info.image;
+        completer.complete(Size(myImage.width.toDouble(), myImage.height.toDouble()));
+      }, onError: (dynamic _, __) {
+        completer.complete(const Size(16, 9)); // fallback
+      }),
+    );
+    return completer.future;
   }
 
   Widget _buildMealCountCard(Map<String, int> mealCounts) {
