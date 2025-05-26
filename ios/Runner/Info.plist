@@ -49,5 +49,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to upload banners.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to upload banners.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need to save images to your photo library.</string>
 </dict>
 </plist>

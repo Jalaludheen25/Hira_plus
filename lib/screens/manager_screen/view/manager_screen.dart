@@ -14,6 +14,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/create_banner_dialog.dart';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -291,6 +292,18 @@ class ManagerScreen extends StatelessWidget {
         ],
         currentIndex: navProvider.selectedIndex,
         onTap: navProvider.setIndex,
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await showDialog(
+            context: context,
+            builder: (context) =>  CreateBannerDialog(),
+          );
+          // Optionally handle result
+        },
+        icon: const Icon(Icons.add_photo_alternate,color: ColorClass.white,),
+        label:  Text('Create Banner',style: TextStyleClass.poppinsMedium(fontSize: 16,color: ColorClass.white),),
+        backgroundColor: ColorClass.brandDarkGreen,
       ),
     );
   }

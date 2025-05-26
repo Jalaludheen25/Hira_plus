@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/banner_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
@@ -154,7 +155,7 @@ class MealService {
   /// Fetches the banner from the API
   Future<BannerModel?> fetchBanner() async {
     try {
-      final url = '${ApiUrls.baseUrl}/banner';
+      final url = ApiUrls.getBanner();
       log('Fetching banner from: ' + url);
       final response = await HttpServiceUtils.fetchData(url, true);
       if (response == null || response is! List || response.isEmpty) {

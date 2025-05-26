@@ -64,5 +64,18 @@ class ApiUrls {
   static String getProfileMe() {
     return '$baseUrl/auth/me';
   }
+
+  static String getBanner() {
+    return '$baseUrl/banner';
+  }
+  static String postBanner() {
+    return '$baseUrl/banner';
+  }
+  static String editBanner(String id) {
+    return '$baseUrl/banner/$id';
+  }
+  static String deleteBanner(String id) {
+    return '$baseUrl/banner/$id';
+  }
 }
 

@@ -1,288 +1,196 @@
-// ignore_for_file: use_build_context_synchronously
-
-import 'dart:async';
-import 'dart:developer' as developer;
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
-
-import 'package:hira_plus/constants/app_utils.dart';
-import 'package:hira_plus/utils/shared_utils.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:hira_plus/utils/navigation_helper.dart';
-import 'package:hira_plus/routes/app_routes.dart';
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:hira_plus/utils/shared_utils.dart';
+import 'dart:developer' as developer;
+import 'package:logger/logger.dart';
 
 class HttpServiceUtils {
-  static const Duration timeoutDuration = Duration(seconds: 30);
+  static final Logger _logger = Logger();
+  static const int timeoutDuration = 30; // seconds
 
-  // Updated headers without hardcoded token
-  static Map<String, String> getDefaultHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-  }
-
-  // Enhanced logging function
-  static void _logError(String message, dynamic error, StackTrace? stackTrace) {
-    developer.log(
-      message,
-      error: error,
-      stackTrace: stackTrace,
-      time: DateTime.now(),
-      level: 2000, // Error level
-    );
-
-    if (kDebugMode) {
-      print('ERROR: $message');
-      print('Error details: $error');
-      if (stackTrace != null) print('Stack trace: $stackTrace');
-    }
-  }
-
-  // Update your fetchData method in HttpServiceUtils class
-  static Future<dynamic> fetchData(String url, bool token, [int retryCount = 2]) async {
+  /// Fetch data from API with GET request
+  static Future<dynamic> fetchData(String url, bool requiresAuth) async {
     try {
-      Map<String, String> headers = getDefaultHeaders();
-      if (token) {
-        final authToken = await SharedUtils.getString('auth_token');
-        if (authToken.isEmpty) {
-          log('❌ No auth token available');
-          throw HttpException('Authentication required. Please login again.');
+      _logger.i('🌐 [HTTP_GET] Starting GET request to: $url');
+      _logger.d('🔐 [HTTP_GET] Requires auth: $requiresAuth');
+      developer.log('🌐 Starting GET request to: $url', name: 'HttpServiceUtils');
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      if (requiresAuth) {
+        final token = await SharedUtils.getString('auth_token');
+        if (token.isEmpty) {
+          _logger.e('❌ [HTTP_GET] No auth token found');
+          developer.log('❌ No auth token found', name: 'HttpServiceUtils');
+          throw const HttpException('Authentication token not found. Please login again.');
         }
-        headers['Authorization'] = 'Bearer $authToken';
+        headers['Authorization'] = 'Bearer $token';
+        _logger.d('🔑 [HTTP_GET] Auth token added to headers');
       }
-      
-      log('🌐 Making GET request to: $url');
-      
+
+      _logger.d('📋 [HTTP_GET] Request headers: $headers');
+      developer.log('📋 Making authenticated request', name: 'HttpServiceUtils');
+
       final response = await http
           .get(
             Uri.parse(url),
             headers: headers,
           )
-          .timeout(
-            const Duration(minutes: 2),
-          );
-      log('URL: $url');
-      log('Response Status Code: ${response.statusCode}');
+          .timeout(const Duration(seconds: timeoutDuration));
 
-      if (response.statusCode == 200) {
-        log('✅ Success: ${response.body.length} bytes received');
-        return jsonDecode(response.body);
-      } else if (response.statusCode == 401) {
-        // Handle authentication error
-        log('🔒 Authentication error: Token may be expired or invalid');
-        // Call the _handleUnauthorized method to logout and redirect
-        await _handleUnauthorized(null);
-        throw HttpException('Authentication failed. Please login again.');
-      } else if (response.statusCode >= 500 && retryCount > 0) {
-        // Retry server errors
-        log('⚠️ Server error (${response.statusCode}), retrying... (${retryCount} attempts left)');
-        // Wait before retrying to give server time to recover
-        await Future.delayed(const Duration(seconds: 2));
-        return await fetchData(url, token, retryCount - 1);
-      } else if (response.statusCode == 429 && retryCount > 0) {
-        // Handle rate limiting with exponential backoff
-        log('⏳ Rate limited, retrying with backoff... (${retryCount} attempts left)');
-        await Future.delayed(Duration(seconds: 5 * (3 - retryCount)));
-        return await fetchData(url, token, retryCount - 1);
+      _logger.i('📨 [HTTP_GET] Response received - Status: ${response.statusCode}');
+      _logger.d('📨 [HTTP_GET] Response headers: ${response.headers}');
+      _logger.d('📨 [HTTP_GET] Response body length: ${response.body.length}');
+      developer.log('📨 GET response: ${response.statusCode}', name: 'HttpServiceUtils');
+
+      return _handleResponse(response, 'GET', url);
+
+    } on SocketException catch (e) {
+      _logger.e('🔌 [HTTP_GET] Network error: $e');
+      developer.log('🔌 Network error: $e', name: 'HttpServiceUtils', error: e);
+      throw const HttpException('No internet connection. Please check your network.');
+    } on HttpException catch (e) {
+      _logger.e('🚫 [HTTP_GET] HTTP exception: $e');
+      developer.log('🚫 HTTP exception: $e', name: 'HttpServiceUtils', error: e);
+      rethrow;
+    } catch (e, stackTrace) {
+      _logger.e('💥 [HTTP_GET] Unexpected error: $e');
+      _logger.e('💥 [HTTP_GET] StackTrace: $stackTrace');
+      developer.log('💥 Unexpected GET error: $e', name: 'HttpServiceUtils', error: e, stackTrace: stackTrace);
+      throw HttpException('Request failed: ${e.toString()}');
+    }
+  }
+
+  /// Post data to API
+  static Future<dynamic> postData(String url, Map<String, dynamic> data, [BuildContext? context]) async {
+    try {
+      _logger.i('🚀 [HTTP_POST] Starting POST request to: $url');
+      _logger.d('📦 [HTTP_POST] Request payload: $data');
+      developer.log('🚀 Starting POST request to: $url', name: 'HttpServiceUtils');
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      // Try to get auth token (optional for some endpoints like banner creation)
+      final token = await SharedUtils.getString('auth_token');
+      if (token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+        _logger.d('🔑 [HTTP_POST] Auth token added to headers');
+        developer.log('🔑 Auth token added', name: 'HttpServiceUtils');
       } else {
-        log('❌ Error: Failed with status code ${response.statusCode}');
-        log('Error Response Body: ${response.body}');
-        throw HttpException(
-            'Failed to load data. Status: ${response.statusCode}');
+        _logger.d('⚠️ [HTTP_POST] No auth token available');
+        developer.log('⚠️ No auth token available', name: 'HttpServiceUtils');
       }
-    } on TimeoutException {
-      if (retryCount > 0) {
-        log('⏱️ Request timed out, retrying... (${retryCount} attempts left)');
-        await Future.delayed(const Duration(seconds: 2));
-        return await fetchData(url, token, retryCount - 1);
-      }
-      log('⏱️ Request timed out for URL: $url');
-      throw const HttpException(
-          'Request timed out. Please check your internet connection and try again.');
-    } catch (e) {
-      log('🐞 Error fetching data from $url: $e');
+
+      _logger.d('📋 [HTTP_POST] Request headers: $headers');
+
+      final jsonBody = jsonEncode(data);
+      _logger.d('📝 [HTTP_POST] JSON body: $jsonBody');
+
+      final response = await http
+          .post(
+            Uri.parse(url),
+            headers: headers,
+            body: jsonBody,
+          )
+          .timeout(const Duration(seconds: timeoutDuration));
+
+      _logger.i('📨 [HTTP_POST] Response received - Status: ${response.statusCode}');
+      _logger.d('📨 [HTTP_POST] Response headers: ${response.headers}');
+      _logger.d('📨 [HTTP_POST] Response body: ${response.body}');
+      developer.log('📨 POST response: ${response.statusCode}', name: 'HttpServiceUtils');
+
+      return _handleResponse(response, 'POST', url);
+
+    } on SocketException catch (e) {
+      _logger.e('🔌 [HTTP_POST] Network error: $e');
+      developer.log('🔌 Network error: $e', name: 'HttpServiceUtils', error: e);
+      throw const HttpException('No internet connection. Please check your network.');
+    } on HttpException catch (e) {
+      _logger.e('🚫 [HTTP_POST] HTTP exception: $e');
+      developer.log('🚫 HTTP exception: $e', name: 'HttpServiceUtils', error: e);
       rethrow;
+    } catch (e, stackTrace) {
+      _logger.e('💥 [HTTP_POST] Unexpected error: $e');
+      _logger.e('💥 [HTTP_POST] StackTrace: $stackTrace');
+      developer.log('💥 Unexpected POST error: $e', name: 'HttpServiceUtils', error: e, stackTrace: stackTrace);
+      throw HttpException('Request failed: ${e.toString()}');
     }
   }
 
-  // Enhanced response handler with logging
-  static String _handleResponse(String url, http.Response response, [BuildContext? context]) {
-    developer.log(
-      'Response received from $url',
-      error: 'Status Code: ${response.statusCode}',
-      time: DateTime.now(),
-    );
-
-    switch (response.statusCode) {
-      case 200:
-      case 201:
-        return response.body;
-
-      case 401:
-        if (context != null) {
-          _handleUnauthorized(context);
-        }
-        throw NetworkException('Authentication failed', response.statusCode);
-
-      case 500:
-        throw NetworkException(
-            'Server error: Bad Gateway', response.statusCode);
-
-      default:
-        throw NetworkException(
-            'Request failed with status: ${response.statusCode}',
-            response.statusCode);
-    }
-  }
-
-  // HTTP error handler
-
-  // Handle unauthorized access
-  static Future<void> _handleUnauthorized(BuildContext? context) async {
+  /// Put data to API
+  static Future<dynamic> putData(String url, Map<String, dynamic> data, [BuildContext? context]) async {
     try {
-      // Clear all authentication data
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
-      
-      // Log the logout action
-      developer.log('🔒 Authentication error detected, clearing credentials', 
-          time: DateTime.now(), level: 1000);
-      
-      // Use the global navigator key if context is not provided
-      if (context == null || !context.mounted) {
-        // We'll use the navigatorKey from navigation_helper.dart
-        if (navigatorKey.currentContext != null) {
-          // Show a message to the user
-          ScaffoldMessenger.of(navigatorKey.currentContext!).showSnackBar(
-            const SnackBar(
-              content: Text('Authentication error. Please login again.'),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          
-          // Delay the navigation slightly to allow the snackbar to be seen
-          Future.delayed(const Duration(seconds: 1), () {
-            Navigator.of(navigatorKey.currentContext!)
-              .pushNamedAndRemoveUntil(Routes.login, (route) => false);
-          });
-        }
-      } else if (context.mounted) {
-        // Use the provided context if it's valid
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Authentication error. Please login again.'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-        
-        Navigator.pushNamedAndRemoveUntil(context, Routes.login, (route) => false);
+      _logger.i('🔄 [HTTP_PUT] Starting PUT request to: $url');
+      _logger.d('📦 [HTTP_PUT] Request payload: $data');
+      developer.log('🔄 Starting PUT request to: $url', name: 'HttpServiceUtils');
+
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      final token = await SharedUtils.getString('auth_token');
+      if (token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+        _logger.d('🔑 [HTTP_PUT] Auth token added to headers');
       }
-    } catch (e) {
-      developer.log('Error handling unauthorized state: $e', 
-        error: e, stackTrace: StackTrace.current, time: DateTime.now(), level: 2000);
-    }
-  }
 
-  // Enhanced connectivity check
-  static Future<void> _checkConnectivity() async {
-    if (!await AppUtils.hasInternet()) {
-      developer.log(
-        'No internet connection detected',
-        time: DateTime.now(),
-        level: 1000,
-      );
-      throw NetworkException('No internet connection');
-    }
-  }
-
-  // POST request method
-  static Future<dynamic> postData(String url, dynamic data, [BuildContext? context]) async {
-    debugPrint('[log] Making POST request to: $url');
-    debugPrint('[log] Request body: $data');
-
-    try {
-      // Get authentication token
-      Map<String, String> headers = getDefaultHeaders();
-      
-      final authToken = await SharedUtils.getString('auth_token');
-      if (authToken.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $authToken';
-      }
-      
-      final response = await http.post(
-        Uri.parse(url),
-        headers: headers,
-        body: jsonEncode(data),
-      );
-
-      debugPrint('[log] Response status: ${response.statusCode}');
-      debugPrint('[log] Response: ${response.body}');
-      
-      return _handleResponse(url, response, context);
-    } catch (e) {
-      debugPrint('ERROR: Error in POST request');
-      debugPrint('Error details: $e');
-      debugPrint('Stack trace: ${StackTrace.current}');
-      rethrow;
-    }
-  }
-
-  // PUT request method
-  static Future<String> putData(
-      String url, dynamic body, [BuildContext? context]) async {
-    try {
-      await _checkConnectivity();
-
-      developer.log('Making PUT request to: $url', time: DateTime.now());
-      developer.log('Request body: $body', time: DateTime.now());
-      
-      // Get authentication token
-      Map<String, String> headers = getDefaultHeaders();
-      
-      final authToken = await SharedUtils.getString('auth_token');
-      if (authToken.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $authToken';
-      }
+      final jsonBody = jsonEncode(data);
+      _logger.d('📝 [HTTP_PUT] JSON body: $jsonBody');
 
       final response = await http
           .put(
             Uri.parse(url),
             headers: headers,
-            body: jsonEncode(body),
+            body: jsonBody,
           )
-          .timeout(timeoutDuration);
+          .timeout(const Duration(seconds: timeoutDuration));
 
-      developer.log('Response: ${response.body}', time: DateTime.now());
+      _logger.i('📨 [HTTP_PUT] Response received - Status: ${response.statusCode}');
+      _logger.d('📨 [HTTP_PUT] Response body: ${response.body}');
+      developer.log('📨 PUT response: ${response.statusCode}', name: 'HttpServiceUtils');
 
-      return _handleResponse(url, response, context);
-    } catch (e, stackTrace) {
-      _logError('Error in PUT request', e, stackTrace);
-      if (context != null && context.mounted) {
-        AppUtils.showInSnackBarNormal('Error updating data', context);
-      }
+      return _handleResponse(response, 'PUT', url);
+
+    } on SocketException catch (e) {
+      _logger.e('🔌 [HTTP_PUT] Network error: $e');
+      developer.log('🔌 Network error: $e', name: 'HttpServiceUtils', error: e);
+      throw const HttpException('No internet connection. Please check your network.');
+    } on HttpException catch (e) {
+      _logger.e('🚫 [HTTP_PUT] HTTP exception: $e');
+      developer.log('🚫 HTTP exception: $e', name: 'HttpServiceUtils', error: e);
       rethrow;
+    } catch (e, stackTrace) {
+      _logger.e('💥 [HTTP_PUT] Unexpected error: $e');
+      _logger.e('💥 [HTTP_PUT] StackTrace: $stackTrace');
+      developer.log('💥 Unexpected PUT error: $e', name: 'HttpServiceUtils', error: e, stackTrace: stackTrace);
+      throw HttpException('Request failed: ${e.toString()}');
     }
   }
 
-  // DELETE request method
-  static Future<String> deleteData(String url, [BuildContext? context]) async {
+  /// Delete data from API
+  static Future<dynamic> deleteData(String url, [BuildContext? context]) async {
     try {
-      await _checkConnectivity();
+      _logger.i('🗑️ [HTTP_DELETE] Starting DELETE request to: $url');
+      developer.log('🗑️ Starting DELETE request to: $url', name: 'HttpServiceUtils');
 
-      developer.log('Making DELETE request to: $url', time: DateTime.now());
-      
-      // Get authentication token
-      Map<String, String> headers = getDefaultHeaders();
-      
-      final authToken = await SharedUtils.getString('auth_token');
-      if (authToken.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $authToken';
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+
+      final token = await SharedUtils.getString('auth_token');
+      if (token.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $token';
+        _logger.d('🔑 [HTTP_DELETE] Auth token added to headers');
       }
 
       final response = await http
@@ -290,73 +198,145 @@ class HttpServiceUtils {
             Uri.parse(url),
             headers: headers,
           )
-          .timeout(timeoutDuration);
+          .timeout(const Duration(seconds: timeoutDuration));
 
-      developer.log('Response: ${response.body}', time: DateTime.now());
+      _logger.i('📨 [HTTP_DELETE] Response received - Status: ${response.statusCode}');
+      _logger.d('📨 [HTTP_DELETE] Response body: ${response.body}');
+      developer.log('📨 DELETE response: ${response.statusCode}', name: 'HttpServiceUtils');
 
-      return _handleResponse(url, response, context);
-    } catch (e, stackTrace) {
-      _logError('Error in DELETE request', e, stackTrace);
-      if (context != null && context.mounted) {
-        AppUtils.showInSnackBarNormal('Error deleting data', context);
-      }
+      return _handleResponse(response, 'DELETE', url);
+
+    } on SocketException catch (e) {
+      _logger.e('🔌 [HTTP_DELETE] Network error: $e');
+      developer.log('🔌 Network error: $e', name: 'HttpServiceUtils', error: e);
+      throw const HttpException('No internet connection. Please check your network.');
+    } on HttpException catch (e) {
+      _logger.e('🚫 [HTTP_DELETE] HTTP exception: $e');
+      developer.log('🚫 HTTP exception: $e', name: 'HttpServiceUtils', error: e);
       rethrow;
+    } catch (e, stackTrace) {
+      _logger.e('💥 [HTTP_DELETE] Unexpected error: $e');
+      _logger.e('💥 [HTTP_DELETE] StackTrace: $stackTrace');
+      developer.log('💥 Unexpected DELETE error: $e', name: 'HttpServiceUtils', error: e, stackTrace: stackTrace);
+      throw HttpException('Request failed: ${e.toString()}');
     }
   }
 
-// Add this method to your HttpServiceUtils class in service_utils.dart
-  static Future<bool> refreshToken(BuildContext context) async {
+  /// Handle HTTP response based on status code
+  static dynamic _handleResponse(http.Response response, String method, String url) {
+    final statusCode = response.statusCode;
+    final body = response.body;
+
+    _logger.d('🔍 [RESPONSE_HANDLER] Processing $method response for $url');
+    _logger.d('🔍 [RESPONSE_HANDLER] Status: $statusCode, Body length: ${body.length}');
+    developer.log('🔍 Processing $method response: $statusCode', name: 'HttpServiceUtils');
+
+    switch (statusCode) {
+      case 200:
+      case 201:
+      case 202:
+        _logger.i('✅ [RESPONSE_HANDLER] Success response: $statusCode');
+        developer.log('✅ Success response: $statusCode', name: 'HttpServiceUtils');
+        
+        if (body.isEmpty) {
+          _logger.d('📭 [RESPONSE_HANDLER] Empty response body');
+          return {};
+        }
+
+        try {
+          final decodedData = jsonDecode(body);
+          _logger.d('📋 [RESPONSE_HANDLER] Decoded JSON response');
+          return decodedData;
+        } catch (e) {
+          _logger.w('⚠️ [RESPONSE_HANDLER] Failed to decode JSON, returning raw body');
+          developer.log('⚠️ Failed to decode JSON response', name: 'HttpServiceUtils');
+          return body;
+        }
+
+      case 204:
+        _logger.i('✅ [RESPONSE_HANDLER] No content response: $statusCode');
+        developer.log('✅ No content response: $statusCode', name: 'HttpServiceUtils');
+        return {};
+
+      case 400:
+        _logger.e('❌ [RESPONSE_HANDLER] Bad request: $statusCode');
+        developer.log('❌ Bad request: $statusCode', name: 'HttpServiceUtils');
+        
+        // Try to extract the actual error message from response
+        try {
+          final errorData = jsonDecode(body);
+          final message = errorData['message'] ?? errorData['error'] ?? 'Bad request. Please check your input.';
+          throw HttpException(message);
+        } catch (e) {
+          // If JSON parsing fails, show generic message
+          throw const HttpException('Bad request. Please check your input.');
+        }
+
+      case 401:
+        _logger.e('🔐 [RESPONSE_HANDLER] Unauthorized: $statusCode');
+        developer.log('🔐 Unauthorized: $statusCode', name: 'HttpServiceUtils');
+        throw const HttpException('Unauthorized. Please login again.');
+
+      case 403:
+        _logger.e('🚫 [RESPONSE_HANDLER] Forbidden: $statusCode');
+        developer.log('🚫 Forbidden: $statusCode', name: 'HttpServiceUtils');
+        throw const HttpException('Access forbidden. You don\'t have permission to perform this action.');
+
+      case 404:
+        _logger.e('🔍 [RESPONSE_HANDLER] Not found: $statusCode');
+        developer.log('🔍 Not found: $statusCode', name: 'HttpServiceUtils');
+        throw const HttpException('Resource not found.');
+
+      case 422:
+        _logger.e('📝 [RESPONSE_HANDLER] Validation error: $statusCode');
+        developer.log('📝 Validation error: $statusCode', name: 'HttpServiceUtils');
+        
+        try {
+          final errorData = jsonDecode(body);
+          final message = errorData['message'] ?? 'Validation failed';
+          throw HttpException(message);
+        } catch (e) {
+          throw const HttpException('Validation failed. Please check your input.');
+        }
+
+      case 500:
+        _logger.e('🔥 [RESPONSE_HANDLER] Server error: $statusCode');
+        developer.log('🔥 Server error: $statusCode', name: 'HttpServiceUtils');
+        throw const HttpException('Server error. Please try again later.');
+
+      case 502:
+      case 503:
+      case 504:
+        _logger.e('⚡ [RESPONSE_HANDLER] Service unavailable: $statusCode');
+        developer.log('⚡ Service unavailable: $statusCode', name: 'HttpServiceUtils');
+        throw const HttpException('Service temporarily unavailable. Please try again later.');
+
+      default:
+        _logger.e('❓ [RESPONSE_HANDLER] Unexpected status code: $statusCode');
+        developer.log('❓ Unexpected status code: $statusCode', name: 'HttpServiceUtils');
+        throw HttpException('Request failed with status code: $statusCode');
+    }
+  }
+
+  /// Check network connectivity
+  static Future<bool> checkConnectivity() async {
     try {
-      log('🔄 Attempting to refresh authentication token');
-
-      // Get the refresh token from storage (you may need to store this)
-      final refreshToken = await SharedUtils.getString('refresh_token');
-
-      if (refreshToken.isEmpty) {
-        log('❌ No refresh token available');
-        return false;
-      }
-
-      // Get authentication headers
-      Map<String, String> headers = getDefaultHeaders();
-
-      // Make a request to your refresh token endpoint
-      // Replace with your actual refresh token endpoint
-      final response = await http.post(
-        Uri.parse('https://hiraplusapi.dharmadhara.com/api/auth/refresh-token'),
-        headers: headers,
-        body: jsonEncode({
-          'refreshToken': refreshToken,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final newToken = data['token']; // Adjust based on your API response
-
-        // Save the new token
-        await SharedUtils.setString('auth_token', newToken);
-
-        log('✅ Token refreshed successfully');
-        return true;
-      } else {
-        log('❌ Failed to refresh token: ${response.statusCode}');
-        return false;
-      }
+      _logger.d('🔍 [CONNECTIVITY] Checking network connectivity');
+      developer.log('🔍 Checking network connectivity', name: 'HttpServiceUtils');
+      
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(seconds: 5));
+      
+      final isConnected = result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+      
+      _logger.i('🌐 [CONNECTIVITY] Network status: ${isConnected ? 'Connected' : 'Disconnected'}');
+      developer.log('🌐 Network status: ${isConnected ? 'Connected' : 'Disconnected'}', name: 'HttpServiceUtils');
+      
+      return isConnected;
     } catch (e) {
-      log('❌ Error refreshing token: $e');
+      _logger.e('❌ [CONNECTIVITY] Network check failed: $e');
+      developer.log('❌ Network check failed: $e', name: 'HttpServiceUtils', error: e);
       return false;
     }
   }
-}
-
-class NetworkException implements Exception {
-  final String message;
-  final int? statusCode;
-
-  NetworkException(this.message, [this.statusCode]);
-
-  @override
-  String toString() =>
-      'NetworkException: $message${statusCode != null ? ' (Status Code: $statusCode)' : ''}';
 }

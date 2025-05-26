@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hira_plus/providers/date_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/banner_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/meal_service.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
