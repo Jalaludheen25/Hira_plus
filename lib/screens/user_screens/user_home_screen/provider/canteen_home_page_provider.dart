@@ -56,6 +56,7 @@ class CanteenHomeProvider extends ChangeNotifier {
   }
 
   void setMode(HomeViewMode mode) {
+    log('setMode called: ' + mode.toString(), name: 'CanteenHomeProvider');
     _mode = mode;
     notifyListeners();
   }

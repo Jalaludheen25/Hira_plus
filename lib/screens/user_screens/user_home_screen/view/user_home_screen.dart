@@ -8,6 +8,7 @@ import '../widgets/home_list_view.dart';
 import '../widgets/today_fab.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -20,6 +21,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   final ScrollController _scrollController = ScrollController();
   CanteenHomeProvider? _viewModeProvider;
   VoidCallback? _viewModeListener;
+
+  // Dummy users for All Users list (replace with API later)
+  final List<Map<String, String>> _dummyUsers = [
+    {
+      'name': 'John Doe',
+      'mobile': '9876543210',
+      'department': 'IT',
+      'designation': 'Developer',
+    },
+    {
+      'name': 'Jane Smith',
+      'mobile': '9123456780',
+      'department': 'HR',
+      'designation': 'Manager',
+    },
+    {
+      'name': 'Alice Brown',
+      'mobile': '9988776655',
+      'department': 'Finance',
+      'designation': 'Accountant',
+    },
+  ];
 
   @override
   void initState() {
@@ -120,12 +143,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     if (todayIndex != -1) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          todayIndex * 80.0, // Approximate item height
+          todayIndex * 56.0, // Use compact item height
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
       } else {
-        // Try again after a short delay if not attached yet
         Future.delayed(const Duration(milliseconds: 100), () {
           _scrollToToday(canteenProvider);
         });
@@ -136,6 +158,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final canteenProvider = Provider.of<CanteenHomeProvider>(context);
+    final mealCounts = canteenProvider.getCurrentMonthMealCounts();
 
     return Scaffold(
       appBar: AppBar(
@@ -148,57 +171,327 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             color: ColorClass.white,
           ),
         ),
-        actions: [
-          TextButton.icon(
-            onPressed: () {
-              canteenProvider.toggleMode();
-            },
-            icon: const Icon(Icons.calendar_month, color: Colors.white),
-            label: Text(
-              '${_getMonthName(canteenProvider.selectedDate.month)} ${canteenProvider.selectedDate.year}',
-              style: TextStyleClass.poppinsRegular(
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 1. Banner
+            _buildBanner(),
+            const SizedBox(height: 16),
+            // 2. Meal Count Card
+            _buildMealCountCard(mealCounts),
+            const SizedBox(height: 16),
+            // 3. Mark Meal Widget
+            _buildMarkMealWidget(context, canteenProvider),
+            const SizedBox(height: 16),
+            // 4. All Users Widget
+            _buildAllUsersWidget(context),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: ColorClass.primaryBase,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.campaign, color: ColorClass.white, size: 32),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Welcome to Hira+! (Banner placeholder)',
+              style: TextStyleClass.poppinsSemiBold(
                 fontSize: 16,
-                color: Colors.white,
+                color: ColorClass.white,
               ),
             ),
           ),
         ],
       ),
-      body: canteenProvider.mode == HomeViewMode.list
-          ? HomeListView(
-              scrollController: _scrollController,
-              getMonthName: _getMonthName,
-              getDayName: _getDayName,
-            )
-          : MonthCalendarView(
-              selectedDate: canteenProvider.selectedDate,
-              getMonthName: _getMonthName,
-              onMonthChanged: (int delta) {
-                final currentYear = DateTime.now().year;
-                final currentMonth = canteenProvider.selectedDate.month;
-                final newMonth = currentMonth + delta;
-                final newYear =
-                    canteenProvider.selectedDate.year + ((newMonth - 1) ~/ 12);
-                final normalizedMonth = ((newMonth - 1) % 12) + 1;
-                // Only allow months within the current year
-                if (newYear == currentYear &&
-                    normalizedMonth >= 1 &&
-                    normalizedMonth <= 12) {
-                  final newDate = DateTime(newYear, normalizedMonth, 1);
-                  canteenProvider.setSelectedDate(newDate, context);
-                }
-              },
+    );
+  }
+
+  Widget _buildMealCountCard(Map<String, int> mealCounts) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: ColorClass.brandLightGreen,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: ColorClass.brandDarkGreen.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'This Month\'s Meal Count',
+            style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildMealCountItem('Breakfast', mealCounts['breakfast'] ?? 0, Icons.free_breakfast, ColorClass.yellowBase),
+              _buildMealCountItem('Lunch', mealCounts['lunch'] ?? 0, Icons.lunch_dining, ColorClass.orangeBase),
+              _buildMealCountItem('Dinner', mealCounts['dinner'] ?? 0, Icons.dinner_dining, ColorClass.blueBase),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMealCountItem(String label, int count, IconData icon, Color color) {
+    return Column(
+      children: [
+        CircleAvatar(
+          backgroundColor: color.withOpacity(0.15),
+          child: Icon(icon, color: color),
+        ),
+        const SizedBox(height: 6),
+        Text('$count', style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: color)),
+        Text(label, style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.brandDarkGreen)),
+      ],
+    );
+  }
+
+  Widget _buildMarkMealWidget(BuildContext context, CanteenHomeProvider canteenProvider) {
+    return GestureDetector(
+      onTap: () => _showMealMarkBottomSheet(context, canteenProvider),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: ColorClass.brandDarkGreen,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.edit_calendar, color: ColorClass.white, size: 32),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Mark Your Meals',
+                style: TextStyleClass.poppinsSemiBold(fontSize: 16, color: ColorClass.white),
+              ),
             ),
-      floatingActionButton: canteenProvider.mode == HomeViewMode.list
-          ? TodayFAB(
-              onPressed: () {
-                canteenProvider.goToToday(context);
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToToday(canteenProvider);
-                });
-              },
-            )
-          : null,
+            Icon(Icons.arrow_forward_ios, color: ColorClass.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMealMarkBottomSheet(BuildContext context, CanteenHomeProvider canteenProvider) {
+    // Always show today's date and list view when opening
+    canteenProvider.setMode(HomeViewMode.list);
+    canteenProvider.setSelectedDate(DateTime.now(), context);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final canteenProvider = Provider.of<CanteenHomeProvider>(context);
+        print('Current HomeViewMode: ' + canteenProvider.mode.toString());
+
+        // Ensure scroll to today when in list mode
+        if (canteenProvider.mode == HomeViewMode.list) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToToday(canteenProvider);
+          });
+        }
+
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          minChildSize: 0.7,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  // Toggle between list and calendar view
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          onPressed: canteenProvider.mode == HomeViewMode.list
+                              ? null
+                              : () => canteenProvider.setMode(HomeViewMode.list),
+                          icon: Icon(Icons.list, color: canteenProvider.mode == HomeViewMode.list ? ColorClass.brandDarkGreen : Colors.grey),
+                          label: Text('List', style: TextStyleClass.poppinsRegular(fontSize: 15, color: canteenProvider.mode == HomeViewMode.list ? ColorClass.brandDarkGreen : Colors.grey)),
+                        ),
+                        TextButton.icon(
+                          onPressed: canteenProvider.mode == HomeViewMode.month
+                              ? null
+                              : () => canteenProvider.setMode(HomeViewMode.month),
+                          icon: Icon(Icons.calendar_month, color: canteenProvider.mode == HomeViewMode.month ? ColorClass.brandDarkGreen : Colors.grey),
+                          label: Text('Calendar', style: TextStyleClass.poppinsRegular(fontSize: 15, color: canteenProvider.mode == HomeViewMode.month ? ColorClass.brandDarkGreen : Colors.grey)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: canteenProvider.mode == HomeViewMode.list
+                        ? Stack(
+                            children: [
+                              HomeListView(
+                                scrollController: _scrollController,
+                                getMonthName: _getMonthName,
+                                getDayName: _getDayName,
+                                itemHeight: 56.0,
+                              ),
+                              Positioned(
+                                bottom: 16,
+                                right: 16,
+                                child: TodayFAB(
+                                  onPressed: () {
+                                    canteenProvider.setSelectedDate(DateTime.now(), context);
+                                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                                      _scrollToToday(canteenProvider);
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                        : MonthCalendarView(
+                            selectedDate: canteenProvider.selectedDate,
+                            getMonthName: _getMonthName,
+                            onMonthChanged: (int delta) {
+                              final currentYear = DateTime.now().year;
+                              final currentMonth = canteenProvider.selectedDate.month;
+                              final newMonth = currentMonth + delta;
+                              final newYear = canteenProvider.selectedDate.year + ((newMonth - 1) ~/ 12);
+                              final normalizedMonth = ((newMonth - 1) % 12) + 1;
+                              if (newYear == currentYear && normalizedMonth >= 1 && normalizedMonth <= 12) {
+                                final newDate = DateTime(newYear, normalizedMonth, 1);
+                                canteenProvider.setSelectedDate(newDate, context);
+                              }
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildAllUsersWidget(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showAllUsersBottomSheet(context),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: ColorClass.brandDarkGreen,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.people, color: ColorClass.white, size: 32),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'All Users',
+                style: TextStyleClass.poppinsSemiBold(fontSize: 16, color: ColorClass.white),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: ColorClass.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAllUsersBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      'All Users',
+                      style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: ColorClass.blueBase),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.separated(
+                      controller: scrollController,
+                      itemCount: _dummyUsers.length,
+                      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
+                      itemBuilder: (context, index) {
+                        final user = _dummyUsers[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: ColorClass.blueBase.withOpacity(0.15),
+                            child: Icon(Icons.person, color: ColorClass.blueBase),
+                          ),
+                          title: Text(user['name'] ?? '', style: TextStyleClass.poppinsSemiBold(fontSize: 16)),
+                          subtitle: Text(
+                            '${user['mobile']}\n${user['department'] ?? user['designation']}',
+                            style: TextStyleClass.poppinsRegular(fontSize: 13, color: Colors.grey[700]),
+                          ),
+                          isThreeLine: true,
+                          trailing: IconButton(
+                            icon: Icon(Icons.call, color: ColorClass.greenBase),
+                            onPressed: () async {
+                              final phone = user['mobile'];
+                              if (phone != null && phone.isNotEmpty) {
+                                final uri = Uri(scheme: 'tel', path: phone);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri);
+                                }
+                              }
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

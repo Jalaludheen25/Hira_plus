@@ -67,16 +67,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 children: [
                   CustomDrawerItem(
-                    title: 'Meal Marked Count',
-                    icon: LucideIcons.utensils,
-                    onTap: () {
-                      navigateTo(
-                          context: context,
-                          route: Routes.mealCount,
-                          useRootNavigator: true);
-                    },
-                  ),
-                  CustomDrawerItem(
                     title: 'Feedback',
                     icon: LucideIcons.messageCircle,
                     onTap: () async {
