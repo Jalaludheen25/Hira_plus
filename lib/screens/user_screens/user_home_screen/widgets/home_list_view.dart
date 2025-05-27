@@ -9,12 +9,13 @@ class HomeListView extends StatelessWidget {
   final String Function(int) getMonthName;
   final String Function(int) getDayName;
   final double itemHeight;
-  const HomeListView({
-    required this.scrollController,
-    required this.getMonthName,
-    required this.getDayName,
-    this.itemHeight = 56.0,
-    Key? key}) : super(key: key);
+  const HomeListView(
+      {required this.scrollController,
+      required this.getMonthName,
+      required this.getDayName,
+      this.itemHeight = 56.0,
+      Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -205,8 +206,8 @@ class HomeListView extends StatelessWidget {
                         if (isToday)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                              vertical: 1,
+                              horizontal: 6,
+                              vertical: 2,
                             ),
                             decoration: BoxDecoration(
                               color: ColorClass.brandLightGreen,
@@ -215,7 +216,7 @@ class HomeListView extends StatelessWidget {
                             child: Text(
                               date.day.toString().padLeft(2, '0'),
                               style: TextStyleClass.poppinsMedium(
-                                fontSize: 16,
+                                fontSize: 20,
                                 color: ColorClass.brandDarkGreen,
                               ),
                             ),
@@ -224,14 +225,15 @@ class HomeListView extends StatelessWidget {
                           Text(
                             date.day.toString().padLeft(2, '0'),
                             style: TextStyleClass.poppinsMedium(
-                              fontSize: 16,
+                              fontSize: 20,
                               color: ColorClass.textMain900,
                             ),
                           ),
+                        const SizedBox(height: 4),
                         Text(
                           ' ${getDayName(date.weekday)}',
                           style: TextStyleClass.poppinsMedium(
-                            fontSize: 10,
+                            fontSize: 12,
                             color: ColorClass.neutral400,
                           ),
                         ),
@@ -249,7 +251,7 @@ class HomeListView extends StatelessWidget {
                           isChecked: hasBreakfast,
                           mealType: 'breakfast',
                           isEnabled: true,
-                          size: 18.0,
+                          size: 24.0,
                         ),
                         _buildMealCheckbox(
                           context: context,
@@ -257,7 +259,7 @@ class HomeListView extends StatelessWidget {
                           isChecked: hasLunch,
                           mealType: 'lunch',
                           isEnabled: true,
-                          size: 18.0,
+                          size: 24.0,
                         ),
                         _buildMealCheckbox(
                           context: context,
@@ -265,7 +267,7 @@ class HomeListView extends StatelessWidget {
                           isChecked: hasDinner,
                           mealType: 'dinner',
                           isEnabled: true,
-                          size: 18.0,
+                          size: 24.0,
                         ),
                       ],
                     ),
@@ -288,17 +290,19 @@ class HomeListView extends StatelessWidget {
     required bool isEnabled,
     double size = 24.0,
   }) {
-    final mealProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
+    final mealProvider =
+        Provider.of<CanteenHomeProvider>(context, listen: false);
     final now = DateTime.now();
-    
+
     // Set cutoff time to 6:00 AM today
     final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
     final checkDate = DateTime(date.year, date.month, date.day);
-    
+
     // Check if the date is in the past or if it's today and past 6 AM
     final isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
-    final isRestrictedToday = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && 
-                             now.isAfter(cutoffTime);
+    final isRestrictedToday =
+        checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) &&
+            now.isAfter(cutoffTime);
     final isRestricted = isPast || isRestrictedToday;
 
     return Transform.scale(
@@ -341,7 +345,8 @@ class HomeListView extends StatelessWidget {
               ),
             );
           } else {
-            _updateMeal(context, mealProvider, date, mealType, newValue ?? false);
+            _updateMeal(
+                context, mealProvider, date, mealType, newValue ?? false);
           }
         },
         activeColor: ColorClass.brandLightGreen,

@@ -124,7 +124,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     if (todayIndex != -1) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
-          todayIndex * 56.0, // Use compact item height
+          todayIndex * 85.0, // Increased from 56.0 to 80.0 for taller items
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
@@ -376,6 +376,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         final canteenProvider = Provider.of<CanteenHomeProvider>(context);
@@ -452,7 +454,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 scrollController: _scrollController,
                                 getMonthName: _getMonthName,
                                 getDayName: _getDayName,
-                                itemHeight: 56.0,
+                                itemHeight: 90.0, // Increased from 56.0 to 80.0
                               ),
                               Positioned(
                                 bottom: 16,
