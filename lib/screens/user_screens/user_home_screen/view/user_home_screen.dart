@@ -403,6 +403,25 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               child: Column(
                 children: [
+                  // Close button and view toggle
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(),
+                      Text("Mark Your Meals",
+                          style: TextStyleClass.poppinsSemiBold(
+                              fontSize: 18, color: ColorClass.brandDarkGreen)),
+                      Container(
+                        padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                        alignment: Alignment.topRight,
+                        child: IconButton(
+                          icon: Icon(Icons.close, size: 30),
+                          onPressed: () => Navigator.pop(context),
+                          color: ColorClass.brandDarkGreen,
+                        ),
+                      ),
+                    ],
+                  ),
                   // Toggle between list and calendar view
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -556,10 +575,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               child: Column(
                 children: [
-                  // Header with refresh button
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 16.0),
+                  // Close button and header
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -568,11 +586,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           style: TextStyleClass.poppinsSemiBold(
                               fontSize: 18, color: ColorClass.brandDarkGreen),
                         ),
-                        IconButton(
-                          onPressed: () =>
-                              canteenProvider.fetchContacts(context),
-                          icon: const Icon(Icons.refresh,
-                              color: ColorClass.brandDarkGreen),
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () =>
+                                  canteenProvider.fetchContacts(context),
+                              icon: const Icon(Icons.refresh,
+                                  size: 30, color: ColorClass.brandDarkGreen),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close, size: 30),
+                              onPressed: () => Navigator.pop(context),
+                              color: ColorClass.brandDarkGreen,
+                            ),
+                          ],
                         ),
                       ],
                     ),
