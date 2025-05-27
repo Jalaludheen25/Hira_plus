@@ -34,6 +34,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       canteenProvider.fetchUserMeals(context);
       _scrollToToday(canteenProvider);
       _setupViewModeListener();
+      canteenProvider.fetchBanner();
+      
+
     });
   }
 
