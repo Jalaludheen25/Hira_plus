@@ -293,18 +293,20 @@ class ManagerScreen extends StatelessWidget {
         currentIndex: navProvider.selectedIndex,
         onTap: navProvider.setIndex,
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await showDialog(
-            context: context,
-            builder: (context) =>  BannerDialog (),
-          );
-          // Optionally handle result
-        },
-        icon: const Icon(Icons.add_photo_alternate,color: ColorClass.white,),
-        label:  Text('Create Banner',style: TextStyleClass.poppinsMedium(fontSize: 16,color: ColorClass.white),),
-        backgroundColor: ColorClass.brandDarkGreen,
-      ),
+      floatingActionButton: navProvider.selectedIndex == 0
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final result = await showDialog(
+                  context: context,
+                  builder: (context) =>  BannerDialog (),
+                );
+                // Optionally handle result
+              },
+              icon: const Icon(Icons.add_photo_alternate,color: ColorClass.white,),
+              label:  Text('Create Banner',style: TextStyleClass.poppinsMedium(fontSize: 16,color: ColorClass.white),),
+              backgroundColor: ColorClass.brandDarkGreen,
+            )
+          : null,
     );
   }
 }
