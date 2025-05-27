@@ -24,28 +24,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   CanteenHomeProvider? _viewModeProvider;
   VoidCallback? _viewModeListener;
 
-  // Dummy users for All Users list (replace with API later)
-  final List<Map<String, String>> _dummyUsers = [
-    {
-      'name': 'John Doe',
-      'mobile': '9876543210',
-      'department': 'IT',
-      'designation': 'Developer',
-    },
-    {
-      'name': 'Jane Smith',
-      'mobile': '9123456780',
-      'department': 'HR',
-      'designation': 'Manager',
-    },
-    {
-      'name': 'Alice Brown',
-      'mobile': '9988776655',
-      'department': 'Finance',
-      'designation': 'Accountant',
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -188,7 +166,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             _buildMarkMealWidget(context, canteenProvider),
             const SizedBox(height: 16),
             // 4. All Users Widget
-            _buildAllUsersWidget(context),
+            _buildAllUsersWidget(context, canteenProvider),
             const SizedBox(height: 24),
           ],
         ),
@@ -478,9 +456,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildAllUsersWidget(BuildContext context) {
+  Widget _buildAllUsersWidget(BuildContext context, CanteenHomeProvider canteenProvider) {
     return GestureDetector(
-      onTap: () => _showAllUsersBottomSheet(context),
+      onTap: () => _showAllUsersBottomSheet(context, canteenProvider),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16),
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
@@ -505,7 +483,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  void _showAllUsersBottomSheet(BuildContext context) {
+  void _showAllUsersBottomSheet(BuildContext context, CanteenHomeProvider canteenProvider) {
+    // Fetch contacts when opening the bottom sheet
+    canteenProvider.fetchContacts(context);
+    
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -523,43 +504,161 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               child: Column(
                 children: [
+                  // Header with refresh button
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text(
-                      'All Users',
-                      style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: ColorClass.blueBase),
+                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'All Users',
+                          style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+                        ),
+                        IconButton(
+                          onPressed: () => canteenProvider.fetchContacts(context),
+                          icon: const Icon(Icons.refresh, color: ColorClass.brandDarkGreen),
+                        ),
+                      ],
                     ),
                   ),
+                  // Content based on state
                   Expanded(
-                    child: ListView.separated(
-                      controller: scrollController,
-                      itemCount: _dummyUsers.length,
-                      separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
-                      itemBuilder: (context, index) {
-                        final user = _dummyUsers[index];
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: ColorClass.blueBase.withOpacity(0.15),
-                            child: Icon(Icons.person, color: ColorClass.blueBase),
-                          ),
-                          title: Text(user['name'] ?? '', style: TextStyleClass.poppinsSemiBold(fontSize: 16)),
-                          subtitle: Text(
-                            '${user['mobile']}\n${user['department'] ?? user['designation']}',
-                            style: TextStyleClass.poppinsRegular(fontSize: 13, color: Colors.grey[700]),
-                          ),
-                          isThreeLine: true,
-                          trailing: IconButton(
-                            icon: Icon(Icons.call, color: ColorClass.greenBase),
-                            onPressed: () async {
-                              final phone = user['mobile'];
-                              if (phone != null && phone.isNotEmpty) {
-                                final uri = Uri(scheme: 'tel', path: phone);
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri);
-                                }
-                              }
-                            },
-                          ),
+                    child: Consumer<CanteenHomeProvider>(
+                      builder: (context, provider, child) {
+                        if (provider.isLoadingContacts) {
+                          return const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 16),
+                                Text("Loading contacts..."),
+                              ],
+                            ),
+                          );
+                        }
+
+                        if (provider.contactsError.isNotEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  provider.contactsError.contains('Authentication')
+                                      ? Icons.lock_outline
+                                      : Icons.error_outline,
+                                  size: 48,
+                                  color: provider.contactsError.contains('Authentication')
+                                      ? Colors.orange
+                                      : Colors.red,
+                                ),
+                                const SizedBox(height: 16),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                  child: Text(
+                                    provider.contactsError,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyleClass.poppinsMedium(
+                                      fontSize: 16,
+                                      color: provider.contactsError.contains('Authentication')
+                                          ? Colors.orange
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  icon: const Icon(Icons.refresh),
+                                  label: const Text('Retry'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: ColorClass.brandDarkGreen,
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  onPressed: () => provider.fetchContacts(context),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        if (provider.contacts.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.people_outline,
+                                  size: 48,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No contacts available',
+                                  style: TextStyleClass.poppinsMedium(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return ListView.separated(
+                          controller: scrollController,
+                          itemCount: provider.contacts.length,
+                          separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
+                          itemBuilder: (context, index) {
+                            final contact = provider.contacts[index];
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundColor: ColorClass.brandLightGreen,
+                                child: Text(
+                                  contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
+                                  style: TextStyleClass.poppinsBold(
+                                    fontSize: 16,
+                                    color: ColorClass.brandDarkGreen,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                contact.name,
+                                style: TextStyleClass.poppinsSemiBold(fontSize: 16),
+                              ),
+                              subtitle: Text(
+                                '${contact.phoneNumber}\n${contact.designation} • ${contact.department}',
+                                style: TextStyleClass.poppinsRegular(fontSize: 13, color: Colors.grey[700]),
+                              ),
+                              isThreeLine: true,
+                              trailing: IconButton(
+                                icon: Icon(Icons.call, color: ColorClass.brandDarkGreen),
+                                onPressed: () async {
+                                  if (contact.phoneNumber.isNotEmpty) {
+                                    final uri = Uri(scheme: 'tel', path: contact.phoneNumber);
+                                    try {
+                                      if (await canLaunchUrl(uri)) {
+                                        await launchUrl(uri);
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Cannot make call to ${contact.phoneNumber}'),
+                                            backgroundColor: ColorClass.redBase,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Error making call: $e'),
+                                          backgroundColor: ColorClass.redBase,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

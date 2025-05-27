@@ -1,5 +1,3 @@
-
-
 class ApiUrls {
  static const String baseUrl = "https://hiraplusapi.dharmadhara.com/api";
  static const String directUsUrl = "https://directus.d4dx.co";
@@ -20,7 +18,6 @@ class ApiUrls {
     return '$baseUrl/admin/meals/$mealType?date=$date';
   }
 
-
  static String getVerifyOtp() {
     return '$baseUrl/auth/verify-otp';
  }
@@ -36,6 +33,11 @@ class ApiUrls {
     return '$baseUrl/mess-staff/login';
   }
 
+  // ################## CONTACTS ##################
+  static String getContacts() {
+    return '$baseUrl/auth/users';
+  }
+
   // ################## MEALS FOR USER ##################
 
   static String getMealsForUser() {
@@ -45,7 +47,6 @@ class ApiUrls {
   static String addMealForUser() {
     return '$baseUrl/meals/mark';
   }
-
 
   // ################## MESS STAFF SCREEN ##################
   static String getMessStaffMeals() {
@@ -79,11 +80,4 @@ class ApiUrls {
   static String deleteBanner(String id) {
     return '$baseUrl/banner/$id';
   }
-
-
-
-  
 }
-
-
-

@@ -7,12 +7,15 @@ import 'package:hira_plus/providers/date_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/banner_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/meal_service.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/services/contact_service.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/contact_model.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
 
 enum HomeViewMode { list, month }
 
 class CanteenHomeProvider extends ChangeNotifier {
   final MealService _mealService = MealService();
+  final ContactService _contactService = ContactService();
 
   // HomeViewModeProvider properties
   HomeViewMode _mode = HomeViewMode.list;
@@ -33,6 +36,11 @@ class CanteenHomeProvider extends ChangeNotifier {
   BannerModel? _banner;
   BannerModel? get banner => _banner;
 
+  // Contacts state
+  List<ContactModel> _contacts = [];
+  bool _isLoadingContacts = false;
+  String _contactsError = '';
+
   // Getters
   // View mode getters
   HomeViewMode get mode => _mode;
@@ -48,6 +56,11 @@ class CanteenHomeProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
   DateTime get lastFetchTime => _lastFetchTime;
+
+  // Contacts getters
+  List<ContactModel> get contacts => _contacts;
+  bool get isLoadingContacts => _isLoadingContacts;
+  String get contactsError => _contactsError;
 
   // Constructor
   CanteenHomeProvider(BuildContext context) {
@@ -309,46 +322,103 @@ class CanteenHomeProvider extends ChangeNotifier {
     }
   }
 
-// Method to count meals for the current month
-Map<String, int> getCurrentMonthMealCounts() {
-  final now = DateTime.now();
-  final currentMonth = now.month;
-  final currentYear = now.year;
-  
-  log('🔢 Calculating meal counts for month: $currentMonth/$currentYear', name: 'MealCounts');
-
-  int breakfastCount = 0;
-  int lunchCount = 0;
-  int dinnerCount = 0;
-
-  // Get first and last day of the current month
-  final firstDay = DateTime(currentYear, currentMonth, 1);
-  final lastDay = DateTime(currentYear, currentMonth + 1, 0);
-
-  log('📅 Date range: ${firstDay.toString().split(' ')[0]} to ${lastDay.toString().split(' ')[0]}', name: 'MealCounts');
-
-  // Iterate through each day of the month
-  for (DateTime date = firstDay; 
-       date.isBefore(lastDay.add(const Duration(days: 1))); 
-       date = date.add(const Duration(days: 1))) {
+  // Method to count meals for the current month
+  Map<String, int> getCurrentMonthMealCounts() {
+    final now = DateTime.now();
+    final currentMonth = now.month;
+    final currentYear = now.year;
     
-    if (isMealMarked(date, 'breakfast')) breakfastCount++;
-    if (isMealMarked(date, 'lunch')) lunchCount++;
-    if (isMealMarked(date, 'dinner')) dinnerCount++;
+    log('🔢 Calculating meal counts for month: $currentMonth/$currentYear', name: 'MealCounts');
+
+    int breakfastCount = 0;
+    int lunchCount = 0;
+    int dinnerCount = 0;
+
+    // Get first and last day of the current month
+    final firstDay = DateTime(currentYear, currentMonth, 1);
+    final lastDay = DateTime(currentYear, currentMonth + 1, 0);
+
+    log('📅 Date range: ${firstDay.toString().split(' ')[0]} to ${lastDay.toString().split(' ')[0]}', name: 'MealCounts');
+
+    // Iterate through each day of the month
+    for (DateTime date = firstDay; 
+         date.isBefore(lastDay.add(const Duration(days: 1))); 
+         date = date.add(const Duration(days: 1))) {
+      
+      if (isMealMarked(date, 'breakfast')) breakfastCount++;
+      if (isMealMarked(date, 'lunch')) lunchCount++;
+      if (isMealMarked(date, 'dinner')) dinnerCount++;
+    }
+
+    log('✅ Meal counts calculated: Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount', name: 'MealCounts');
+
+    return {
+      'breakfast': breakfastCount,
+      'lunch': lunchCount,
+      'dinner': dinnerCount,
+    };
   }
-
-  log('✅ Meal counts calculated: Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount', name: 'MealCounts');
-
-  return {
-    'breakfast': breakfastCount,
-    'lunch': lunchCount,
-    'dinner': dinnerCount,
-  };
-}
 
   Future<void> fetchBanner() async {
     _banner = await _mealService.fetchBanner();
     notifyListeners();
+  }
+
+  // Contacts methods
+  Future<void> fetchContacts(BuildContext context) async {
+    try {
+      if (_isLoadingContacts) {
+        log('🔄 Already fetching contacts, ignoring new request', name: 'CanteenHomeProvider');
+        return;
+      }
+
+      _isLoadingContacts = true;
+      _contactsError = '';
+      notifyListeners();
+
+      log('🔄 Starting to fetch contacts in provider', name: 'CanteenHomeProvider');
+      final contactsResponse = await _contactService.getContacts(context);
+
+      if (contactsResponse.success) {
+        _contacts = contactsResponse.users;
+        log('✅ Successfully updated contacts in provider. Count: ${_contacts.length}', 
+            name: 'CanteenHomeProvider');
+      } else {
+        _contactsError = 'Failed to fetch contacts from server';
+        log('❌ Contacts API returned success: false', name: 'CanteenHomeProvider');
+      }
+
+      _isLoadingContacts = false;
+      notifyListeners();
+    } on HttpException catch (e) {
+      log('🚨 HTTP error in contacts provider: $e', name: 'CanteenHomeProvider');
+      _isLoadingContacts = false;
+
+      if (e.toString().contains('401')) {
+        _contactsError = 'Authentication error. Please login again.';
+      } else {
+        _contactsError = 'Failed to load contacts. Please check your connection and try again.';
+      }
+
+      notifyListeners();
+    } catch (e) {
+      log('❌ Error in contacts provider: $e', name: 'CanteenHomeProvider');
+      _isLoadingContacts = false;
+      _contactsError = 'Failed to load contacts. Please try again.';
+      notifyListeners();
+    }
+  }
+
+  /// Search contacts by name, department, or designation
+  List<ContactModel> searchContacts(String query) {
+    if (query.isEmpty) return _contacts;
+    
+    final lowerQuery = query.toLowerCase();
+    return _contacts.where((contact) {
+      return contact.name.toLowerCase().contains(lowerQuery) ||
+             contact.department.toLowerCase().contains(lowerQuery) ||
+             contact.designation.toLowerCase().contains(lowerQuery);
+    }).toList();
   }
 
   // Reset all provider state
@@ -358,6 +428,9 @@ Map<String, int> getCurrentMonthMealCounts() {
     _errorMessage = '';
     _mode = HomeViewMode.list;
     _selectedDate = DateTime.now();
+    _contacts = [];
+    _isLoadingContacts = false;
+    _contactsError = '';
     _updateAllDays(null);
     notifyListeners();
   }
