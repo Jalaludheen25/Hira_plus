@@ -21,10 +21,10 @@ class MealService {
       String url;
       if (userType == 'Manager') {
         url = '${ApiUrls.baseUrl}/admin/users/meals';
-        log('🎯 Using manager' );
+        log('🎯 Using manager');
       } else if (userType == 'Mess Staff') {
         url = '${ApiUrls.baseUrl}/mess-staff/meals';
-        log('🎯 Using mess staff' );
+        log('🎯 Using mess staff');
       } else {
         url = ApiUrls.getMealsForUser();
         log('🎯 Using regular user endpoint: $url');
@@ -48,7 +48,8 @@ class MealService {
       log('Number of meals received: ${mealsList.length}');
 
       // Convert each JSON object to MealModel
-      final meals = mealsList.map((mealJson) => MealModel.fromJson(mealJson)).toList();
+      final meals =
+          mealsList.map((mealJson) => MealModel.fromJson(mealJson)).toList();
       log('✅ Meals parsed successfully: ${meals.length} meals');
 
       // Sort meals by date (most recent first)
@@ -125,9 +126,10 @@ class MealService {
 
       // Make API request
       log('Sending POST request to server...', name: 'MealService');
-      final response = await HttpServiceUtils.postData(url, requestBody, context);
+      final response =
+          await HttpServiceUtils.postData(url, requestBody, context);
       log('Response received from server', name: 'MealService');
-      
+
       if (response == null) {
         log('❌ Error: Empty response from meals API', name: 'MealService');
         throw HttpException('Failed to add meal: Empty response');
@@ -162,10 +164,18 @@ class MealService {
         log('No banner data received');
         return null;
       }
-      // Parse the first banner (if any)
-      final banner = BannerModel.fromJson(response[0]);
-      log('Banner fetched: ' + banner.bannerImage);
-      return banner;
+
+      // Convert all banners to BannerModel objects
+      final banners =
+          (response as List).map((json) => BannerModel.fromJson(json)).toList();
+
+      // Sort banners by updatedAt date in descending order (most recent first)
+      banners.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+      // Get the most recent banner
+      final latestBanner = banners.first;
+      log('Latest banner fetched: ${latestBanner.title} (Updated: ${latestBanner.updatedAt})');
+      return latestBanner;
     } catch (e) {
       log('Error fetching banner: $e');
       return null;

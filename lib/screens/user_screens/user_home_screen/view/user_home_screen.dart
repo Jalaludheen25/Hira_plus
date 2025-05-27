@@ -67,7 +67,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           Provider.of<CanteenHomeProvider>(context, listen: false);
       _scrollToToday(canteenProvider);
       // Set user info for profile card
-      final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+      final profileProvider =
+          Provider.of<ProfileScreenProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       profileProvider.setUserInfo(
         userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'),
@@ -224,14 +225,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         errorBuilder: (context, error, stackTrace) => Container(
                           color: ColorClass.brandDarkGreen,
                           alignment: Alignment.center,
-                          child: Icon(Icons.broken_image, color: ColorClass.white, size: 48),
+                          child: Icon(Icons.broken_image,
+                              color: ColorClass.white, size: 48),
                         ),
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Container(
                             color: ColorClass.brandDarkGreen,
                             alignment: Alignment.center,
-                            child: CircularProgressIndicator(color: ColorClass.white),
+                            child: CircularProgressIndicator(
+                                color: ColorClass.white),
                           );
                         },
                       ),
@@ -241,7 +244,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       right: 0,
                       bottom: 0,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         color: Colors.black.withOpacity(0.4),
                         child: Text(
                           banner.title,
@@ -266,13 +270,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final Completer<Size> completer = Completer();
     final Image image = Image.network(url);
     image.image.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener((ImageInfo info, bool _) {
-        final myImage = info.image;
-        completer.complete(Size(myImage.width.toDouble(), myImage.height.toDouble()));
-      }, onError: (dynamic _, __) {
-        completer.complete(const Size(16, 9)); // fallback
-      }),
-    );
+          ImageStreamListener((ImageInfo info, bool _) {
+            final myImage = info.image;
+            completer.complete(
+                Size(myImage.width.toDouble(), myImage.height.toDouble()));
+          }, onError: (dynamic _, __) {
+            completer.complete(const Size(16, 9)); // fallback
+          }),
+        );
     return completer.future;
   }
 
@@ -296,15 +301,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         children: [
           Text(
             'This Month\'s Meal Count',
-            style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+            style: TextStyleClass.poppinsSemiBold(
+                fontSize: 18, color: ColorClass.brandDarkGreen),
           ),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildMealCountItem('Breakfast', mealCounts['breakfast'] ?? 0, Icons.free_breakfast, ColorClass.yellowBase),
-              _buildMealCountItem('Lunch', mealCounts['lunch'] ?? 0, Icons.lunch_dining, ColorClass.orangeBase),
-              _buildMealCountItem('Dinner', mealCounts['dinner'] ?? 0, Icons.dinner_dining, ColorClass.blueBase),
+              _buildMealCountItem('Breakfast', mealCounts['breakfast'] ?? 0,
+                  Icons.free_breakfast, ColorClass.yellowBase),
+              _buildMealCountItem('Lunch', mealCounts['lunch'] ?? 0,
+                  Icons.lunch_dining, ColorClass.orangeBase),
+              _buildMealCountItem('Dinner', mealCounts['dinner'] ?? 0,
+                  Icons.dinner_dining, ColorClass.blueBase),
             ],
           ),
         ],
@@ -312,7 +321,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildMealCountItem(String label, int count, IconData icon, Color color) {
+  Widget _buildMealCountItem(
+      String label, int count, IconData icon, Color color) {
     return Column(
       children: [
         CircleAvatar(
@@ -320,13 +330,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           child: Icon(icon, color: color),
         ),
         const SizedBox(height: 6),
-        Text('$count', style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: color)),
-        Text(label, style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.brandDarkGreen)),
+        Text('$count',
+            style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: color)),
+        Text(label,
+            style: TextStyleClass.poppinsRegular(
+                fontSize: 14, color: ColorClass.brandDarkGreen)),
       ],
     );
   }
 
-  Widget _buildMarkMealWidget(BuildContext context, CanteenHomeProvider canteenProvider) {
+  Widget _buildMarkMealWidget(
+      BuildContext context, CanteenHomeProvider canteenProvider) {
     return GestureDetector(
       onTap: () => _showMealMarkBottomSheet(context, canteenProvider),
       child: Container(
@@ -343,7 +357,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             Expanded(
               child: Text(
                 'Mark Your Meals',
-                style: TextStyleClass.poppinsSemiBold(fontSize: 16, color: ColorClass.white),
+                style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 16, color: ColorClass.white),
               ),
             ),
             Icon(Icons.arrow_forward_ios, color: ColorClass.white, size: 20),
@@ -353,7 +368,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  void _showMealMarkBottomSheet(BuildContext context, CanteenHomeProvider canteenProvider) {
+  void _showMealMarkBottomSheet(
+      BuildContext context, CanteenHomeProvider canteenProvider) {
     // Always show today's date and list view when opening
     canteenProvider.setMode(HomeViewMode.list);
     canteenProvider.setSelectedDate(DateTime.now(), context);
@@ -380,7 +396,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
                 children: [
@@ -393,16 +410,36 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         TextButton.icon(
                           onPressed: canteenProvider.mode == HomeViewMode.list
                               ? null
-                              : () => canteenProvider.setMode(HomeViewMode.list),
-                          icon: Icon(Icons.list, color: canteenProvider.mode == HomeViewMode.list ? ColorClass.brandDarkGreen : Colors.grey),
-                          label: Text('List', style: TextStyleClass.poppinsRegular(fontSize: 15, color: canteenProvider.mode == HomeViewMode.list ? ColorClass.brandDarkGreen : Colors.grey)),
+                              : () =>
+                                  canteenProvider.setMode(HomeViewMode.list),
+                          icon: Icon(Icons.list,
+                              color: canteenProvider.mode == HomeViewMode.list
+                                  ? ColorClass.brandDarkGreen
+                                  : Colors.grey),
+                          label: Text('List',
+                              style: TextStyleClass.poppinsRegular(
+                                  fontSize: 15,
+                                  color:
+                                      canteenProvider.mode == HomeViewMode.list
+                                          ? ColorClass.brandDarkGreen
+                                          : Colors.grey)),
                         ),
                         TextButton.icon(
                           onPressed: canteenProvider.mode == HomeViewMode.month
                               ? null
-                              : () => canteenProvider.setMode(HomeViewMode.month),
-                          icon: Icon(Icons.calendar_month, color: canteenProvider.mode == HomeViewMode.month ? ColorClass.brandDarkGreen : Colors.grey),
-                          label: Text('Calendar', style: TextStyleClass.poppinsRegular(fontSize: 15, color: canteenProvider.mode == HomeViewMode.month ? ColorClass.brandDarkGreen : Colors.grey)),
+                              : () =>
+                                  canteenProvider.setMode(HomeViewMode.month),
+                          icon: Icon(Icons.calendar_month,
+                              color: canteenProvider.mode == HomeViewMode.month
+                                  ? ColorClass.brandDarkGreen
+                                  : Colors.grey),
+                          label: Text('Calendar',
+                              style: TextStyleClass.poppinsRegular(
+                                  fontSize: 15,
+                                  color:
+                                      canteenProvider.mode == HomeViewMode.month
+                                          ? ColorClass.brandDarkGreen
+                                          : Colors.grey)),
                         ),
                       ],
                     ),
@@ -422,8 +459,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 right: 16,
                                 child: TodayFAB(
                                   onPressed: () {
-                                    canteenProvider.setSelectedDate(DateTime.now(), context);
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    canteenProvider.setSelectedDate(
+                                        DateTime.now(), context);
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
                                       _scrollToToday(canteenProvider);
                                     });
                                   },
@@ -436,13 +475,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             getMonthName: _getMonthName,
                             onMonthChanged: (int delta) {
                               final currentYear = DateTime.now().year;
-                              final currentMonth = canteenProvider.selectedDate.month;
+                              final currentMonth =
+                                  canteenProvider.selectedDate.month;
                               final newMonth = currentMonth + delta;
-                              final newYear = canteenProvider.selectedDate.year + ((newMonth - 1) ~/ 12);
+                              final newYear =
+                                  canteenProvider.selectedDate.year +
+                                      ((newMonth - 1) ~/ 12);
                               final normalizedMonth = ((newMonth - 1) % 12) + 1;
-                              if (newYear == currentYear && normalizedMonth >= 1 && normalizedMonth <= 12) {
-                                final newDate = DateTime(newYear, normalizedMonth, 1);
-                                canteenProvider.setSelectedDate(newDate, context);
+                              if (newYear == currentYear &&
+                                  normalizedMonth >= 1 &&
+                                  normalizedMonth <= 12) {
+                                final newDate =
+                                    DateTime(newYear, normalizedMonth, 1);
+                                canteenProvider.setSelectedDate(
+                                    newDate, context);
                               }
                             },
                           ),
@@ -456,7 +502,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildAllUsersWidget(BuildContext context, CanteenHomeProvider canteenProvider) {
+  Widget _buildAllUsersWidget(
+      BuildContext context, CanteenHomeProvider canteenProvider) {
     return GestureDetector(
       onTap: () => _showAllUsersBottomSheet(context, canteenProvider),
       child: Container(
@@ -473,7 +520,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             Expanded(
               child: Text(
                 'All Users',
-                style: TextStyleClass.poppinsSemiBold(fontSize: 16, color: ColorClass.white),
+                style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 16, color: ColorClass.white),
               ),
             ),
             Icon(Icons.arrow_forward_ios, color: ColorClass.white, size: 20),
@@ -483,10 +531,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  void _showAllUsersBottomSheet(BuildContext context, CanteenHomeProvider canteenProvider) {
+  void _showAllUsersBottomSheet(
+      BuildContext context, CanteenHomeProvider canteenProvider) {
     // Fetch contacts when opening the bottom sheet
     canteenProvider.fetchContacts(context);
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -500,23 +549,28 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             return Container(
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Column(
                 children: [
                   // Header with refresh button
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16.0, horizontal: 16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'All Users',
-                          style: TextStyleClass.poppinsSemiBold(fontSize: 18, color: ColorClass.brandDarkGreen),
+                          style: TextStyleClass.poppinsSemiBold(
+                              fontSize: 18, color: ColorClass.brandDarkGreen),
                         ),
                         IconButton(
-                          onPressed: () => canteenProvider.fetchContacts(context),
-                          icon: const Icon(Icons.refresh, color: ColorClass.brandDarkGreen),
+                          onPressed: () =>
+                              canteenProvider.fetchContacts(context),
+                          icon: const Icon(Icons.refresh,
+                              color: ColorClass.brandDarkGreen),
                         ),
                       ],
                     ),
@@ -544,23 +598,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  provider.contactsError.contains('Authentication')
+                                  provider.contactsError
+                                          .contains('Authentication')
                                       ? Icons.lock_outline
                                       : Icons.error_outline,
                                   size: 48,
-                                  color: provider.contactsError.contains('Authentication')
+                                  color: provider.contactsError
+                                          .contains('Authentication')
                                       ? Colors.orange
                                       : Colors.red,
                                 ),
                                 const SizedBox(height: 16),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32.0),
                                   child: Text(
                                     provider.contactsError,
                                     textAlign: TextAlign.center,
                                     style: TextStyleClass.poppinsMedium(
                                       fontSize: 16,
-                                      color: provider.contactsError.contains('Authentication')
+                                      color: provider.contactsError
+                                              .contains('Authentication')
                                           ? Colors.orange
                                           : Colors.red,
                                     ),
@@ -574,7 +632,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                     backgroundColor: ColorClass.brandDarkGreen,
                                     foregroundColor: Colors.white,
                                   ),
-                                  onPressed: () => provider.fetchContacts(context),
+                                  onPressed: () =>
+                                      provider.fetchContacts(context),
                                 ),
                               ],
                             ),
@@ -607,14 +666,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         return ListView.separated(
                           controller: scrollController,
                           itemCount: provider.contacts.length,
-                          separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
+                          separatorBuilder: (_, __) =>
+                              Divider(height: 1, color: Colors.grey[200]),
                           itemBuilder: (context, index) {
                             final contact = provider.contacts[index];
                             return ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: ColorClass.brandLightGreen,
                                 child: Text(
-                                  contact.name.isNotEmpty ? contact.name[0].toUpperCase() : '?',
+                                  contact.name.isNotEmpty
+                                      ? contact.name[0].toUpperCase()
+                                      : '?',
                                   style: TextStyleClass.poppinsBold(
                                     fontSize: 16,
                                     color: ColorClass.brandDarkGreen,
@@ -623,33 +685,42 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               ),
                               title: Text(
                                 contact.name,
-                                style: TextStyleClass.poppinsSemiBold(fontSize: 16),
+                                style: TextStyleClass.poppinsSemiBold(
+                                    fontSize: 16),
                               ),
                               subtitle: Text(
                                 '${contact.phoneNumber}\n${contact.designation} • ${contact.department}',
-                                style: TextStyleClass.poppinsRegular(fontSize: 13, color: Colors.grey[700]),
+                                style: TextStyleClass.poppinsRegular(
+                                    fontSize: 13, color: Colors.grey[700]),
                               ),
                               isThreeLine: true,
                               trailing: IconButton(
-                                icon: Icon(Icons.call, color: ColorClass.brandDarkGreen),
+                                icon: Icon(Icons.call,
+                                    color: ColorClass.brandDarkGreen),
                                 onPressed: () async {
                                   if (contact.phoneNumber.isNotEmpty) {
-                                    final uri = Uri(scheme: 'tel', path: contact.phoneNumber);
+                                    final uri = Uri(
+                                        scheme: 'tel',
+                                        path: contact.phoneNumber);
                                     try {
                                       if (await canLaunchUrl(uri)) {
                                         await launchUrl(uri);
                                       } else {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           SnackBar(
-                                            content: Text('Cannot make call to ${contact.phoneNumber}'),
+                                            content: Text(
+                                                'Cannot make call to ${contact.phoneNumber}'),
                                             backgroundColor: ColorClass.redBase,
                                           ),
                                         );
                                       }
                                     } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
                                         SnackBar(
-                                          content: Text('Error making call: $e'),
+                                          content:
+                                              Text('Error making call: $e'),
                                           backgroundColor: ColorClass.redBase,
                                         ),
                                       );
