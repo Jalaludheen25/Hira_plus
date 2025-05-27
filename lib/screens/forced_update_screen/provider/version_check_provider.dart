@@ -125,7 +125,7 @@ class VersionCheckProvider extends ChangeNotifier {
 
   void launchAppStore({required BuildContext context}) async {
     // Replace these URLs with your actual app store URLs
-    const String iOSUrl = 'https://apps.apple.com/in/app/muhasaba/id1620752442';
+    const String iOSUrl = '';
 
     if (Platform.isAndroid) {
       await launchUrl(Uri.parse(
