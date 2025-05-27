@@ -13,22 +13,30 @@ class BannerDialog extends StatelessWidget {
 
   Future<void> _pickImage(BuildContext context) async {
     print('[BannerDialog] 📸 Starting image picker process');
-    
-    var status = await Permission.photos.request();
-    print('[BannerDialog] 🔐 Photo permission status: $status');
-    
+
+    // First check the current permission status
+    var status = await Permission.photos.status;
+    print('[BannerDialog] 🔐 Current photo permission status: $status');
+
+    if (status.isDenied) {
+      // If denied for the first time, request permission
+      status = await Permission.photos.request();
+      print('[BannerDialog] 🔐 Requested permission status: $status');
+    }
+
     if (status.isGranted) {
       print('[BannerDialog] ✅ Permission granted, opening gallery');
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      
+
       if (pickedFile != null) {
         final file = File(pickedFile.path);
         final fileSize = await file.length();
         final fileExtension = pickedFile.path.split('.').last.toLowerCase();
-        
-        print('[BannerDialog] 📁 File selected: ${pickedFile.path}, Size: $fileSize bytes, Type: $fileExtension');
-        
+
+        print(
+            '[BannerDialog] 📁 File selected: ${pickedFile.path}, Size: $fileSize bytes, Type: $fileExtension');
+
         Provider.of<BannerUploadProvider>(context, listen: false)
             .setImage(file);
         print('[BannerDialog] ✅ File set successfully');
@@ -36,8 +44,30 @@ class BannerDialog extends StatelessWidget {
         print('[BannerDialog] ❌ No image selected by user');
       }
     } else if (status.isPermanentlyDenied) {
-      print('[BannerDialog] 🚫 Permission permanently denied, opening settings');
-      openAppSettings();
+      print('[BannerDialog] 🚫 Permission permanently denied');
+
+      // Show a dialog explaining why we need permission and how to enable it
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Photo Access Required'),
+          content: const Text(
+              'To upload banners, we need access to your photos. Please enable photo access in your device settings.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings();
+              },
+              child: const Text('Open Settings'),
+            ),
+          ],
+        ),
+      );
     } else {
       print('[BannerDialog] ❌ Permission denied: $status');
       toastification.show(
@@ -54,19 +84,21 @@ class BannerDialog extends StatelessWidget {
 
   void _submit(BuildContext context) async {
     final provider = Provider.of<BannerUploadProvider>(context, listen: false);
-    
+
     print('[BannerDialog] 🚀 Starting banner submission');
     print('[BannerDialog] 📋 Title: "${provider.title}"');
-    print('[BannerDialog] 🖼️ Image selected: ${provider.selectedImage != null}');
-    
+    print(
+        '[BannerDialog] 🖼️ Image selected: ${provider.selectedImage != null}');
+
     if (provider.selectedImage != null) {
       final file = provider.selectedImage!;
       final fileSize = await file.length();
-      print('[BannerDialog] 📊 Image details: Path=${file.path}, Size=$fileSize bytes');
+      print(
+          '[BannerDialog] 📊 Image details: Path=${file.path}, Size=$fileSize bytes');
     }
-    
+
     final error = await provider.submitBanner();
-    
+
     if (error == null) {
       print('[BannerDialog] ✅ Banner created successfully!');
       Navigator.of(context).pop(true);
@@ -102,7 +134,8 @@ class BannerDialog extends StatelessWidget {
       },
       child: Consumer<BannerUploadProvider>(
         builder: (context, provider, _) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: SingleChildScrollView(
@@ -110,12 +143,10 @@ class BannerDialog extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Create Banner', 
-                    style: TextStyleClass.poppinsSemiBold(fontSize: 20)
-                  ),
+                  Text('Create Banner',
+                      style: TextStyleClass.poppinsSemiBold(fontSize: 20)),
                   const SizedBox(height: 16),
-                  
+
                   // Title input field
                   TextField(
                     onChanged: (value) {
@@ -129,7 +160,7 @@ class BannerDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Image preview container
                   Container(
                     height: 180,
@@ -163,12 +194,14 @@ class BannerDialog extends StatelessWidget {
                           ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Pick image button
                   ElevatedButton.icon(
                     onPressed: () => _pickImage(context),
                     icon: const Icon(Icons.image),
-                    label: Text(provider.selectedImage != null ? 'Change Image' : 'Pick Image'),
+                    label: Text(provider.selectedImage != null
+                        ? 'Change Image'
+                        : 'Pick Image'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorClass.brandDarkGreen,
                       foregroundColor: Colors.white,
@@ -176,11 +209,13 @@ class BannerDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  
+
                   // Create banner button
                   ElevatedButton(
-                    onPressed: (provider.isLoading || provider.title.trim().isEmpty || provider.selectedImage == null) 
-                        ? null 
+                    onPressed: (provider.isLoading ||
+                            provider.title.trim().isEmpty ||
+                            provider.selectedImage == null)
+                        ? null
                         : () => _submit(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorClass.brandDarkGreen,
@@ -192,30 +227,30 @@ class BannerDialog extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(
-                                width: 20, 
-                                height: 20, 
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2, 
-                                  color: Colors.white
-                                )
-                              ),
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white)),
                               SizedBox(width: 12),
                               Text('Creating...'),
                             ],
                           )
                         : const Text(
                             'Create Banner',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           ),
                   ),
-                  
+
                   // Cancel button
                   const SizedBox(height: 12),
                   TextButton(
-                    onPressed: provider.isLoading ? null : () {
-                      print('[BannerDialog] ❌ Dialog cancelled by user');
-                      Navigator.of(context).pop(false);
-                    },
+                    onPressed: provider.isLoading
+                        ? null
+                        : () {
+                            print('[BannerDialog] ❌ Dialog cancelled by user');
+                            Navigator.of(context).pop(false);
+                          },
                     child: const Text('Cancel'),
                   ),
                 ],
