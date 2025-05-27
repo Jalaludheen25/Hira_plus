@@ -1,3 +1,5 @@
+
+
 class ApiUrls {
  static const String baseUrl = "https://hiraplusapi.dharmadhara.com/api";
  static const String directUsUrl = "https://directus.d4dx.co";
@@ -77,5 +79,11 @@ class ApiUrls {
   static String deleteBanner(String id) {
     return '$baseUrl/banner/$id';
   }
+
+
+
+  
 }
+
+
 

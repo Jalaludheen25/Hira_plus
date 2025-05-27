@@ -7,111 +7,158 @@ import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
-import 'dart:developer' as developer;
-import 'package:logger/logger.dart';
 
 class BannerUploadProvider extends ChangeNotifier {
-  final Logger _logger = Logger();
   String title = '';
   File? selectedImage;
   bool isLoading = false;
 
   void setTitle(String value) {
-    _logger.i('🏷️ [BANNER] Setting title: $value');
-    developer.log('🏷️ Setting banner title: $value', name: 'BannerUploadProvider');
+    print('[BannerUploadProvider] 📝 Setting title: "$value"');
     title = value;
     notifyListeners();
   }
 
   void setImage(File? file) {
-    _logger.i('📷 [BANNER] Setting image: ${file?.path}');
-    developer.log('📷 Setting banner image: ${file?.path}', name: 'BannerUploadProvider');
+    if (file != null) {
+      print('[BannerUploadProvider] 🖼️ Setting image: ${file.path}');
+      print('[BannerUploadProvider] 📊 File exists: ${file.existsSync()}');
+      if (file.existsSync()) {
+        final sizeInBytes = file.lengthSync();
+        final sizeInMB = (sizeInBytes / (1024 * 1024)).toStringAsFixed(2);
+        print('[BannerUploadProvider] 📏 File size: $sizeInBytes bytes ($sizeInMB MB)');
+      }
+    } else {
+      print('[BannerUploadProvider] ❌ Setting image to null');
+    }
     selectedImage = file;
     notifyListeners();
   }
 
   Future<String?> uploadToSpaces(File file) async {
+    print('[BannerUploadProvider] 🚀 Starting upload to DigitalOcean Spaces');
+    print('[BannerUploadProvider] 📁 File path: ${file.path}');
+    print('[BannerUploadProvider] 📊 File exists: ${file.existsSync()}');
+    
+    if (!file.existsSync()) {
+      print('[BannerUploadProvider] ❌ File does not exist!');
+      return null;
+    }
+
     try {
-      _logger.i('🚀 [UPLOAD] Starting DigitalOcean Spaces upload');
-      developer.log('🚀 Starting DigitalOcean Spaces upload: ${file.path}', name: 'BannerUploadProvider');
+      // Get current UTC time
+      final now = DateTime.now().toUtc();
+      print('[BannerUploadProvider] ⏰ Current UTC time: $now');
       
+      // Create a clean filename without special characters
+      final timestamp = DateFormat('yyyyMMdd_HHmmss').format(now);
+      final originalName = file.path.split('/').last;
+      final cleanName = originalName.replaceAll(RegExp(r'[^a-zA-Z0-9._-]'), '_');
+      final fileName = '${timestamp}_$cleanName';
+      
+      print('[BannerUploadProvider] 📄 Original filename: $originalName');
+      print('[BannerUploadProvider] 📄 Clean filename: $fileName');
+
       final folder = DOSpacesConfig.folder;
-      final fileName = '${DateFormat('yyyyMMdd_HHmmss').format(DateTime.now())}_${file.path.split('/').last}';
-      final objectPath = '$folder/$fileName';
+      final objectKey = '$folder/$fileName'; // This is the S3 object key
       
-      _logger.d('📁 [UPLOAD] Folder: $folder');
-      _logger.d('📄 [UPLOAD] FileName: $fileName');
-      _logger.d('🗂️ [UPLOAD] ObjectPath: $objectPath');
-      
-      developer.log('📁 Upload details - Folder: $folder, FileName: $fileName', name: 'BannerUploadProvider');
-      
-      // Use the raw path for URL construction (no encoding here)
-      final url = 'https://${DOSpacesConfig.bucket}.${DOSpacesConfig.endpoint}/$objectPath';
+      print('[BannerUploadProvider] 📂 Bucket: ${DOSpacesConfig.bucket}');
+      print('[BannerUploadProvider] 📂 Folder: $folder');
+      print('[BannerUploadProvider] 🔑 Object key: $objectKey');
+
+      // Build the URL - no encoding for the URL construction
+      final host = '${DOSpacesConfig.bucket}.${DOSpacesConfig.endpoint}';
+      final url = 'https://$host/$objectKey';
+      print('[BannerUploadProvider] 🌐 Upload URL: $url');
+
       final contentType = _getMimeType(file.path);
-      final dateString = HttpDate.format(DateTime.now().toUtc());
+      final dateHeader = HttpDate.format(now);
       final fileBytes = await file.readAsBytes();
       final contentLength = fileBytes.length;
 
-      _logger.d('🌐 [UPLOAD] URL: $url');
-      _logger.d('📝 [UPLOAD] ContentType: $contentType');
-      _logger.d('📅 [UPLOAD] Date: $dateString');
-      _logger.d('📏 [UPLOAD] ContentLength: $contentLength');
+      print('[BannerUploadProvider] 📋 Content type: $contentType');
+      print('[BannerUploadProvider] 📅 Date header: $dateHeader');
+      print('[BannerUploadProvider] 📏 Content length: $contentLength bytes');
 
-      // Create the string to sign with x-amz-acl header
-      final canonicalResource = '/${DOSpacesConfig.bucket}/$objectPath';
-      final canonicalizedAmzHeaders = 'x-amz-acl:public-read\n';
-      final stringToSign = 'PUT\n\n$contentType\n$dateString\n$canonicalizedAmzHeaders$canonicalResource';
+      // Create the canonical string to sign for AWS Signature Version 2
+      // Format: HTTP-VERB + "\n" + Content-MD5 + "\n" + Content-Type + "\n" + Date + "\n" + CanonicalizedAmzHeaders + CanonicalizedResource
+      final canonicalizedResource = '/${DOSpacesConfig.bucket}/$objectKey';
+      final stringToSign = 'PUT\n\n$contentType\n$dateHeader\nx-amz-acl:public-read\n$canonicalizedResource';
       
-      _logger.d('🔏 [UPLOAD] CanonicalResource: $canonicalResource');
-      _logger.d('🔏 [UPLOAD] CanonicalizedAmzHeaders: $canonicalizedAmzHeaders');
-      _logger.d('📋 [UPLOAD] StringToSign: $stringToSign');
+      print('[BannerUploadProvider] 🔐 Canonicalized resource: $canonicalizedResource');
+      print('[BannerUploadProvider] 🔐 String to sign:');
+      print('[BannerUploadProvider] ────────────────────');
+      print('[BannerUploadProvider] $stringToSign');
+      print('[BannerUploadProvider] ────────────────────');
       
-      developer.log('🔏 String to sign: $stringToSign', name: 'BannerUploadProvider');
-
-      // Generate signature
+      // Calculate HMAC-SHA1 signature
       final hmac = Hmac(sha1, utf8.encode(DOSpacesConfig.secret));
       final digest = hmac.convert(utf8.encode(stringToSign));
       final signature = base64.encode(digest.bytes);
       final authHeader = 'AWS ${DOSpacesConfig.key}:$signature';
-
-      _logger.d('🔑 [UPLOAD] Signature: $signature');
-      _logger.d('🔐 [UPLOAD] AuthHeader: $authHeader');
       
-      developer.log('🔑 Generated signature for upload', name: 'BannerUploadProvider');
+      print('[BannerUploadProvider] 🔑 Access key: ${DOSpacesConfig.key}');
+      print('[BannerUploadProvider] 🔒 Secret key length: ${DOSpacesConfig.secret.length} chars');
+      print('[BannerUploadProvider] 🔐 Calculated signature: $signature');
+      print('[BannerUploadProvider] 🔐 Authorization header: $authHeader');
 
-      // Make the request
+      // Prepare headers
+      final headers = {
+        'Host': host,
+        'Authorization': authHeader,
+        'Date': dateHeader,
+        'Content-Type': contentType,
+        'Content-Length': contentLength.toString(),
+        'x-amz-acl': 'public-read',
+      };
+      
+      print('[BannerUploadProvider] 📋 All headers:');
+      headers.forEach((key, value) {
+        print('[BannerUploadProvider] 📋   $key: $value');
+      });
+
+      // Make the PUT request
+      print('[BannerUploadProvider] 📡 Making PUT request...');
       final response = await http.put(
         Uri.parse(url),
-        headers: {
-          'Authorization': authHeader,
-          'Date': dateString,
-          'Content-Type': contentType,
-          'Content-Length': contentLength.toString(),
-          'x-amz-acl': 'public-read',
-        },
+        headers: headers,
         body: fileBytes,
       );
 
-      _logger.i('📤 [UPLOAD] Response status: ${response.statusCode}');
-      _logger.d('📤 [UPLOAD] Response headers: ${response.headers}');
+      print('[BannerUploadProvider] 📡 Upload response status: ${response.statusCode}');
+      print('[BannerUploadProvider] 📡 Upload response headers: ${response.headers}');
       
-      developer.log('📤 Upload response status: ${response.statusCode}', name: 'BannerUploadProvider');
-
-      if (response.statusCode == 200) {
-        final publicUrl = '${DOSpacesConfig.cdnEndpoint}/$objectPath';
-        _logger.i('✅ [UPLOAD] Upload successful! Public URL: $publicUrl');
-        developer.log('✅ Upload successful! Public URL: $publicUrl', name: 'BannerUploadProvider');
-        return publicUrl;
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final finalUrl = '${DOSpacesConfig.cdnEndpoint}/$objectKey';
+        print('[BannerUploadProvider] ✅ Upload successful!');
+        print('[BannerUploadProvider] 🔗 Final CDN URL: $finalUrl');
+        return finalUrl;
       } else {
-        _logger.e('❌ [UPLOAD] Upload failed with status ${response.statusCode}');
-        _logger.e('❌ [UPLOAD] Error response: ${response.body}');
-        developer.log('❌ Upload failed: ${response.statusCode} - ${response.body}', name: 'BannerUploadProvider', error: response.body);
+        print('[BannerUploadProvider] ❌ Upload failed with status: ${response.statusCode}');
+        print('[BannerUploadProvider] 📄 Error response body: ${response.body}');
+        
+        // Parse XML error for better debugging
+        try {
+          if (response.body.contains('<Code>')) {
+            final codeMatch = RegExp(r'<Code>(.*?)</Code>').firstMatch(response.body);
+            final messageMatch = RegExp(r'<Message>(.*?)</Message>').firstMatch(response.body);
+            
+            if (codeMatch != null) {
+              print('[BannerUploadProvider] 🚨 Error code: ${codeMatch.group(1)}');
+            }
+            if (messageMatch != null) {
+              print('[BannerUploadProvider] 💬 Error message: ${messageMatch.group(1)}');
+            }
+          }
+        } catch (e) {
+          print('[BannerUploadProvider] ⚠️ Could not parse XML error: $e');
+        }
+        
         return null;
       }
     } catch (e, stackTrace) {
-      _logger.e('💥 [UPLOAD] Exception during upload: $e');
-      _logger.e('💥 [UPLOAD] StackTrace: $stackTrace');
-      developer.log('💥 Upload exception: $e', name: 'BannerUploadProvider', error: e, stackTrace: stackTrace);
+      print('[BannerUploadProvider] 💥 Exception during upload: $e');
+      print('[BannerUploadProvider] 📚 Stack trace: $stackTrace');
       return null;
     }
   }
@@ -127,154 +174,105 @@ class BannerUploadProvider extends ChangeNotifier {
       'svg' => 'image/svg+xml',
       _ => 'application/octet-stream',
     };
-    
-    _logger.d('🎭 [MIME] File extension: $ext -> MIME type: $mimeType');
-    developer.log('🎭 MIME type detected: $ext -> $mimeType', name: 'BannerUploadProvider');
+    print('[BannerUploadProvider] 🏷️ File extension: $ext, MIME type: $mimeType');
     return mimeType;
   }
 
-  Future<String?> submitBanner() async {
+  // Alternative upload method using presigned URL (if the direct upload keeps failing)
+  Future<String?> uploadWithPresignedUrl(File file) async {
+    print('[BannerUploadProvider] 🔄 Attempting upload with presigned URL method');
+    
     try {
-      _logger.i('🎯 [SUBMIT] Starting banner submission process');
-      developer.log('🎯 Starting banner submission process', name: 'BannerUploadProvider');
+      // You would need to implement an API endpoint that generates presigned URLs
+      // This is a more secure and reliable method for uploads
       
-      // Validation
-      if (title.trim().isEmpty) {
-        _logger.w('⚠️ [SUBMIT] Validation failed: Title is empty');
-        developer.log('⚠️ Validation failed: Title is empty', name: 'BannerUploadProvider');
-        return 'Please enter a banner title.';
-      }
-      
-      if (selectedImage == null) {
-        _logger.w('⚠️ [SUBMIT] Validation failed: No image selected');
-        developer.log('⚠️ Validation failed: No image selected', name: 'BannerUploadProvider');
-        return 'Please select an image.';
-      }
-
-      // Check file size
-      final fileSize = await selectedImage!.length();
-      if (fileSize > DOSpacesConfig.maxFileSize) {
-        _logger.w('⚠️ [SUBMIT] Validation failed: File too large ($fileSize bytes)');
-        developer.log('⚠️ Validation failed: File too large ($fileSize bytes)', name: 'BannerUploadProvider');
-        return 'Image size must be less than ${(DOSpacesConfig.maxFileSize / 1024 / 1024).toStringAsFixed(1)}MB.';
-      }
-
-      _logger.i('✅ [SUBMIT] Validation passed. Title: "${title.trim()}", File size: $fileSize bytes');
-      developer.log('✅ Validation passed', name: 'BannerUploadProvider');
-
-      isLoading = true;
-      notifyListeners();
-
-      // Step 1: Upload image to DigitalOcean Spaces
-      _logger.i('🔄 [SUBMIT] Step 1: Uploading image to DigitalOcean Spaces');
-      developer.log('🔄 Step 1: Uploading image to DigitalOcean Spaces', name: 'BannerUploadProvider');
-      
-      final imageUrl = await uploadToSpaces(selectedImage!);
-      
-      if (imageUrl == null) {
-        isLoading = false;
-        notifyListeners();
-        _logger.e('❌ [SUBMIT] Step 1 failed: Image upload failed');
-        developer.log('❌ Step 1 failed: Image upload failed', name: 'BannerUploadProvider');
-        return 'Failed to upload image to cloud storage. Please try again.';
-      }
-
-      _logger.i('✅ [SUBMIT] Step 1 completed: Image uploaded to $imageUrl');
-      developer.log('✅ Step 1 completed: Image uploaded successfully', name: 'BannerUploadProvider');
-
-      // Step 2: Save banner data to backend
-      _logger.i('🔄 [SUBMIT] Step 2: Saving banner data to backend');
-      developer.log('🔄 Step 2: Saving banner data to backend', name: 'BannerUploadProvider');
-      
-      // Try different field name formats that the backend might expect
-      final bannerDataOptions = [
-        // Option 1: Original format
-        {
-          'title': title.trim(),
-          'bannerImage': imageUrl,
-          'createdAt': DateTime.now().toIso8601String(),
-        },
-        // Option 2: Different field name
-        {
-          'title': title.trim(),
-          'image': imageUrl,
-          'createdAt': DateTime.now().toIso8601String(),
-        },
-        // Option 3: Simplified format
-        {
-          'title': title.trim(),
-          'bannerImage': imageUrl,
-        },
-        // Option 4: Alternative field name
-        {
-          'title': title.trim(),
-          'imageUrl': imageUrl,
-        }
-      ];
-
-      // Try each format until one works
-      dynamic response;
-      String? lastError;
-      
-      for (int i = 0; i < bannerDataOptions.length; i++) {
-        final bannerData = bannerDataOptions[i];
-        
-        _logger.d('📦 [SUBMIT] Trying banner data format ${i + 1}: $bannerData');
-        developer.log('📦 Trying banner data format ${i + 1}', name: 'BannerUploadProvider');
-
-        try {
-          response = await HttpServiceUtils.postData(
-            ApiUrls.postBanner(), 
-            bannerData,
-          );
-          
-          _logger.i('✅ [SUBMIT] Banner data format ${i + 1} worked!');
-          developer.log('✅ Banner data format ${i + 1} worked!', name: 'BannerUploadProvider');
-          break; // Success, exit the loop
-          
-        } catch (e) {
-          lastError = e.toString();
-          _logger.w('⚠️ [SUBMIT] Banner data format ${i + 1} failed: $e');
-          developer.log('⚠️ Banner data format ${i + 1} failed: $e', name: 'BannerUploadProvider');
-          
-          // If this is the last option, throw the error
-          if (i == bannerDataOptions.length - 1) {
-            throw e;
-          }
-          // Otherwise, continue to next format
-        }
-      }
-
-      _logger.i('📨 [SUBMIT] Backend response received');
-      _logger.d('📨 [SUBMIT] Response data: $response');
-      developer.log('📨 Backend response received', name: 'BannerUploadProvider');
-
-      isLoading = false;
-      notifyListeners();
-
-      _logger.i('✅ [SUBMIT] Banner creation completed successfully');
-      developer.log('✅ Banner creation completed successfully', name: 'BannerUploadProvider');
-      return null; // Success
-
-    } catch (e, stackTrace) {
-      isLoading = false;
-      notifyListeners();
-      
-      _logger.e('💥 [SUBMIT] Exception during banner submission: $e');
-      _logger.e('💥 [SUBMIT] StackTrace: $stackTrace');
-      developer.log('💥 Banner submission exception: $e', name: 'BannerUploadProvider', error: e, stackTrace: stackTrace);
-      
-      return 'Error creating banner: ${e.toString()}';
+      // For now, return null to fall back to direct upload
+      return null;
+    } catch (e) {
+      print('[BannerUploadProvider] ❌ Presigned URL upload failed: $e');
+      return null;
     }
   }
 
-  void reset() {
-    _logger.i('🔄 [RESET] Resetting banner upload provider');
-    developer.log('🔄 Resetting banner upload provider', name: 'BannerUploadProvider');
+  Future<String?> submitBanner() async {
+    print('[BannerUploadProvider] 🚀 Starting banner submission');
+    print('[BannerUploadProvider] 📋 Title: "$title"');
+    print('[BannerUploadProvider] 🖼️ Image selected: ${selectedImage != null}');
     
-    title = '';
-    selectedImage = null;
-    isLoading = false;
+    // Validation
+    if (title.trim().isEmpty) {
+      print('[BannerUploadProvider] ❌ Title is empty');
+      return 'Please enter a banner title.';
+    }
+    
+    if (selectedImage == null) {
+      print('[BannerUploadProvider] ❌ No image selected');
+      return 'Please select an image.';
+    }
+
+    if (!selectedImage!.existsSync()) {
+      print('[BannerUploadProvider] ❌ Selected image file does not exist');
+      return 'Selected image file is not accessible.';
+    }
+
+    // Check file size
+    final fileSize = selectedImage!.lengthSync();
+    print('[BannerUploadProvider] 📏 File size: $fileSize bytes');
+    if (fileSize > DOSpacesConfig.maxFileSize) {
+      final maxSizeMB = (DOSpacesConfig.maxFileSize / (1024 * 1024)).toStringAsFixed(1);
+      final currentSizeMB = (fileSize / (1024 * 1024)).toStringAsFixed(1);
+      print('[BannerUploadProvider] ❌ File too large: ${currentSizeMB}MB > ${maxSizeMB}MB');
+      return 'Image is too large. Maximum size is ${maxSizeMB}MB, but selected image is ${currentSizeMB}MB.';
+    }
+
+    isLoading = true;
     notifyListeners();
+    
+    try {
+      print('[BannerUploadProvider] 📤 Starting image upload...');
+      String? imageUrl = await uploadToSpaces(selectedImage!);
+      
+      // If direct upload fails, you could try alternative methods here
+      if (imageUrl == null) {
+        print('[BannerUploadProvider] 🔄 Direct upload failed, checking alternatives...');
+        // imageUrl = await uploadWithPresignedUrl(selectedImage!);
+      }
+      
+      if (imageUrl == null) {
+        print('[BannerUploadProvider] ❌ All upload methods failed');
+        isLoading = false;
+        notifyListeners();
+        return 'Image upload failed. Please verify your DigitalOcean Spaces configuration and try again.';
+      }
+
+      print('[BannerUploadProvider] ✅ Image uploaded successfully: $imageUrl');
+      print('[BannerUploadProvider] 📡 Sending banner data to API...');
+
+      // Prepare data for API
+      final data = {
+        'title': title.trim(),
+        'bannerImage': imageUrl,
+      };
+      
+      print('[BannerUploadProvider] 📦 API payload: $data');
+      
+      final response = await HttpServiceUtils.postData(ApiUrls.postBanner(), data);
+      print('[BannerUploadProvider] 📡 API response: $response');
+      
+      isLoading = false;
+      notifyListeners();
+      
+      print('[BannerUploadProvider] ✅ Banner submission completed successfully');
+      return null; // Success
+      
+    } catch (e, stackTrace) {
+      print('[BannerUploadProvider] 💥 Exception during banner submission: $e');
+      print('[BannerUploadProvider] 📚 Stack trace: $stackTrace');
+      
+      isLoading = false;
+      notifyListeners();
+      
+      return 'Error creating banner: ${e.toString()}';
+    }
   }
 }

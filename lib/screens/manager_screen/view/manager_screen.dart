@@ -14,7 +14,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/create_banner_dialog.dart';
+import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -297,7 +297,7 @@ class ManagerScreen extends StatelessWidget {
         onPressed: () async {
           final result = await showDialog(
             context: context,
-            builder: (context) =>  CreateBannerDialog(),
+            builder: (context) =>  BannerDialog (),
           );
           // Optionally handle result
         },
