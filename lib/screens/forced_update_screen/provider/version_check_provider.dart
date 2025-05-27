@@ -129,7 +129,7 @@ class VersionCheckProvider extends ChangeNotifier {
 
     if (Platform.isAndroid) {
       await launchUrl(Uri.parse(
-          'https://play.google.com/store/apps/details?id=com.muhasabah.app'));
+          'https://play.google.com/store/apps/details?id=com.d4dx.hiraplus'));
     } else {
       await launchUrl(Uri.parse(iOSUrl));
     }
