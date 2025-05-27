@@ -25,6 +25,10 @@ class ApiUrls {
     return '$baseUrl/admin/login';
   }
 
+  static String testLogin() {
+    return '$baseUrl/auth/test-login';
+  }
+
   static String getRequestOtp() {
     return '$baseUrl/auth/request-otp';
   }

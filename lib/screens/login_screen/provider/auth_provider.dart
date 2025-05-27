@@ -131,22 +131,22 @@ class AuthProvider extends ChangeNotifier {
   // }
 
   // Add these methods to your AuthProvider class
-Future<String?> getAuthToken() async {
-  return await SharedUtils.getString('auth_token');
-}
+  Future<String?> getAuthToken() async {
+    return await SharedUtils.getString('auth_token');
+  }
 
-Future<String?> getUserType() async {
-  return await SharedUtils.getString('user_type');
-}
+  Future<String?> getUserType() async {
+    return await SharedUtils.getString('user_type');
+  }
 
 // Make sure these methods are used during login to set user type
-Future<void> handleSuccessfulLogin(String token, String userType) async {
-  await SharedUtils.setString('auth_token', token);
-  await SharedUtils.setString('user_type', userType);
-  _isLoggedIn = true;
-  _userType = userType;
-  notifyListeners();
-}
+  Future<void> handleSuccessfulLogin(String token, String userType) async {
+    await SharedUtils.setString('auth_token', token);
+    await SharedUtils.setString('user_type', userType);
+    _isLoggedIn = true;
+    _userType = userType;
+    notifyListeners();
+  }
 
   // Updated checkLoginStatus method for AuthProvider class
   Future<bool> checkLoginStatus() async {
@@ -288,30 +288,87 @@ Future<void> handleSuccessfulLogin(String token, String userType) async {
     }
   }
 
+  // Method to handle test login
+  Future<void> handleTestLogin() async {
+    try {
+      developer.log('🔵 [AUTH] Initiating test login...', name: 'AuthProvider');
+      _logger.i('🔵 [API] Starting test login process');
+
+      final url = ApiUrls.testLogin();
+      final requestBody = {
+        'phoneNumber': _phone,
+        'otp': _otp,
+      };
+
+      developer.log('📡 Making test login request to: $url',
+          name: 'AuthProvider');
+      developer.log('📦 Request payload: ${jsonEncode(requestBody)}',
+          name: 'AuthProvider');
+
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+      );
+
+      developer.log('📥 Response status: ${response.statusCode}',
+          name: 'AuthProvider');
+      _logger.d('🔹 [API] Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (!data['success']) {
+          throw Exception(data['message'] ?? 'Test login failed');
+        }
+
+        final String token = data['token'];
+        final userDetails = data['user'];
+
+        // Store user details
+        if (userDetails != null) {
+          await SharedUtils.setString(
+              'user_department', userDetails['department'] ?? '');
+          await SharedUtils.setString(
+              'user_designation', userDetails['designation'] ?? '');
+          setDepartment(userDetails['department'] ?? '');
+          setDesignation(userDetails['designation'] ?? '');
+        }
+
+        // Store token and update login status
+        await SharedUtils.setString('auth_token', token);
+        await SharedUtils.setString('user_type', _selectedRole);
+        _isLoggedIn = true;
+        _userType = _selectedRole;
+
+        developer.log('✅ Test login successful', name: 'AuthProvider');
+        developer.log('👤 User details stored', name: 'AuthProvider');
+        developer.log('🔑 Token stored in SharedPreferences',
+            name: 'AuthProvider');
+
+        notifyListeners();
+      } else {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Test login failed');
+      }
+    } catch (e) {
+      _logger.e('🔴 [AUTH] Test login failed: $e');
+      developer.log('🔴 Test login failed: $e', name: 'AuthProvider', error: e);
+      throw Exception('Test login failed: ${e.toString()}');
+    }
+  }
+
   // For User authentication with phone/OTP
   Future<void> fetchVerifyOtpToken() async {
     try {
       developer.log('🔵 Fetching login token...', name: 'AuthProvider');
       _logger.i('🔵 [API] Fetching login token...');
 
-      // Test credentials for user role - hardcoded for development
+      // Check for test credentials
       if (_phone == '9998887776' && _otp == '123456') {
         _logger.i('🔵 [TEST] Using test user credentials...');
         developer.log('🔵 Using test user credentials', name: 'AuthProvider');
-
-        // Store token and update login status
-
-        await SharedUtils.setString('user_type', _selectedRole);
-        _isLoggedIn = true;
-        _userType = _selectedRole;
-
-        developer.log('📦 Demo token stored in SharedPreferences',
-            name: 'AuthProvider');
-        developer.log(
-            '🔐 Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType',
-            name: 'AuthProvider');
-
-        notifyListeners();
+        await handleTestLogin();
         return;
       }
 
