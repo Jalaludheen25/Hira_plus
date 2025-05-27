@@ -76,8 +76,8 @@ class BannerDialog extends StatelessWidget {
         type: ToastificationType.error,
         style: ToastificationStyle.fillColored,
         autoCloseDuration: const Duration(seconds: 2),
-        backgroundColor: Colors.red,
-        foregroundColor: ColorClass.white,
+        primaryColor: ColorClass.redBase  ,
+        backgroundColor: ColorClass.white,
       );
     }
   }
@@ -108,8 +108,9 @@ class BannerDialog extends StatelessWidget {
         type: ToastificationType.success,
         style: ToastificationStyle.fillColored,
         autoCloseDuration: const Duration(seconds: 2),
-        backgroundColor: ColorClass.brandDarkGreen,
-        foregroundColor: ColorClass.white,
+        primaryColor: ColorClass.brandDarkGreen,
+        backgroundColor: ColorClass.white,
+        // foregroundColor: ColorClass.white,
       );
     } else {
       print('[BannerDialog] ❌ Banner creation failed: $error');

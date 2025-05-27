@@ -19,7 +19,7 @@ class BottomNavProvider extends ChangeNotifier {
       _lastBackPressed = DateTime.now();
       toastification.show(
         context: context,
-        title: Text('Tap again to exit'),
+        title: Text('Back again to exit'),
         type: ToastificationType.info,
         autoCloseDuration: Duration(seconds: 2),
       );
