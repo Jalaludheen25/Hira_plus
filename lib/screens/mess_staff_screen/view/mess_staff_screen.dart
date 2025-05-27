@@ -519,48 +519,53 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     final navProvider = Provider.of<BottomNavProvider>(context);
     final tabTitles = ['Home', 'Settings']; // Updated names
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: ColorClass.brandDarkGreen,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          tabTitles[navProvider.selectedIndex],
-          style: TextStyleClass.poppinsSemiBold(
-            fontSize: 20,
-            color: ColorClass.white,
-          ),
-        ),
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: _pages(context)[navProvider.selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: ColorClass.brandWhite,
-        selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
-        currentIndex: navProvider.selectedIndex,
-        unselectedLabelStyle: TextStyleClass.poppinsSemiBold(
-          fontSize: 14,
-        ),
-        onTap: navProvider.setIndex,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.home,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(
-              LucideIcons.home,
-              size: 32,
+    return WillPopScope(
+      onWillPop: () async {
+        return navProvider.shouldExitOnBack(context);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: ColorClass.brandDarkGreen,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: Text(
+            tabTitles[navProvider.selectedIndex],
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 20,
+              color: ColorClass.white,
             ),
-            label: 'Home',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.settings,
-                size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.settings, size: 32),
-            label: 'Settings',
+          centerTitle: true,
+          elevation: 0,
+        ),
+        body: _pages(context)[navProvider.selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: ColorClass.brandWhite,
+          selectedItemColor: ColorClass.brandDarkGreen,
+          unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
+          currentIndex: navProvider.selectedIndex,
+          unselectedLabelStyle: TextStyleClass.poppinsSemiBold(
+            fontSize: 14,
           ),
-        ],
+          onTap: navProvider.setIndex,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.home,
+                  size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+              activeIcon: Icon(
+                LucideIcons.home,
+                size: 32,
+              ),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.settings,
+                  size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+              activeIcon: Icon(LucideIcons.settings, size: 32),
+              label: 'Settings',
+            ),
+          ],
+        ),
       ),
     );
   }

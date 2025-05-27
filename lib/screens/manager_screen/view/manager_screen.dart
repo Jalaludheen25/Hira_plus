@@ -15,6 +15,8 @@ import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
+import 'package:toastification/toastification.dart';
+import 'dart:async';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -233,80 +235,94 @@ class ManagerScreen extends StatelessWidget {
       'Users',
       'Settings'
     ];
-    return Scaffold(
-      backgroundColor: ColorClass.bgWhite0,
-      appBar: AppBar(
-        backgroundColor: ColorClass.brandDarkGreen,
-        iconTheme: const IconThemeData(color: Colors.white),
-        centerTitle: true,
-        title: Text(
-          tabTitles[navProvider.selectedIndex],
-          style: TextStyleClass.poppinsSemiBold(
-            fontSize: 20,
-            color: ColorClass.white,
+    DateTime? _lastBackPressed;
+    return WillPopScope(
+      onWillPop: () async {
+        if (_lastBackPressed == null || DateTime.now().difference(_lastBackPressed!) > Duration(seconds: 2)) {
+          _lastBackPressed = DateTime.now();
+          toastification.show(
+            context: context,
+            title: Text('Tap again to exit'),
+            type: ToastificationType.info,
+            autoCloseDuration: Duration(seconds: 2),
+          );
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: ColorClass.bgWhite0,
+        appBar: AppBar(
+          backgroundColor: ColorClass.brandDarkGreen,
+          iconTheme: const IconThemeData(color: Colors.white),
+          centerTitle: true,
+          title: Text(
+            tabTitles[navProvider.selectedIndex],
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 20,
+              color: ColorClass.white,
+            ),
           ),
         ),
+        body: _pages(context)[navProvider.selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: ColorClass.brandWhite,
+          selectedItemColor: ColorClass.brandDarkGreen,
+          unselectedItemColor: const Color.fromARGB(255, 63, 94, 43),
+          unselectedFontSize: 10,
+          selectedFontSize: 10,
+          selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 10),
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.layoutDashboard,
+                  size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+              activeIcon: Icon(LucideIcons.layoutDashboard, size: 28),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.clipboardList,
+                  size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+              activeIcon: Icon(LucideIcons.clipboardList, size: 28),
+              label: 'Markings',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.messageCircle,
+                  size: 24, color: Color.fromARGB(255, 63, 94, 43)),
+              activeIcon: Icon(LucideIcons.messageCircle, size: 28),
+              label: 'Messages',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.users,
+                  size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+              activeIcon: Icon(LucideIcons.users, size: 28),
+              label: 'Users',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.settings,
+                  size: 20, color: Color.fromARGB(255, 63, 94, 43)),
+              activeIcon: Icon(LucideIcons.settings, size: 28),
+              label: 'Settings',
+            ),
+          ],
+          currentIndex: navProvider.selectedIndex,
+          onTap: navProvider.setIndex,
+        ),
+        floatingActionButton: navProvider.selectedIndex == 0
+            ? FloatingActionButton.extended(
+                onPressed: () async {
+                  final result = await showDialog(
+                    context: context,
+                    builder: (context) =>  BannerDialog (),
+                  );
+                  // Optionally handle result
+                },
+                icon: const Icon(Icons.add_photo_alternate,color: ColorClass.white,),
+                label:  Text('Create Banner',style: TextStyleClass.poppinsMedium(fontSize: 16,color: ColorClass.white),),
+                backgroundColor: ColorClass.brandDarkGreen,
+              )
+            : null,
       ),
-      // Remove the conditional that's causing the issue
-      body: _pages(context)[navProvider.selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: ColorClass.brandWhite,
-        selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor: const Color.fromARGB(255, 63, 94, 43),
-        unselectedFontSize: 10,
-        selectedFontSize: 10,
-        selectedLabelStyle: TextStyleClass.poppinsSemiBold(fontSize: 10),
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.layoutDashboard,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.layoutDashboard, size: 28),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.clipboardList,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.clipboardList, size: 28),
-            label: 'Markings',
-          ),
-          // Messages tab (center)
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.messageCircle,
-                size: 24, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.messageCircle, size: 28),
-            label: 'Messages',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.users,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.users, size: 28),
-            label: 'Users',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(LucideIcons.settings,
-                size: 20, color: Color.fromARGB(255, 63, 94, 43)),
-            activeIcon: Icon(LucideIcons.settings, size: 28),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: navProvider.selectedIndex,
-        onTap: navProvider.setIndex,
-      ),
-      floatingActionButton: navProvider.selectedIndex == 0
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final result = await showDialog(
-                  context: context,
-                  builder: (context) =>  BannerDialog (),
-                );
-                // Optionally handle result
-              },
-              icon: const Icon(Icons.add_photo_alternate,color: ColorClass.white,),
-              label:  Text('Create Banner',style: TextStyleClass.poppinsMedium(fontSize: 16,color: ColorClass.white),),
-              backgroundColor: ColorClass.brandDarkGreen,
-            )
-          : null,
     );
   }
 }

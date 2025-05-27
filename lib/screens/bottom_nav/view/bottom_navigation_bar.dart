@@ -21,46 +21,51 @@ class BottomNavigationBarScreen extends StatelessWidget {
     final routes = getRoutes();
     final routeName = pageRoutes[selectedIndex];
     final builder = routes[routeName]!;
-    return Scaffold(
-      body: Navigator(
-        key: ValueKey(selectedIndex),
-        onGenerateRoute: (RouteSettings settings) {
-          return MaterialPageRoute(
-            builder: builder,
-            settings: settings,
-          );
-        },
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: ColorClass.brandWhite,
-        selectedItemColor: ColorClass.brandDarkGreen,
-        unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
-        unselectedFontSize: 14,
-        selectedFontSize: 14,
-        selectedLabelStyle: TextStyleClass.poppinsSemiBold(
-          fontSize: 14,
+    return WillPopScope(
+      onWillPop: () async {
+        return bottomNavProvider.shouldExitOnBack(context);
+      },
+      child: Scaffold(
+        body: Navigator(
+          key: ValueKey(selectedIndex),
+          onGenerateRoute: (RouteSettings settings) {
+            return MaterialPageRoute(
+              builder: builder,
+              settings: settings,
+            );
+          },
         ),
-        currentIndex: selectedIndex,
-        onTap: (int index) {
-          bottomNavProvider.setIndex(index);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined, size: 28),
-            activeIcon: Icon(Icons.home, size: 34),
-            label: 'Home',
+        bottomNavigationBar: BottomNavigationBar(
+          backgroundColor: ColorClass.brandWhite,
+          selectedItemColor: ColorClass.brandDarkGreen,
+          unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
+          unselectedFontSize: 14,
+          selectedFontSize: 14,
+          selectedLabelStyle: TextStyleClass.poppinsSemiBold(
+            fontSize: 14,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.notifications_none, size: 28),
-            activeIcon: Icon(Icons.notifications, size: 34),
-            label: 'Notifications',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline, size: 28),
-            activeIcon: Icon(Icons.person, size: 34),
-            label: 'Profile',
-          ),
-        ],
+          currentIndex: selectedIndex,
+          onTap: (int index) {
+            bottomNavProvider.setIndex(index);
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined, size: 28),
+              activeIcon: Icon(Icons.home, size: 34),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications_none, size: 28),
+              activeIcon: Icon(Icons.notifications, size: 34),
+              label: 'Notifications',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline, size: 28),
+              activeIcon: Icon(Icons.person, size: 34),
+              label: 'Profile',
+            ),
+          ],
+        ),
       ),
     );
   }
