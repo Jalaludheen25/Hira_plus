@@ -17,4 +17,5 @@ class Routes {
   static const String messages = '/manager/messages';
   static const String notifications = '/user/notifications';
   static const String bookings = '/bookings';
+  static const String bulkFoodBooking = '/booking/bulk_food';
 }

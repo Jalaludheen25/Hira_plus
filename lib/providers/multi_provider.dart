@@ -1,5 +1,5 @@
-import 'package:hira_plus/screens/manager_screen/provider/user_marking_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/provider/bulk_food_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
 import 'package:hira_plus/providers/date_provider.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
@@ -20,6 +20,6 @@ List<SingleChildWidget> getProviders() {
     ChangeNotifierProvider(create: (context) => UsersProvider()),
     ChangeNotifierProvider(create: (context) => MessStaffMealProvider()),
     ChangeNotifierProvider(create: (context) => VersionCheckProvider()),
-    ChangeNotifierProvider(create: (context) => UserMarkingProvider()),
+    ChangeNotifierProvider(create: (context) => BulkFoodProvider()),
   ];
 }

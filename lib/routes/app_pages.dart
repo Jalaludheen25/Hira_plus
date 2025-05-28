@@ -3,7 +3,8 @@ import 'package:hira_plus/screens/bottom_nav/view/bottom_navigation_bar.dart';
 import 'package:hira_plus/screens/login_screen/view/login_screen.dart';
 import 'package:hira_plus/screens/profile_screen/view/profile_screen.dart';
 import 'package:hira_plus/screens/splash_screen/splash_screen.dart';
-import 'package:hira_plus/screens/user_screens/booking_screen/booking_screen.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/booking_screen.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/bulk_food_marking_screen.dart';
 import 'package:hira_plus/screens/user_screens/contact_us/contact_us_screen.dart';
 import 'package:hira_plus/screens/mess_staff_screen/view/mess_staff_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/manager_screen.dart';
@@ -31,6 +32,7 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.messages: (context) => const ManagerMessagesScreen(),
     Routes.notifications: (context) => const UserNotificationsScreen(),
     Routes.bookings: (context) => const BookingScreen(),
+    Routes.bulkFoodBooking: (context) => const BulkFoodBookingScreen(),
   };
 }
 
