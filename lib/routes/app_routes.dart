@@ -16,4 +16,5 @@ class Routes {
   static const forceUpdate = '/force_update';
   static const String messages = '/manager/messages';
   static const String notifications = '/user/notifications';
+  static const String bookings = '/bookings';
 }

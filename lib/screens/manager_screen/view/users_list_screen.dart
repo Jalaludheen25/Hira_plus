@@ -52,8 +52,9 @@ class _UsersListScreenState extends State<UsersListScreen> {
           initialDepartment: user.department ?? '',
           initialDesignation: user.designation ?? '',
           initialIsVerified: user.isVerified == true,
-          onSave: (name, phoneNumber, department, designation, isVerified) {
-            provider.updateUser(user.id!, name, phoneNumber, department, designation, isVerified);
+          initialIsDeptHead: user.isDeptHead == true,
+          onSave: (name, phoneNumber, department, designation, isVerified, isDeptHead) {
+            provider.updateUser(user.id!, name, phoneNumber, department, designation, isVerified, isDeptHead);
           },
         );
       },
@@ -147,6 +148,20 @@ class _UsersListScreenState extends State<UsersListScreen> {
                               user.department ?? 'No Department',
                               style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.neutral400),
                             ),
+                            if (user.isDeptHead == true)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2.0),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.verified, color: ColorClass.brandDarkGreen, size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Head',
+                                      style: TextStyleClass.poppinsBold(fontSize: 12, color: ColorClass.brandDarkGreen),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                         trailing: Row(
@@ -194,8 +209,9 @@ class _UsersListScreenState extends State<UsersListScreen> {
                         initialDepartment: '',
                         initialDesignation: '',
                         initialIsVerified: context.read<UsersProvider>().tempIsVerified,
-                        onSave: (name, phoneNumber, department, designation, isVerified) {
-                          provider.addUser(name, phoneNumber, department, designation, isVerified);
+                        initialIsDeptHead: false,
+                        onSave: (name, phoneNumber, department, designation, isVerified, isDeptHead) {
+                          provider.addUser(name, phoneNumber, department, designation, isVerified, isDeptHead);
                           context.read<UsersProvider>().setTempIsVerified(false);
                         },
                       ),

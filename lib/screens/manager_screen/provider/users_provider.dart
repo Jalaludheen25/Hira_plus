@@ -46,7 +46,7 @@ class UsersProvider extends ChangeNotifier {
     ).toList();
   }
 
-  Future<void> updateUser(String id, String name, String phoneNumber, String department, String designation, bool isVerified) async {
+  Future<void> updateUser(String id, String name, String phoneNumber, String department, String designation, bool isVerified, bool isDeptHead) async {
     debugPrint('[UsersProvider] updateUser called for id: $id');
     try {
       final data = {
@@ -54,10 +54,11 @@ class UsersProvider extends ChangeNotifier {
         "phoneNumber": phoneNumber,
         "department": department,
         "designation": designation,
-        "isVerified": isVerified
+        "isVerified": isVerified,
+        "isDeptHead": isDeptHead
       };
       debugPrint('[UsersProvider] updateUser data: $data');
-      debugPrint('Sending isVerified: $isVerified (${isVerified.runtimeType})');
+      debugPrint('Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
       await HttpServiceUtils.putData('${ApiUrls.getUsers()}/$id', data, null);
       await fetchUsers(); // Refresh the list
       debugPrint('[UsersProvider] updateUser success');
@@ -83,7 +84,7 @@ class UsersProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addUser(String name, String phoneNumber, String department, String designation, bool isVerified) async {
+  Future<void> addUser(String name, String phoneNumber, String department, String designation, bool isVerified, bool isDeptHead) async {
     debugPrint('[UsersProvider] addUser called');
     try {
       final data = {
@@ -91,10 +92,11 @@ class UsersProvider extends ChangeNotifier {
         "phoneNumber": phoneNumber,
         "department": department,
         "designation": designation,
-        "isVerified": isVerified
+        "isVerified": isVerified,
+        "isDeptHead": isDeptHead
       };
       debugPrint('[UsersProvider] addUser data: $data');
-      debugPrint('Sending isVerified: $isVerified (${isVerified.runtimeType})');
+      debugPrint('Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
       await HttpServiceUtils.postData(ApiUrls.getUsers(), data, null);
       await fetchUsers(); // Refresh the list
       debugPrint('[UsersProvider] addUser success');

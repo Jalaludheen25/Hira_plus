@@ -11,6 +11,7 @@ class ProfileScreenProvider extends ChangeNotifier {
   String _userType = '';
   String _department = '';
   String _designation = '';
+  bool _isDeptHead = false;
 
   String get userName {
     // Case-insensitive comparison and handle different formats
@@ -28,6 +29,7 @@ class ProfileScreenProvider extends ChangeNotifier {
   String get userType => _userType;
   String get department => _department;
   String get designation => _designation;
+  bool get isDeptHead => _isDeptHead;
 
   void setUserInfo({
     required String userType,
@@ -35,13 +37,15 @@ class ProfileScreenProvider extends ChangeNotifier {
     String phone = '',
     String department = '',
     String designation = '',
+    bool isDeptHead = false,
   }) {
     _userType = userType;
     _userName = userName;
     _phone = phone;
     _department = department;
     _designation = designation;
-    developer.log('ProfileScreenProvider: Set user info - userType=$userType, userName=$userName, phone=$phone', 
+    _isDeptHead = isDeptHead;
+    developer.log('ProfileScreenProvider: Set user info - userType=$userType, userName=$userName, phone=$phone, isDeptHead=$isDeptHead', 
         name: 'ProfileProvider');
     notifyListeners();
   }
@@ -83,6 +87,7 @@ class ProfileScreenProvider extends ChangeNotifier {
           phone: profile.phoneNumber,
           department: profile.department,
           designation: profile.designation,
+          isDeptHead: profile.isDeptHead,
         );
         
         developer.log('[PROFILE] Profile info set successfully', name: 'ProfileScreenProvider');

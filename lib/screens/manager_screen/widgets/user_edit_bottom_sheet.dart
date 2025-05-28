@@ -12,7 +12,8 @@ class UserEditBottomSheet extends StatefulWidget {
   final String initialDepartment;
   final String initialDesignation;
   final bool initialIsVerified;
-  final Function(String name, String phoneNumber, String department, String designation, bool isVerified) onSave;
+  final bool initialIsDeptHead;
+  final Function(String name, String phoneNumber, String department, String designation, bool isVerified, bool isDeptHead) onSave;
 
   const UserEditBottomSheet({
     Key? key,
@@ -22,6 +23,7 @@ class UserEditBottomSheet extends StatefulWidget {
     required this.initialDepartment,
     required this.initialDesignation,
     required this.initialIsVerified,
+    required this.initialIsDeptHead,
     required this.onSave,
   }) : super(key: key);
 
@@ -35,6 +37,7 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
   late TextEditingController _departmentController;
   late TextEditingController _designationController;
   bool _isSaving = false;
+  bool _isDeptHead = false;
 
   @override
   void initState() {
@@ -43,6 +46,7 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
     _phoneNumberController = TextEditingController(text: widget.initialPhoneNumber);
     _departmentController = TextEditingController(text: widget.initialDepartment);
     _designationController = TextEditingController(text: widget.initialDesignation);
+    _isDeptHead = widget.initialIsDeptHead;
   }
 
   @override
@@ -63,6 +67,7 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
         _departmentController.text,
         _designationController.text,
         context.read<UsersProvider>().tempIsVerified,
+        _isDeptHead,
       );
       if (result is Future) {
         await result;
@@ -138,6 +143,17 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
             ),
           ),
           const SizedBox(height: 24),
+          CheckboxListTile(
+            value: _isDeptHead,
+            onChanged: (val) {
+              setState(() {
+                _isDeptHead = val ?? false;
+              });
+            },
+            title: Text('Department Head', style: TextStyleClass.poppinsRegular(fontSize: 16)),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+          ),
           ElevatedButton(
             onPressed: _isSaving ? null : _handleSave,
             style: ElevatedButton.styleFrom(

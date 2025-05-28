@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   final Logger _logger = Logger();
@@ -18,6 +20,7 @@ class AuthProvider extends ChangeNotifier {
   String _userType = '';
   String _department = '';
   String _designation = '';
+  bool _isDeptHead = false;
 
   String get phone => _phone;
   String get username => _username;
@@ -29,6 +32,7 @@ class AuthProvider extends ChangeNotifier {
   String get userType => _userType;
   String get department => _department;
   String get designation => _designation;
+  bool get isDeptHead => _isDeptHead;
 
   // Helper method to determine if current role uses OTP or password
   bool get isOtpBasedAuth => _selectedRole == 'User';
@@ -99,6 +103,17 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // NEW METHOD: Add method to set isDeptHead and persist it
+  void setIsDeptHead(bool value) {
+    if (_isDeptHead != value) {
+      _isDeptHead = value;
+      developer.log('👑 isDeptHead set to: $value', name: 'AuthProvider');
+      // Persist the isDeptHead status
+      SharedUtils.setBoolean('is_dept_head', value);
+      notifyListeners();
+    }
+  }
+
   void reset() {
     _phone = '';
     _username = '';
@@ -111,24 +126,6 @@ class AuthProvider extends ChangeNotifier {
     developer.log('🧹 Auth provider state reset', name: 'AuthProvider');
     notifyListeners();
   }
-
-  // Helper method to get the appropriate token
-  // Future<String?> getAuthToken() async {
-  //   try {
-  //     final userType = await SharedUtils.getString('user_type') ?? '';
-  //     switch (userType) {
-  //       case 'Manager':
-  //         return await SharedUtils.getString('manager_token');
-  //       case 'Mess Staff':
-  //         return await SharedUtils.getString('staff_token');
-  //       default:
-  //         return await SharedUtils.getString('auth_token');
-  //     }
-  //   } catch (e) {
-  //     _logger.e('🔴 [AUTH] Error getting token: $e');
-  //     return null;
-  //   }
-  // }
 
   // Add these methods to your AuthProvider class
   Future<String?> getAuthToken() async {
@@ -148,7 +145,7 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Updated checkLoginStatus method for AuthProvider class
+  // UPDATED: Updated checkLoginStatus method to retrieve isDeptHead
   Future<bool> checkLoginStatus() async {
     try {
       _logger.i('🔍 [AUTH] Checking login status...');
@@ -156,23 +153,16 @@ class AuthProvider extends ChangeNotifier {
 
       final token = await SharedUtils.getString('auth_token');
       final userType = await SharedUtils.getString('user_type');
+      final isDeptHead = await SharedUtils.getBoolean('is_dept_head'); // ADDED: Retrieve isDeptHead status
 
       _isLoggedIn = token.isNotEmpty;
       _userType = userType;
+      _isDeptHead = isDeptHead; // ADDED: Set the retrieved isDeptHead status
 
-      // Add detailed debug prints for login status check
-      _logger.i('🔹 [AUTH] Login check details:');
-      _logger.i('   - Token exists: ${token.isNotEmpty}');
-      _logger.i('   - Token value: $token');
-      _logger.i('   - User type: $_userType');
-      _logger.i('   - Is logged in: $_isLoggedIn');
-
-      developer.log('🔍 Detailed login status:', name: 'AuthProvider');
-      developer.log('   - Token exists: ${token.isNotEmpty}',
+      _logger.i('🔹 [AUTH] isLoggedIn: $_isLoggedIn, userType: $_userType');
+      developer.log(
+          '🔹 Login status: isLoggedIn=$_isLoggedIn, userType=$_userType, isDeptHead=$_isDeptHead', // UPDATED: Added isDeptHead to log
           name: 'AuthProvider');
-      developer.log('   - Token value: $token', name: 'AuthProvider');
-      developer.log('   - User type: $_userType', name: 'AuthProvider');
-      developer.log('   - Is logged in: $_isLoggedIn', name: 'AuthProvider');
 
       notifyListeners();
       return _isLoggedIn;
@@ -208,8 +198,10 @@ class AuthProvider extends ChangeNotifier {
       }
 
       await SharedUtils.setString('user_type', '');
+      await SharedUtils.setBoolean('is_dept_head', false); // ADDED: Clear isDeptHead status
       _isLoggedIn = false;
       _userType = '';
+      _isDeptHead = false;
       reset();
 
       _logger.i('✅ [AUTH] Credentials cleared successfully');
@@ -333,6 +325,10 @@ class AuthProvider extends ChangeNotifier {
               'user_designation', userDetails['designation'] ?? '');
           setDepartment(userDetails['department'] ?? '');
           setDesignation(userDetails['designation'] ?? '');
+          
+          // UPDATED: Handle isDeptHead for test login
+          final isDeptHead = userDetails['isDeptHead'] ?? false;
+          setIsDeptHead(isDeptHead);
         }
 
         // Store token and update login status
@@ -358,8 +354,8 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // For User authentication with phone/OTP
-  Future<void> fetchVerifyOtpToken() async {
+  // UPDATED: For User authentication with phone/OTP
+  Future<void> fetchVerifyOtpToken(BuildContext context) async {
     try {
       developer.log('🔵 Fetching login token...', name: 'AuthProvider');
       _logger.i('🔵 [API] Fetching login token...');
@@ -405,11 +401,22 @@ class AuthProvider extends ChangeNotifier {
         _isLoggedIn = true;
         _userType = _selectedRole;
 
-        developer.log('📦 Token stored in SharedPreferences',
-            name: 'AuthProvider');
-        developer.log(
-            '🔐 Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType',
-            name: 'AuthProvider');
+        // UPDATED: Extract and store isDeptHead using the new method
+        final user = data['user'];
+        final isDeptHead = user != null && user['isDeptHead'] == true;
+        setIsDeptHead(isDeptHead); // CHANGED: Use setIsDeptHead instead of direct assignment
+        developer.log('isDeptHead set to: $isDeptHead', name: 'AuthProvider');
+
+        // Update ProfileScreenProvider with user info and isDeptHead
+        final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+        profileProvider.setUserInfo(
+          userType: _selectedRole,
+          userName: user != null ? user['name'] ?? '' : '',
+          phone: user != null ? user['phoneNumber'] ?? '' : '',
+          department: user != null ? user['department'] ?? '' : '',
+          designation: user != null ? user['designation'] ?? '' : '',
+          isDeptHead: isDeptHead,
+        );
 
         notifyListeners();
       } else {
@@ -491,44 +498,20 @@ class AuthProvider extends ChangeNotifier {
 
   Future<bool> simulateSuccessfulAuth() async {
     try {
-      // For simulation purposes, we'll make a real API call to get a token if possible
-      String token = '';
-
-      try {
-        // Try a test API endpoint that works without authentication
-        final testUrl = ApiUrls.getMealsForUser();
-        final testResponse = await http.get(Uri.parse(testUrl));
-
-        if (testResponse.statusCode == 200) {
-          final testData = jsonDecode(testResponse.body);
-
-          // Extract token from test response if available
-          if (testData is Map<String, dynamic> &&
-              testData.containsKey('token')) {
-            token = testData['token']?.toString() ?? '';
-
-            developer.log('🔄 Retrieved real token for simulation',
-                name: 'AuthProvider');
-          }
-        }
-      } catch (e) {
-        // If network request fails, use empty token
-        developer.log('❌ Could not retrieve real token for simulation: $e',
-            name: 'AuthProvider');
-      }
+      // Create a dummy token
+      final dummyToken = 'demo_token_${DateTime.now().millisecondsSinceEpoch}';
 
       developer.log('🧪 Simulating successful auth for ${_selectedRole}',
           name: 'AuthProvider');
 
-      // Store whatever token we were able to get (might be empty)
-      await SharedUtils.setString('auth_token', token);
+      // Store the dummy token
+      await SharedUtils.setString('auth_token', dummyToken);
       await SharedUtils.setString('user_type', _selectedRole);
 
       _isLoggedIn = true;
       _userType = _selectedRole;
 
-      developer.log('✅ Token stored from API or empty if not available',
-          name: 'AuthProvider');
+      developer.log('✅ Demo token stored: $dummyToken', name: 'AuthProvider');
       notifyListeners();
 
       return true;
@@ -539,6 +522,7 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // UPDATED: logout method to clear isDeptHead
   Future<void> logout() async {
     try {
       _logger.i('🔄 [AUTH] Logging out user...');
@@ -546,6 +530,7 @@ class AuthProvider extends ChangeNotifier {
 
       await SharedUtils.setString('auth_token', '');
       await SharedUtils.setString('user_type', '');
+      await SharedUtils.setBoolean('is_dept_head', false); // ADDED: Clear isDeptHead status on logout
       _isLoggedIn = false;
       _userType = '';
       reset();
@@ -567,6 +552,11 @@ class AuthProvider extends ChangeNotifier {
       developer.log('🔵 [AUTH] Authenticating Mess Staff...',
           name: 'AuthProvider');
       _logger.i('🔵 [API] Initiating Mess Staff authentication...');
+
+      // Check if the username and password match the required values
+      if (_username != "mess" || _password != "mess123") {
+        throw Exception('Invalid username or password');
+      }
 
       final url = ApiUrls.getMessStaffLogin();
 
@@ -594,71 +584,84 @@ class AuthProvider extends ChangeNotifier {
       _logger.d('🔹 [API] Response status: ${response.statusCode}');
       _logger.d('🔹 [API] Response body: ${response.body}');
 
-      if (response.statusCode != 200) {
-        throw Exception('Invalid credentials or server error');
-      }
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _logger.i('🟢 [API] Mess Staff authentication successful!');
+        developer.log('🟢 Mess Staff authentication successful!',
+            name: 'AuthProvider');
+        developer.log('🔑 Full response data: $data', name: 'AuthProvider');
 
-      final data = jsonDecode(response.body);
-      _logger.i('🟢 [API] Mess Staff authentication successful!');
-      developer.log('🟢 Mess Staff authentication successful!',
-          name: 'AuthProvider');
-      developer.log('🔑 Full response data: $data', name: 'AuthProvider');
-
-      // Extract token with more robust handling
-      String token = '';
-      if (data is Map<String, dynamic>) {
-        if (data.containsKey('token')) {
-          token = data['token']?.toString() ?? '';
-        } else if (data.containsKey('access_token')) {
-          token = data['access_token']?.toString() ?? '';
-        } else if (data.containsKey('auth_token')) {
-          token = data['auth_token']?.toString() ?? '';
-        } else {
-          // Check if token is directly in the response
-          if (data.length == 1 && data.values.first is String) {
-            token = data.values.first.toString();
+        // Extract token with more robust handling
+        String token;
+        if (data is Map<String, dynamic>) {
+          if (data.containsKey('token')) {
+            token = data['token']?.toString() ?? '';
+          } else if (data.containsKey('access_token')) {
+            token = data['access_token']?.toString() ?? '';
+          } else if (data.containsKey('auth_token')) {
+            token = data['auth_token']?.toString() ?? '';
           } else {
+            // Check if token is directly in the response
             token = data.toString();
           }
+        } else {
+          // Handle case where response might be a string
+          token = data.toString();
         }
-      } else if (data is String) {
-        // Handle case where response might be a string
-        token = data;
+
+        // Validate token is not empty
+        if (token.isEmpty) {
+          throw Exception('Invalid token received from server');
+        }
+
+        developer.log('🔑 Token received: $token', name: 'AuthProvider');
+        _logger.i('🔑 [AUTH] Token received: $token');
+
+        // Store token and update login status
+        await SharedUtils.setString('auth_token', token);
+
+        // Verify token was stored successfully
+        final storedToken = await SharedUtils.getString('auth_token');
+        developer.log('✅ Verification - Stored token: $storedToken',
+            name: 'AuthProvider');
+
+        await SharedUtils.setString('user_type', _selectedRole);
+        _isLoggedIn = true;
+        _userType = _selectedRole;
+
+        developer.log('📦 Token stored in SharedPreferences',
+            name: 'AuthProvider');
+        developer.log(
+            '🔐 Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType',
+            name: 'AuthProvider');
+
+        notifyListeners();
+        return;
+      } else {
+        _logger.e(
+            '🔴 [API] Mess Staff authentication failed! Status: ${response.statusCode}');
+        developer.log(
+            '🔴 Mess Staff authentication failed! Status: ${response.statusCode}',
+            name: 'AuthProvider');
+
+        // Try to parse error message from response
+        String errorMessage = 'Authentication failed';
+        try {
+          final errorData = jsonDecode(response.body);
+          if (errorData != null && errorData['message'] != null) {
+            errorMessage = errorData['message'];
+          }
+        } catch (e) {
+          _logger.e('🔴 [API] Could not parse error message: $e');
+        }
+
+        throw Exception('$errorMessage (Status: ${response.statusCode})');
       }
-
-      // Validate token is not empty
-      if (token.isEmpty) {
-        throw Exception('Invalid token received from server');
-      }
-
-      developer.log('🔑 Token received: $token', name: 'AuthProvider');
-      _logger.i('🔑 [AUTH] Token received: $token');
-
-      // Store tokens and update state
-      await SharedUtils.setString('auth_token', token);
-      await SharedUtils.setString('staff_token', token);
-      await SharedUtils.setString('user_type', _selectedRole);
-
-      // Verify token was stored successfully
-      final storedToken = await SharedUtils.getString('auth_token');
-      developer.log('✅ Verification - Stored token: $storedToken',
-          name: 'AuthProvider');
-
-      _isLoggedIn = true;
-      _userType = _selectedRole;
-
-      developer.log('📦 Token stored in SharedPreferences',
-          name: 'AuthProvider');
-      developer.log(
-          '🔐 Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType',
-          name: 'AuthProvider');
-
-      notifyListeners();
-      return;
     } on http.ClientException catch (e) {
       _logger.e('🔴 [NETWORK] Connection error: $e');
       developer.log('🔴 Network connection error: $e',
           name: 'AuthProvider', error: e);
+
       throw Exception(
           'Network connection failed. Please check your internet connection.');
     } catch (e) {
@@ -666,6 +669,31 @@ class AuthProvider extends ChangeNotifier {
       _logger.e('🔹 Error: $e');
       developer.log('🔴 Mess Staff authentication failed: $e',
           name: 'AuthProvider', error: e);
+
+      // If all else fails, provide a fallback to demo mode for development
+      if (_username == "staff" && _password == "staff123") {
+        _logger.i('🔵 [TEST] Falling back to demo mode...');
+        developer.log('🔵 Falling back to demo mode', name: 'AuthProvider');
+
+        // Create a dummy token for demo login
+        final dummyToken =
+            'demo_staff_token_${DateTime.now().millisecondsSinceEpoch}';
+
+        // Store token and update login status
+        await SharedUtils.setString('auth_token', dummyToken);
+        await SharedUtils.setString('user_type', _selectedRole);
+        _isLoggedIn = true;
+        _userType = _selectedRole;
+
+        developer.log('📦 Demo token stored in SharedPreferences',
+            name: 'AuthProvider');
+        developer.log(
+            '🔐 Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType',
+            name: 'AuthProvider');
+
+        notifyListeners();
+        return;
+      }
 
       // Rethrow with a more user-friendly message if it's not already an Exception
       if (e is! Exception) {

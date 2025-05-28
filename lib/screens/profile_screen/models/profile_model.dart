@@ -7,6 +7,7 @@ class ProfileModel {
   final bool isVerified;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool isDeptHead;
 
   ProfileModel({
     required this.id,
@@ -17,6 +18,7 @@ class ProfileModel {
     required this.isVerified,
     required this.createdAt,
     required this.updatedAt,
+    required this.isDeptHead,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class ProfileModel {
       isVerified: json['isVerified'] ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
+      isDeptHead: json['isDeptHead'] ?? false,
     );
   }
 }

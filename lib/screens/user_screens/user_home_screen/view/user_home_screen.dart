@@ -36,6 +36,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       _setupViewModeListener();
       canteenProvider.fetchBanner();
       
+      
 
     });
   }

@@ -16,6 +16,7 @@ class UsersListModel {
     String? designation;
     bool? isVerified;
     DateTime? createdAt;
+    bool? isDeptHead;
 
     UsersListModel({
         this.id,
@@ -25,6 +26,7 @@ class UsersListModel {
         this.designation,
         this.isVerified,
         this.createdAt,
+        this.isDeptHead,
     });
 
     factory UsersListModel.fromJson(Map<String, dynamic> json) => UsersListModel(
@@ -35,6 +37,7 @@ class UsersListModel {
         designation: json["designation"],
         isVerified: json["isVerified"],
         createdAt: json["createdAt"] == null ? null : DateTime.parse(json["createdAt"]),
+        isDeptHead: json["isDeptHead"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -45,5 +48,6 @@ class UsersListModel {
         "designation": designation,
         "isVerified": isVerified,
         "createdAt": createdAt?.toIso8601String(),
+        "isDeptHead": isDeptHead,
     };
 }

@@ -5,6 +5,7 @@ import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 
 class BottomNavigationBarScreen extends StatelessWidget {
   const BottomNavigationBarScreen({super.key});
@@ -13,9 +14,12 @@ class BottomNavigationBarScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomNavProvider = Provider.of<BottomNavProvider>(context);
     final int selectedIndex = bottomNavProvider.selectedIndex;
+    final authProvider = Provider.of<AuthProvider>(context);
+    final bool isDeptHead = authProvider.isDeptHead;
     final List<String> pageRoutes = [
       Routes.home,
       Routes.notifications,
+      if (isDeptHead) Routes.bookings,
       Routes.profile,
     ];
     final routes = getRoutes();
@@ -48,18 +52,24 @@ class BottomNavigationBarScreen extends StatelessWidget {
           onTap: (int index) {
             bottomNavProvider.setIndex(index);
           },
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined, size: 28),
               activeIcon: Icon(Icons.home, size: 34),
               label: 'Home',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.notifications_none, size: 28),
               activeIcon: Icon(Icons.notifications, size: 34),
               label: 'Notifications',
             ),
-            BottomNavigationBarItem(
+            if (isDeptHead)
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.book_outlined, size: 28),
+                activeIcon: Icon(Icons.book, size: 34),
+                label: 'Bookings',
+              ),
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline, size: 28),
               activeIcon: Icon(Icons.person, size: 34),
               label: 'Profile',

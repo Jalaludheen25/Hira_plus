@@ -455,7 +455,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               }
 
                               try {
-                                await authProvider.fetchVerifyOtpToken();
+                                await authProvider.fetchVerifyOtpToken(context);
                                 developer.log(
                                     '✅ User authentication successful',
                                     name: 'LoginScreen');

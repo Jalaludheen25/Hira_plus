@@ -7,6 +7,7 @@ class ProfileCard extends StatelessWidget {
   final String phone;
   final String? department;
   final String? designation;
+  final bool isDeptHead;
   
   const ProfileCard({
     super.key,
@@ -14,6 +15,7 @@ class ProfileCard extends StatelessWidget {
     required this.phone,
     this.department,
     this.designation,
+    this.isDeptHead = false,
   });
 
   @override
@@ -69,6 +71,31 @@ class ProfileCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
+                if (isDeptHead) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified, color: ColorClass.greenBase, size: 18),
+                      const SizedBox(width: 4),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: ColorClass.greenBase.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'Dept Head',
+                          style: TextStyle(
+                            color: ColorClass.greenBase,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 if (phone.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(

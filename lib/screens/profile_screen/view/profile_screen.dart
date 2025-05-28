@@ -60,6 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               phone: profileProvider.phone,
               department: profileProvider.department,
               designation: profileProvider.designation,
+              isDeptHead: profileProvider.isDeptHead,
             ),
             const SizedBox(height: 12),
             Padding(
