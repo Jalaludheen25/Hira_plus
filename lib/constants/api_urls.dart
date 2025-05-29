@@ -111,4 +111,10 @@ class ApiUrls {
   static String adminEditGuestMeals(String id) {
     return '$baseUrl/admin/guest-meals/$id';
   }
+
+   // ################## GUEST MEALS FOR MESS STAFF ##################
+
+  static String getBulkMealsForMessStaff() {
+    return '$baseUrl/mess-staff/guest-meals';
+  }
 }

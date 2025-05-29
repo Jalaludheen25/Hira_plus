@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hira_plus/screens/mess_staff_screen/provider/mess_bulk_meal_provider.dart';
+import 'package:hira_plus/screens/mess_staff_screen/widgets/bulk_meal_card_widget.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
@@ -39,6 +43,8 @@ class MessStaffScreen extends StatefulWidget {
 
 class _MessStaffScreenState extends State<MessStaffScreen> {
   final Logger _logger = Logger();
+  final ValueNotifier<int?> _selectedMealNotifier = ValueNotifier<int?>(null);
+  final ValueNotifier<DateTime> _bulkMealDateNotifier = ValueNotifier<DateTime>(DateTime.now());
 
   @override
   void initState() {
@@ -77,7 +83,18 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       final mealProvider = Provider.of<MessStaffMealProvider>(context, listen: false);
       mealProvider.reset();
       mealProvider.fetchMessStaffMeals(context);
+
+      // Fetch guest meal data
+      final guestMealProvider = Provider.of<MessBulkMealProvider>(context, listen: false);
+      guestMealProvider.fetchGuestMeals(context);
     });
+  }
+
+  @override
+  void dispose() {
+    _selectedMealNotifier.dispose();
+    _bulkMealDateNotifier.dispose();
+    super.dispose();
   }
 
   // Define the pages for the bottom navigation - now just 2 tabs
@@ -88,9 +105,81 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         _buildSettingsTab(context),
       ];
 
+  Widget _buildMealCard({
+    required IconData icon,
+    required String label,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final hasCount = count > 0;
+    return GestureDetector(
+      onTap: hasCount ? onTap : null,
+      child: Container(
+        width: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 2),
+        decoration: BoxDecoration(
+          color: isSelected ? ColorClass.brandLightGreen : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? ColorClass.brandLightGreen
+                : ColorClass.neutral200,
+            width: 1.5,
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: ColorClass.brandLightGreen.withOpacity(0.08),
+                spreadRadius: 1,
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 28,
+              color: hasCount
+                  ? ColorClass.brandDarkGreen
+                  : ColorClass.neutral300,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyleClass.poppinsRegular(
+                fontSize: 12,
+                color: hasCount
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              count.toString(),
+              style: TextStyleClass.poppinsBold(
+                fontSize: 16,
+                color: hasCount
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildHomeTab(BuildContext context) {
-    return Consumer<MessStaffMealProvider>(
-      builder: (context, mealProvider, _) {
+    return Consumer2<MessStaffMealProvider, MessBulkMealProvider>(
+      builder: (context, mealProvider, messBulkMealProvider, _) {
         // Get meal counts from provider
         final mealCounts = mealProvider.getTodayMealCounts();
 
@@ -113,11 +202,10 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
           },
         ];
 
-        // Get the selected meal details
-        final detailedLists =
-            mealProvider.getMealDetailsList(mealProvider.selectedMeal);
+        // Get today's guest meals
+        final todayGuestMeals = messBulkMealProvider.getTodayGuestMeals();
 
-        if (mealProvider.isLoading) {
+        if (mealProvider.isLoading && messBulkMealProvider.isLoading) {
           return const SafeArea(
             child: Center(
               child: CircularProgressIndicator(),
@@ -126,89 +214,272 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         }
 
         return SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0, vertical: 16.0),
-                      sliver: SliverList(
-                        delegate: SliverChildListDelegate([
-                          Text('Meal Summary-Today',
+          child: RefreshIndicator(
+            onRefresh: () async {
+              await Future.wait([
+                mealProvider.fetchMessStaffMeals(context),
+                messBulkMealProvider.fetchGuestMeals(context),
+              ]);
+            },
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Meal Summary Section
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                          child: Text('Meal Summary - Today',
                               style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 12.0,
-                            runSpacing: 12.0,
-                            children: List.generate(
-                              mealSummary.length,
-                              (index) => GestureDetector(
-                                onTap: () {
-                                  mealProvider.selectMeal(index);
-                                },
-                                child: MealSummaryWidget(
-                                  icon: mealSummary[index]['icon'] as IconData,
-                                  label: mealSummary[index]['label'] as String,
-                                  count: mealSummary[index]['count'] as int,
-                                  isSelected: mealProvider.selectedMeal == index,
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // Meal Cards Row - Fixed layout
+                        SizedBox(
+                          height: 110,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                            child: ValueListenableBuilder<int?>(
+                              valueListenable: _selectedMealNotifier,
+                              builder: (context, selectedMeal, _) => Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: List.generate(
+                                  mealSummary.length,
+                                  (index) => _buildMealCard(
+                                    icon: mealSummary[index]['icon'] as IconData,
+                                    label: mealSummary[index]['label'] as String,
+                                    count: mealSummary[index]['count'] as int,
+                                    isSelected: selectedMeal == index,
+                                    onTap: () {
+                                      if (selectedMeal == index) {
+                                        _selectedMealNotifier.value = null; // Deselect if tapped again
+                                        mealProvider.selectMeal(0); // Reset to first meal for share/print
+                                      } else {
+                                        _selectedMealNotifier.value = index;
+                                        mealProvider.selectMeal(index); // Update provider for share/print
+                                      }
+                                    },
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 24),
-                          Text('Detailed List',
-                              style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                          const SizedBox(height: 8),
-                          DetailedList(details: detailedLists),
-                        ]),
+                        ),
+
+                        // Detailed List Section (only show if meal is selected)
+                        ValueListenableBuilder<int?>(
+                          valueListenable: _selectedMealNotifier,
+                          builder: (context, selectedMeal, _) {
+                            if (selectedMeal == null) return const SizedBox.shrink();
+                            
+                            final count = mealSummary[selectedMeal]['count'] as int;
+                            if (count <= 0) return const SizedBox.shrink();
+                            
+                            final detailedLists = mealProvider.getMealDetailsList(selectedMeal);
+                            
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 16),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Detailed List',
+                                          style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                                      Text(
+                                        'Total: ${detailedLists.length}',
+                                        style: TextStyleClass.poppinsBold(
+                                          fontSize: 16,
+                                          color: ColorClass.brandDarkGreen,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    height: 220,
+                                    child: SingleChildScrollView(
+                                      child: DetailedList(details: detailedLists),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+
+                        // Bulk Meals Section
+                        if (messBulkMealProvider.guestMeals.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 32),
+                                
+                                // Section header with date picker
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          LucideIcons.users,
+                                          size: 20,
+                                          color: ColorClass.brandDarkGreen,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Bulk Food Bookings',
+                                          style: TextStyleClass.poppinsSemiBold(fontSize: 18),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ValueListenableBuilder<DateTime>(
+                                      valueListenable: _bulkMealDateNotifier,
+                                      builder: (context, selectedDate, _) => GestureDetector(
+                                        onTap: () => _selectBulkMealDate(context),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              DateFormat('dd MMM yyyy').format(selectedDate),
+                                              style: TextStyleClass.poppinsMedium(fontSize: 14),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            const Icon(Icons.calendar_today, size: 16),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                
+                                // Bulk meal cards filtered by selected date
+                                ValueListenableBuilder<DateTime>(
+                                  valueListenable: _bulkMealDateNotifier,
+                                  builder: (context, selectedDate, _) {
+                                    final filteredGuestMeals = messBulkMealProvider.getGuestMealsForDate(selectedDate);
+                                    
+                                    if (filteredGuestMeals.isEmpty) {
+                                      return Container(
+                                        padding: const EdgeInsets.all(20),
+                                        child: Center(
+                                          child: Column(
+                                            children: [
+                                              Icon(
+                                                LucideIcons.calendarOff,
+                                                size: 48,
+                                                color: ColorClass.neutral300,
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Text(
+                                                'No bulk bookings for this date',
+                                                style: TextStyleClass.poppinsRegular(
+                                                  fontSize: 14,
+                                                  color: ColorClass.neutral400,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    
+                                    return Column(
+                                      children: filteredGuestMeals.map((guestMeal) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 12),
+                                        child: BulkMealCardWidget(guestMeal: guestMeal),
+                                      )).toList(),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
+                        // Add bottom padding for better spacing
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Bottom Buttons (Fixed at bottom)
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, -2),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      BottomButton(
+                        label: 'Share',
+                        onTap: () {
+                          final selectedIndex = mealProvider.selectedMeal;
+                          final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                          final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
+                          generateAndSharePdf(
+                            context, 
+                            mealLabel, 
+                            detailedLists,
+                            messBulkMealProvider,
+                            shareInsteadOfOpen: true
+                          );
+                        },
+                      ),
+                      BottomButton(
+                        label: 'Print',
+                        onTap: () {
+                          final selectedIndex = mealProvider.selectedMeal;
+                          final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                          final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
+                          generateAndSharePdf(
+                            context, 
+                            mealLabel, 
+                            detailedLists,
+                            messBulkMealProvider,
+                            shareInsteadOfOpen: false
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    BottomButton(
-                      label: 'Share',
-                      onTap: () {
-                        final selectedIndex = mealProvider.selectedMeal;
-                        final mealLabel =
-                            mealSummary[selectedIndex]['label'] as String;
-                        generateAndSharePdf(
-                          context, 
-                          mealLabel, 
-                          detailedLists,
-                          shareInsteadOfOpen: true
-                        );
-                      },
-                    ),
-                    BottomButton(
-                      label: 'Print',
-                      onTap: () {
-                        final selectedIndex = mealProvider.selectedMeal;
-                        final mealLabel =
-                            mealSummary[selectedIndex]['label'] as String;
-                        generateAndSharePdf(
-                          context, 
-                          mealLabel, 
-                          detailedLists,
-                          shareInsteadOfOpen: false
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
+  }
+
+  // Date picker for bulk meals
+  void _selectBulkMealDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _bulkMealDateNotifier.value,
+      firstDate: DateTime(2022),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null && picked != _bulkMealDateNotifier.value) {
+      _bulkMealDateNotifier.value = picked;
+    }
   }
 
   Widget _buildSettingsTab(BuildContext context) {
@@ -314,6 +585,12 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                 listen: false)
                             .clearData();
 
+                        // Clear guest meal provider data
+                        await Provider.of<MessBulkMealProvider>(
+                                navigatorKey.currentContext!,
+                                listen: false)
+                            .clearData();
+
                         // Reset bottom nav to initial index
                         Provider.of<BottomNavProvider>(
                                 navigatorKey.currentContext!,
@@ -365,7 +642,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
-  // Other methods like showProgressDialog and generateAndSharePdf remain unchanged
+  // PDF generation and sharing methods
   Future<void> showProgressDialog(
       BuildContext context, ValueNotifier<double> progress) async {
     return showDialog(
@@ -378,21 +655,42 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   Future<void> generateAndSharePdf(
     BuildContext context,
     String mealLabel,
-    List<Map<String, String>> details, {
+    List<Map<String, String>> details,
+    MessBulkMealProvider bulkMealProvider, {
     bool shareInsteadOfOpen = false,
   }) async {
-    // Existing PDF generation code...
     final progress = ValueNotifier<double>(0.0);
     showProgressDialog(context, progress);
 
     File? file;
     try {
       final pdf = pw.Document();
+      
+      // Get bulk meal data for today based on selected meal type
+      final todayBulkMeals = bulkMealProvider.getTodayGuestMeals();
+      int bulkMealCount = 0;
+      String mealType = mealLabel.toLowerCase();
+      
+      for (final bulkMeal in todayBulkMeals) {
+        switch (mealType) {
+          case 'breakfast':
+            bulkMealCount += bulkMeal.breakfastCount;
+            break;
+          case 'lunch':
+            bulkMealCount += bulkMeal.lunchCount;
+            break;
+          case 'dinner':
+            bulkMealCount += bulkMeal.dinnerCount;
+            break;
+        }
+      }
+      
       final total = details.length;
       for (int i = 0; i < total; i++) {
         progress.value = (i + 1) / (total + 1);
         await Future.delayed(const Duration(milliseconds: 200));
       }
+      
       pdf.addPage(
         pw.Page(
           build: (pw.Context context) => pw.Column(
@@ -406,35 +704,102 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   DateTime.now().toString().substring(0, 10),
                   style: pw.TextStyle(fontSize: 14)),
               pw.SizedBox(height: 8),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Regular Meals: ${details.length}',
+                      style: pw.TextStyle(
+                          fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                  if (bulkMealCount > 0)
+                    pw.Text('Extra Meals ($mealLabel): $bulkMealCount',
+                        style: pw.TextStyle(
+                            fontSize: 16, 
+                            fontWeight: pw.FontWeight.bold,
+                            color: PdfColors.green)),
+                ],
+              ),
+              pw.SizedBox(height: 4),
               pw.Align(
                 alignment: pw.Alignment.centerRight,
-                child: pw.Text('Total: ${details.length}',
+                child: pw.Text('Total: ${details.length + bulkMealCount}',
                     style: pw.TextStyle(
                         fontSize: 18, fontWeight: pw.FontWeight.bold)),
               ),
               pw.SizedBox(height: 16),
-              ...details.map((item) => pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(item['name'] ?? '',
-                          style: pw.TextStyle(
-                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                      pw.Text(item['type'] ?? '',
-                          style: pw.TextStyle(fontSize: 12)),
-                      pw.Text(item['room'] ?? '',
-                          style: pw.TextStyle(fontSize: 12)),
-                      pw.SizedBox(height: 8),
-                    ],
-                  )),
+              
+              // Regular meal details
+              if (details.isNotEmpty) ...[
+                pw.Text('Regular Meals:',
+                    style: pw.TextStyle(
+                        fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 8),
+                ...details.map((item) => pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(item['name'] ?? '',
+                            style: pw.TextStyle(
+                                fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                        pw.Text(item['type'] ?? '',
+                            style: pw.TextStyle(fontSize: 12)),
+                        pw.Text(item['room'] ?? '',
+                            style: pw.TextStyle(fontSize: 12)),
+                        pw.SizedBox(height: 6),
+                      ],
+                    )),
+              ],
+              
+              // Bulk meal details
+              if (bulkMealCount > 0) ...[
+                pw.SizedBox(height: 16),
+                pw.Text('Extra Meals ($mealLabel):',
+                    style: pw.TextStyle(
+                        fontSize: 16, 
+                        fontWeight: pw.FontWeight.bold,
+                        color: PdfColors.green)),
+                pw.SizedBox(height: 8),
+                ...todayBulkMeals.map((bulkMeal) {
+                  int mealCount = 0;
+                  switch (mealType) {
+                    case 'breakfast':
+                      mealCount = bulkMeal.breakfastCount;
+                      break;
+                    case 'lunch':
+                      mealCount = bulkMeal.lunchCount;
+                      break;
+                    case 'dinner':
+                      mealCount = bulkMeal.dinnerCount;
+                      break;
+                  }
+                  
+                  if (mealCount > 0) {
+                    return pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('Department: ${bulkMeal.departmentNames}',
+                            style: pw.TextStyle(
+                                fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                        pw.Text('Count: $mealCount',
+                            style: pw.TextStyle(fontSize: 12)),
+                        pw.Text('Date: ${DateFormat('dd MMM yyyy').format(bulkMeal.date)}',
+                            style: pw.TextStyle(fontSize: 12)),
+                        pw.SizedBox(height: 6),
+                      ],
+                    );
+                  }
+                  return pw.SizedBox.shrink();
+                }),
+              ],
             ],
           ),
         ),
       );
+      
       progress.value = 1.0;
       final output = await getTemporaryDirectory();
       file = File('${output.path}/$mealLabel-detailed-list.pdf');
       await file.writeAsBytes(await pdf.save());
       Navigator.of(context, rootNavigator: true).pop();
+      
       if (shareInsteadOfOpen) {
         await Share.shareXFiles([XFile(file.path)],
             text: '$mealLabel - Detailed List');
@@ -517,7 +882,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         name: 'MessStaffScreen');
 
     final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = ['Home', 'Settings']; // Updated names
+    final tabTitles = ['Home', 'Settings'];
 
     return WillPopScope(
       onWillPop: () async {
