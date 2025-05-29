@@ -25,7 +25,6 @@ import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../widgets/meal_summary_widget.dart';
 import '../widgets/progress_dialog.dart';
 import '../widgets/detailed_list.dart';
 import '../widgets/bottom_button.dart';
