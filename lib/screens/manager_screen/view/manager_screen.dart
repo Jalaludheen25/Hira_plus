@@ -17,6 +17,7 @@ import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
 import 'package:toastification/toastification.dart';
 import 'dart:async';
+import 'package:hira_plus/screens/manager_screen/view/manager_bulk_food_list_screen.dart';
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -68,7 +69,8 @@ class ManagerScreen extends StatelessWidget {
   }
 
   Widget _buildDashboardTab(BuildContext context) {
-    final selectedMealNotifier = ValueNotifier<int>(0);
+    final selectedMealNotifier =
+        ValueNotifier<int?>(null); // null means no meal selected
     final dateSelectNotifier = DateTimeNotifier(DateTime.now());
 
     // Fetch meal data for current date
@@ -87,6 +89,78 @@ class ManagerScreen extends StatelessWidget {
       }
     }
 
+    Widget buildMealCard({
+      required IconData icon,
+      required String label,
+      required int count,
+      required bool isSelected,
+      required VoidCallback onTap,
+    }) {
+      final hasCount = count > 0;
+      return GestureDetector(
+        onTap: hasCount ? onTap : null,
+        child: Container(
+          width: 80,
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 2),
+          decoration: BoxDecoration(
+            color: isSelected ? ColorClass.brandLightGreen : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? ColorClass.brandLightGreen
+                  : ColorClass.neutral200,
+              width: 1.5,
+            ),
+            boxShadow: [
+              if (isSelected)
+                BoxShadow(
+                  color: ColorClass.brandLightGreen.withOpacity(0.08),
+                  spreadRadius: 1,
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 28,
+                color: hasCount
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral300,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 12,
+                  color: hasCount
+                      ? ColorClass.brandDarkGreen
+                      : ColorClass.neutral400,
+                ),
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                count.toString(),
+                style: TextStyleClass.poppinsBold(
+                  fontSize: 16,
+                  color: hasCount
+                      ? ColorClass.brandDarkGreen
+                      : ColorClass.neutral400,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return ChangeNotifierProvider(
       create: (_) => UsersByMealsProvider()..fetchAllMeals(),
       child: Consumer<UsersByMealsProvider>(
@@ -96,110 +170,291 @@ class ManagerScreen extends StatelessWidget {
           return SafeArea(
             child: mealProvider.isLoading
                 ? const Center(child: CupertinoActivityIndicator())
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Date selection row
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Meal Summary',
-                                style: TextStyleClass.poppinsSemiBold(
-                                    fontSize: 18)),
-                            GestureDetector(
-                              onTap: () =>
-                                  selectDate(context, dateSelectNotifier),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    DateFormat('dd MMM yyyy').format(
-                                        DateTime.parse(
-                                            mealProvider.currentDate)),
-                                    style: TextStyleClass.poppinsMedium(
-                                        fontSize: 14),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.calendar_today, size: 16),
-                                ],
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Date selection row
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Meal Summary',
+                                  style: TextStyleClass.poppinsSemiBold(
+                                      fontSize: 18)),
+                              GestureDetector(
+                                onTap: () =>
+                                    selectDate(context, dateSelectNotifier),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      DateFormat('dd MMM yyyy').format(
+                                          DateTime.parse(
+                                              mealProvider.currentDate)),
+                                      style: TextStyleClass.poppinsMedium(
+                                          fontSize: 14),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.calendar_today, size: 16),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Meal summary widgets
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: selectedMealNotifier,
-                          builder: (context, selectedMeal, _) => Wrap(
-                            spacing: 12.0,
-                            runSpacing: 12.0,
-                            children: List.generate(
-                                mealSummary.length,
-                                (index) => GestureDetector(
-                                      onTap: () {
-                                        selectedMealNotifier.value = index;
-                                      },
-                                      child: MealSummaryWidget(
-                                        icon: mealSummary[index]['icon']
-                                            as IconData,
-                                        label: mealSummary[index]['label']
-                                            as String,
-                                        count:
-                                            mealSummary[index]['count'] as int,
-                                        isSelected: selectedMeal == index,
-                                      ),
-                                    )),
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Detailed list section
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: ValueListenableBuilder<int>(
+                        const SizedBox(height: 12),
+                        // Meal summary row
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                          child: ValueListenableBuilder<int?>(
                             valueListenable: selectedMealNotifier,
-                            builder: (context, selectedMeal, _) {
-                              final details =
-                                  getDetailedList(selectedMeal, mealProvider);
-                              return Column(
+                            builder: (context, selectedMeal, _) => Wrap(
+                              spacing: 12.0,
+                              runSpacing: 12.0,
+                              children: List.generate(
+                                mealSummary.length,
+                                (index) => buildMealCard(
+                                  icon: mealSummary[index]['icon'] as IconData,
+                                  label: mealSummary[index]['label'] as String,
+                                  count: mealSummary[index]['count'] as int,
+                                  isSelected: selectedMeal == index,
+                                  onTap: () {
+                                    if (selectedMeal == index) {
+                                      selectedMealNotifier.value =
+                                          null; // Deselect if tapped again
+                                    } else {
+                                      selectedMealNotifier.value = index;
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Only show detailed list if a meal is selected and available
+                        ValueListenableBuilder<int?>(
+                          valueListenable: selectedMealNotifier,
+                          builder: (context, selectedMeal, _) {
+                            if (selectedMeal == null)
+                              return const SizedBox.shrink();
+                            final count =
+                                mealSummary[selectedMeal]['count'] as int;
+                            if (count <= 0) return const SizedBox.shrink();
+                            final details =
+                                getDetailedList(selectedMeal, mealProvider);
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text('Detailed List',
-                                          style: TextStyleClass.poppinsSemiBold(
-                                              fontSize: 18)),
+                                      Column(
+                                        children: [
+                                          SizedBox(
+                                            height: 10,
+                                          ),
+                                          Text('Detailed List',
+                                              style: TextStyleClass
+                                                  .poppinsSemiBold(
+                                                      fontSize: 18)),
+                                        ],
+                                      ),
                                       Text(
-                                        'Total: ${details.length}',
+                                        'Total: 	${details.length}',
                                         style: TextStyleClass.poppinsBold(
-                                            fontSize: 18,
-                                            color: ColorClass.brandDarkGreen),
+                                          fontSize: 16,
+                                          color: ColorClass.brandDarkGreen,
+                                        ),
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 15),
-                                  Expanded(
-                                    child: details.isEmpty
-                                        ? const Center(
-                                            child: Text(
-                                                'No users found for this meal'),
-                                          )
-                                        : DetailedList(details: details),
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    height: 220,
+                                    child: DetailedList(details: details),
                                   ),
                                 ],
-                              );
-                            },
+                              ),
+                            );
+                          },
+                        ),
+                        // Quick Actions Section
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                          child: Text(
+                            'Quick Actions',
+                            style: TextStyleClass.poppinsSemiBold(fontSize: 18),
                           ),
                         ),
-                      ),
-                    ],
+                        // Bulk Food Booking Card
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ManagerBulkFoodListScreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: ColorClass.brandWhite,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: ColorClass.brandLightGreen,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ColorClass.brandLightGreen
+                                        .withOpacity(0.1),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandLightGreen
+                                          .withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      LucideIcons.utensils,
+                                      size: 28,
+                                      color: ColorClass.brandDarkGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Bulk Food Booking',
+                                          style: TextStyleClass.poppinsSemiBold(
+                                            fontSize: 18,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Book meals for guests in bulk',
+                                          style: TextStyleClass.poppinsRegular(
+                                            fontSize: 14,
+                                            color: ColorClass.neutral500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    LucideIcons.chevronRight,
+                                    color: ColorClass.brandDarkGreen,
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Banner Creation Card
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                          child: GestureDetector(
+                            onTap: () async {
+                              final result = await showDialog(
+                                context: context,
+                                builder: (context) => BannerDialog(),
+                              );
+                              // Optionally handle result
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: ColorClass.brandWhite,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: ColorClass.brandLightGreen,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: ColorClass.brandLightGreen
+                                        .withOpacity(0.1),
+                                    spreadRadius: 2,
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandLightGreen
+                                          .withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      LucideIcons.image,
+                                      size: 28,
+                                      color: ColorClass.brandDarkGreen,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Create Banner',
+                                          style: TextStyleClass.poppinsSemiBold(
+                                            fontSize: 18,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Create promotional banners',
+                                          style: TextStyleClass.poppinsRegular(
+                                            fontSize: 14,
+                                            color: ColorClass.neutral500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    LucideIcons.chevronRight,
+                                    color: ColorClass.brandDarkGreen,
+                                    size: 20,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        // Add bottom padding for better spacing
+                        const SizedBox(height: 30),
+                      ],
+                    ),
                   ),
           );
         },
@@ -238,7 +493,9 @@ class ManagerScreen extends StatelessWidget {
     DateTime? _lastBackPressed;
     return WillPopScope(
       onWillPop: () async {
-        if (_lastBackPressed == null || DateTime.now().difference(_lastBackPressed!) > Duration(seconds: 2)) {
+        if (_lastBackPressed == null ||
+            DateTime.now().difference(_lastBackPressed!) >
+                Duration(seconds: 2)) {
           _lastBackPressed = DateTime.now();
           toastification.show(
             context: context,
@@ -308,20 +565,7 @@ class ManagerScreen extends StatelessWidget {
           currentIndex: navProvider.selectedIndex,
           onTap: navProvider.setIndex,
         ),
-        floatingActionButton: navProvider.selectedIndex == 0
-            ? FloatingActionButton.extended(
-                onPressed: () async {
-                  final result = await showDialog(
-                    context: context,
-                    builder: (context) =>  BannerDialog (),
-                  );
-                  // Optionally handle result
-                },
-                icon: const Icon(Icons.add_photo_alternate,color: ColorClass.white,),
-                label:  Text('Create Banner',style: TextStyleClass.poppinsMedium(fontSize: 16,color: ColorClass.white),),
-                backgroundColor: ColorClass.brandDarkGreen,
-              )
-            : null,
+        // Removed the floating action button
       ),
     );
   }

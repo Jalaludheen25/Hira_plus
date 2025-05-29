@@ -102,4 +102,13 @@ class ApiUrls {
   static String editGuestMeals(String id) {
     return '$baseUrl/auth/guest-meals/$id';
   }
+
+  // ################## ADMIN GUEST MEALS (BULK BOOKING) ##################
+  static String adminGuestMeals() {
+    return '$baseUrl/admin/guest-meals';
+  }
+
+  static String adminEditGuestMeals(String id) {
+    return '$baseUrl/admin/guest-meals/$id';
+  }
 }
