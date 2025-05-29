@@ -545,10 +545,14 @@ class AuthProvider extends ChangeNotifier {
       _logger.i('🔄 [AUTH] Logging out user...');
       developer.log('🔄 Logging out user...', name: 'AuthProvider');
 
+      // Clear all tokens
       await SharedUtils.setString('auth_token', '');
       await SharedUtils.setString('user_type', '');
-      await SharedUtils.setBoolean(
-          'is_dept_head', false); // ADDED: Clear isDeptHead status on logout
+      await SharedUtils.setBoolean('is_dept_head', false);
+
+      // Clear manager_token specifically
+      await SharedUtils.setString('manager_token', '');
+
       _isLoggedIn = false;
       _userType = '';
       reset();

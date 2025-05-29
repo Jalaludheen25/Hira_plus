@@ -16,6 +16,7 @@ import 'package:shake_flutter/enums/shake_screen.dart';
 import 'package:shake_flutter/shake_flutter.dart';
 import 'package:toastification/toastification.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -106,8 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('About Us'),
-                    content:
-                        const Text('This is dummy content for About Us.'),
+                    content: const Text('This is dummy content for About Us.'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
@@ -138,17 +138,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   builder: (BuildContext context) {
                     return LogoutConfirmationBottomSheet(
-                      onLogout: () {
+                      onLogout: () async {
+                        developer.log('🔄 Manager initiated logout process',
+                            name: 'ManagerScreen');
+
+                        // Reset bottom nav to initial index
                         Provider.of<BottomNavProvider>(
                                 navigatorKey.currentContext!,
                                 listen: false)
                             .setIndex(0);
+                        developer.log('👆 Reset bottom nav index to 0',
+                            name: 'ManagerScreen');
+
+                        // Get auth provider and check current token status
+                        final authProvider = Provider.of<AuthProvider>(
+                            navigatorKey.currentContext!,
+                            listen: false);
+
+                        final beforeToken = await authProvider.getAuthToken();
+                        final beforeManagerToken =
+                            await SharedUtils.getString('manager_token');
+                        developer.log(
+                            '📊 Before logout - auth_token: ${beforeToken?.isNotEmpty}, manager_token: ${beforeManagerToken?.isNotEmpty}',
+                            name: 'ManagerScreen');
+
+                        // Call the AuthProvider logout method to clear shared preferences
+                        await authProvider.logout();
+
+                        // Verify tokens are cleared
+                        final afterToken = await authProvider.getAuthToken();
+                        final afterManagerToken =
+                            await SharedUtils.getString('manager_token');
+                        developer.log(
+                            '📊 After logout - auth_token: ${afterToken?.isNotEmpty}, manager_token: ${afterManagerToken?.isNotEmpty}',
+                            name: 'ManagerScreen');
+
+                        developer.log(
+                            '🟢 Successfully cleared preferences and updated auth state',
+                            name: 'ManagerScreen');
+
                         toastification.show(
                           context: context,
                           title: Text('Logged out successfully'),
                           type: ToastificationType.success,
                           autoCloseDuration: const Duration(seconds: 2),
                         );
+
                         Future.delayed(const Duration(milliseconds: 500), () {
                           navigatePRTo(
                             context: navigatorKey.currentContext!,
