@@ -35,9 +35,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       _scrollToToday(canteenProvider);
       _setupViewModeListener();
       canteenProvider.fetchBanner();
-      
-      
-
     });
   }
 
@@ -80,6 +77,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         phone: authProvider.phone,
         department: authProvider.department,
         designation: authProvider.designation,
+        isDeptHead: authProvider.isDeptHead,
       );
     });
   }

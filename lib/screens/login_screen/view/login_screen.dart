@@ -437,7 +437,20 @@ class _LoginScreenState extends State<LoginScreen> {
                             // Validate based on authentication type
                             if (useOtpAuth) {
                               // Handle OTP validation
-                              if (authProvider.otp.length != 6) {
+                              if (authProvider.phone == '9998887776') {
+                                // For test user, any OTP is valid
+                                // Just ensure it's not empty
+                                if (authProvider.otp.isEmpty) {
+                                  toastification.show(
+                                    context: context,
+                                    title: const Text('Please enter OTP'),
+                                    type: ToastificationType.error,
+                                    autoCloseDuration:
+                                        const Duration(seconds: 2),
+                                  );
+                                  return;
+                                }
+                              } else if (authProvider.otp.length != 6) {
                                 _logger.w(
                                     '🟠 [VALIDATION] Invalid OTP length: ${authProvider.otp.length}');
                                 developer.log(

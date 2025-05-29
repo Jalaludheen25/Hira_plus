@@ -1,3 +1,5 @@
+// ignore_for_file: empty_catches
+
 import 'package:hira_plus/utils/shared_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
@@ -153,7 +155,8 @@ class AuthProvider extends ChangeNotifier {
 
       final token = await SharedUtils.getString('auth_token');
       final userType = await SharedUtils.getString('user_type');
-      final isDeptHead = await SharedUtils.getBoolean('is_dept_head'); // ADDED: Retrieve isDeptHead status
+      final isDeptHead = await SharedUtils.getBoolean(
+          'is_dept_head'); // ADDED: Retrieve isDeptHead status
 
       _isLoggedIn = token.isNotEmpty;
       _userType = userType;
@@ -198,7 +201,8 @@ class AuthProvider extends ChangeNotifier {
       }
 
       await SharedUtils.setString('user_type', '');
-      await SharedUtils.setBoolean('is_dept_head', false); // ADDED: Clear isDeptHead status
+      await SharedUtils.setBoolean(
+          'is_dept_head', false); // ADDED: Clear isDeptHead status
       _isLoggedIn = false;
       _userType = '';
       _isDeptHead = false;
@@ -325,7 +329,7 @@ class AuthProvider extends ChangeNotifier {
               'user_designation', userDetails['designation'] ?? '');
           setDepartment(userDetails['department'] ?? '');
           setDesignation(userDetails['designation'] ?? '');
-          
+
           // UPDATED: Handle isDeptHead for test login
           final isDeptHead = userDetails['isDeptHead'] ?? false;
           setIsDeptHead(isDeptHead);
@@ -361,7 +365,7 @@ class AuthProvider extends ChangeNotifier {
       _logger.i('🔵 [API] Fetching login token...');
 
       // Check for test credentials
-      if (_phone == '9998887776' && _otp == '123456') {
+      if (_phone == '9998887776') {
         _logger.i('🔵 [TEST] Using test user credentials...');
         developer.log('🔵 Using test user credentials', name: 'AuthProvider');
         await handleTestLogin();
@@ -404,11 +408,13 @@ class AuthProvider extends ChangeNotifier {
         // UPDATED: Extract and store isDeptHead using the new method
         final user = data['user'];
         final isDeptHead = user != null && user['isDeptHead'] == true;
-        setIsDeptHead(isDeptHead); // CHANGED: Use setIsDeptHead instead of direct assignment
+        setIsDeptHead(
+            isDeptHead); // CHANGED: Use setIsDeptHead instead of direct assignment
         developer.log('isDeptHead set to: $isDeptHead', name: 'AuthProvider');
 
         // Update ProfileScreenProvider with user info and isDeptHead
-        final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+        final profileProvider =
+            Provider.of<ProfileScreenProvider>(context, listen: false);
         profileProvider.setUserInfo(
           userType: _selectedRole,
           userName: user != null ? user['name'] ?? '' : '',
@@ -459,13 +465,24 @@ class AuthProvider extends ChangeNotifier {
       if (e is! Exception) {
         throw Exception('Authentication failed. Please try again later.');
       }
-      throw e;
+      rethrow;
     }
   }
 
   // New method to request OTP for a phone number
   Future<void> requestOtp(String phoneNumber) async {
     try {
+      // Special handling for test phone number
+      if (phoneNumber == '9998887776') {
+        developer.log('🧪 Test phone number detected, simulating OTP request',
+            name: 'AuthProvider');
+        // Simulate successful OTP request for test phone number
+        await Future.delayed(const Duration(milliseconds: 500));
+        developer.log('🟢 Test OTP sent successfully to $phoneNumber',
+            name: 'AuthProvider');
+        return;
+      }
+
       final url = ApiUrls.getRequestOtp();
       developer.log('📡 Requesting OTP for $phoneNumber at $url',
           name: 'AuthProvider');
@@ -501,7 +518,7 @@ class AuthProvider extends ChangeNotifier {
       // Create a dummy token
       final dummyToken = 'demo_token_${DateTime.now().millisecondsSinceEpoch}';
 
-      developer.log('🧪 Simulating successful auth for ${_selectedRole}',
+      developer.log('🧪 Simulating successful auth for $_selectedRole',
           name: 'AuthProvider');
 
       // Store the dummy token
@@ -530,7 +547,8 @@ class AuthProvider extends ChangeNotifier {
 
       await SharedUtils.setString('auth_token', '');
       await SharedUtils.setString('user_type', '');
-      await SharedUtils.setBoolean('is_dept_head', false); // ADDED: Clear isDeptHead status on logout
+      await SharedUtils.setBoolean(
+          'is_dept_head', false); // ADDED: Clear isDeptHead status on logout
       _isLoggedIn = false;
       _userType = '';
       reset();
@@ -699,7 +717,7 @@ class AuthProvider extends ChangeNotifier {
       if (e is! Exception) {
         throw Exception('Authentication failed. Please try again later.');
       }
-      throw e;
+      rethrow;
     }
   }
 
