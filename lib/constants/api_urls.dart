@@ -117,4 +117,40 @@ class ApiUrls {
   static String getBulkMealsForMessStaff() {
     return '$baseUrl/mess-staff/guest-meals';
   }
+
+  
+
+  // ################## RECEPTION APIs ##################
+
+  static String getReceptionLogin() {
+    return '$baseUrl/reception/login';
+  }
+
+  static String getAllReceptionUsers() {
+    return '$baseUrl/reception/users/all';
+  }
+
+  static String checkInUser(String userId) {
+    return '$baseUrl/reception/check-in/$userId';
+  }
+
+  static String checkOutUser(String userId) {
+    return '$baseUrl/reception/checkout/$userId';
+  }
+
+  // Get today's check-ins
+  static String getTodayCheckIns() {
+    return '$baseUrl/reception/check-ins/today';
+  }
+
+  // Get today's check-outs
+  static String getTodayCheckOuts() {
+    return '$baseUrl/reception/checkouts/today';
+  }
+
+
+
+  static String getAttendanceByDate(String date) {
+    return '$baseUrl/reception/attendance/by-date?date=$date';
+  }
 }

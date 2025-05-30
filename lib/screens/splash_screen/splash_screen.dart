@@ -113,6 +113,8 @@ class _SplashScreenState extends State<SplashScreen>
         } else if (authProvider.userType == 'Mess Staff') {
           _logger.i('🧭 [NAVIGATION] Directing to Mess Staff screen');
           navigatePRToGlobal(route: Routes.messStaff);
+        } else if (authProvider.userType == 'Reception') {
+          navigatePRToGlobal(route: Routes.reception);
         } else {
           _logger.i('🧭 [NAVIGATION] Directing to User screen');
           navigatePRToGlobal(route: Routes.bottomNav);
