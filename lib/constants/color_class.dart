@@ -202,5 +202,7 @@ class ColorClass {
   // Brand Colors (extracted from HiraPlus icon)
   static const Color brandDarkGreen = Color(0xFF1B3932); // background
   static const Color brandLightGreen = Color(0xFFC6E3B2); // band
-  static const Color brandWhite = Color(0xFFFFFFFF); // H and background
+  static const Color brandWhite = Color(0xFFFFFFFF);
+  static const Color brandGreen = Color(0xFF188064);
+  static const Color splashGreen = Color(0xFF12342B); // H and background
 }
