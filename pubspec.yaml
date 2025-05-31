@@ -67,6 +67,9 @@ flutter:
     # - assets/images/
     - assets/icons/HiraPlus.png
     - assets/icons/d4dx_logo.png
+    - assets/icons/splashImage.png
+    - assets/icons/splashLogo.png
+    - assets/icons/dxLogoWhite.png
   #   - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -5,6 +5,7 @@ import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/icons_class.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
@@ -20,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _rotateAnimation;
+  late Animation<double> _fadeAnimation;
   final Logger _logger = Logger();
 
   @override
@@ -28,24 +29,24 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
 
     _scaleAnimation = Tween<double>(
-      begin: 0.0,
+      begin: 0.5,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
       curve: Curves.elasticOut,
     ));
 
-    _rotateAnimation = Tween<double>(
+    _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeIn,
+      curve: Curves.easeInOut,
     ));
 
     _animationController.forward();
@@ -145,33 +146,143 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ColorClass.brandDarkGreen,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Spacer(),
-          Center(
-            child: AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: Transform.rotate(
-                    angle: _rotateAnimation.value * 2 * 3.14159,
-                    child: Image.asset(
-                      IconClass.hiraPlus,
-                      width: 180,
-                      height: 180,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1B3932), // Darker green at top
+              Color(0xFF2D5A4F), // Medium green
+              Color(0xFF4A8F77), // Lighter green at bottom
+            ],
+            stops: [0.0, 0.6, 1.0],
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Main content
+            SafeArea(
+              child: Column(
+                children: [
+                  // Top section with center logo
+                  Expanded(
+                    flex: 4,
+                    child: Center(
+                      child: AnimatedBuilder(
+                        animation: _animationController,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _scaleAnimation.value,
+                            child: FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: _buildImageWithFallback(
+                                IconClass.splashLogo,
+                                width: 180,
+                                height: 180,
+                                fallbackIcon: Icons.home_work,
+                                fallbackColor: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                );
-              },
+                  
+                  // Bottom spacer to leave room for building image
+                  Expanded(
+                    flex: 2,
+                    child: SizedBox(),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Spacer(),
-          const SizedBox(height: 32),
-        ],
+            
+            // PoweredBy section positioned in the center of the building image
+            Positioned(
+              bottom: 80, // Adjust this value to center it on your building image
+              left: 0,
+              right: 0,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Image.asset(IconClass.dxLogoWhite,width: 58,height: 58,),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            
+            // Bottom building image positioned absolutely at the bottom
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: _buildImageWithFallback(
+                        IconClass.splashImage,
+                        width: MediaQuery.of(context).size.width,
+                        height: null, // Let it determine height automatically
+                        fallbackIcon: Icons.business,
+                        fallbackColor: Colors.white70,
+                        fitType: BoxFit.fitWidth, // Show full image, fit to width
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  // Helper method to build image with fallback
+  Widget _buildImageWithFallback(
+    String assetPath, {
+    required double width,
+    double? height, // Made nullable to allow auto height
+    required IconData fallbackIcon,
+    required Color fallbackColor,
+    BoxFit fitType = BoxFit.contain,
+  }) {
+    return Image.asset(
+      assetPath,
+      width: width,
+      height: height,
+      fit: fitType,
+      errorBuilder: (context, error, stackTrace) {
+        // Fallback widget when image fails to load
+        _logger.w('🖼️ [IMAGE] Failed to load image: $assetPath - Error: $error');
+        return Container(
+          width: width,
+          height: height ?? 150, // Default height for fallback
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: fitType == BoxFit.cover ? BorderRadius.zero : BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Icon(
+            fallbackIcon,
+            size: width * 0.3,
+            color: fallbackColor,
+          ),
+        );
+      },
     );
   }
 }
