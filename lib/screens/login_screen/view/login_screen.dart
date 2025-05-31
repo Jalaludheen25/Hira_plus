@@ -101,21 +101,10 @@ class _LoginScreenState extends State<LoginScreen> {
               letterSpacing: 1.2,
             ),
             decoration: InputDecoration(
-              labelText: 'Password',
-              labelStyle: TextStyle(
-                color: ColorClass.brandDarkGreen,
+              hintText: 'Password',
+              hintStyle: TextStyle(
+                color: ColorClass.brandDarkGreen.withOpacity(0.6),
                 fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-              floatingLabelStyle: TextStyle(
-                color: ColorClass.brandDarkGreen,
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
-                letterSpacing: 0.5,
-              ),
-              errorStyle: TextStyle(
-                color: ColorClass.brandLightGreen,
-                fontSize: 12,
               ),
               prefixIcon: Icon(
                 Icons.lock_outline,
@@ -179,8 +168,20 @@ class _LoginScreenState extends State<LoginScreen> {
             name: 'LoginScreen');
 
         return Scaffold(
-          backgroundColor: ColorClass.brandDarkGreen,
-          body: SafeArea(
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF1B3932), // Darker green at top
+                  Color(0xFF2D5A4F), // Medium green
+                  Color(0xFF4A8F77), // Lighter green at bottom
+                ],
+                stops: [0.0, 0.6, 1.0],
+              ),
+            ),
+            child: SafeArea(
             child: SingleChildScrollView(
               child: Padding(
                 padding:
@@ -188,7 +189,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 150),
+                    // Back arrow - only show when on OTP/password screen
+                    if (authProvider.showOTPField)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: GestureDetector(
+                          onTap: () {
+                            // Clear OTP and password fields when going back
+                            authProvider.setOtp('');
+                            authProvider.setPassword('');
+                            
+                            // Go back to the first screen
+                            authProvider.setShowOTPField(false);
+                            
+                            developer.log('⬅️ Navigating back to input screen', 
+                                name: 'LoginScreen');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: ColorClass.brandLightGreen.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.arrow_back_ios_new,
+                              color: ColorClass.brandLightGreen,
+                              size: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 120),
                     Center(
                       child: Container(
                         padding: const EdgeInsets.all(16),
@@ -203,34 +235,37 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     Center(
-                      child: ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          colors: [
-                            ColorClass.brandLightGreen,
-                            ColorClass.brandLightGreen.withOpacity(0.8),
-                          ],
-                        ).createShader(bounds),
-                        child: const Text(
-                          'Mess Connect',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                      child: Column(
+                        children: [
+                          ShaderMask(
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: [
+                                ColorClass.brandLightGreen,
+                                ColorClass.brandLightGreen.withOpacity(0.8),
+                              ],
+                            ).createShader(bounds),
+                            child: const Text(
+                              'Mess Connect',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                height: 1.2, // Proper line height to prevent clipping
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Center(
-                      child: Text(
-                        'Your Digital Mess Companion',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: ColorClass.brandLightGreen.withOpacity(0.8),
-                          letterSpacing: 0.5,
-                        ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Your Digital Mess Companion',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: ColorClass.brandLightGreen.withOpacity(0.8),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 48),
@@ -644,6 +679,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
+          ),
         );
       },
     );
@@ -664,21 +700,10 @@ class _LoginScreenState extends State<LoginScreen> {
         letterSpacing: 1.2,
       ),
       decoration: InputDecoration(
-        labelText: 'Phone Number',
-        labelStyle: TextStyle(
-          color: ColorClass.brandDarkGreen,
+        hintText: 'Phone Number',
+        hintStyle: TextStyle(
+          color: ColorClass.brandDarkGreen.withOpacity(0.6),
           fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        floatingLabelStyle: TextStyle(
-          color: ColorClass.brandDarkGreen,
-          fontWeight: FontWeight.bold,
-          fontSize: 17,
-          letterSpacing: 0.5,
-        ),
-        errorStyle: TextStyle(
-          color: ColorClass.brandLightGreen,
-          fontSize: 12,
         ),
         prefixIcon: Icon(
           Icons.phone_android,
@@ -721,21 +746,10 @@ class _LoginScreenState extends State<LoginScreen> {
         letterSpacing: 0.5,
       ),
       decoration: InputDecoration(
-        labelText: 'Username',
-        labelStyle: TextStyle(
-          color: ColorClass.brandDarkGreen,
+        hintText: 'Username',
+        hintStyle: TextStyle(
+          color: ColorClass.brandDarkGreen.withOpacity(0.6),
           fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        floatingLabelStyle: TextStyle(
-          color: ColorClass.brandDarkGreen,
-          fontWeight: FontWeight.bold,
-          fontSize: 17,
-          letterSpacing: 0.5,
-        ),
-        errorStyle: TextStyle(
-          color: ColorClass.brandLightGreen,
-          fontSize: 12,
         ),
         prefixIcon: Icon(
           Icons.person_outline,

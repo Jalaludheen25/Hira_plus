@@ -41,10 +41,12 @@ class ApiUrls {
   static String getMessStaffLogin() {
     return '$baseUrl/mess-staff/login';
   }
+
   // ################## DEPARTMENT API ##################
   static String getDepartments() {
     return '$baseUrl/admin/departments';
   }
+
   // ################## CONTACTS ##################
   static String getContacts() {
     return '$baseUrl/auth/users';
@@ -101,7 +103,7 @@ class ApiUrls {
   static String getGuestMeals() {
     return '$baseUrl/auth/guest-meals';
   }
-  
+
   static String editGuestMeals(String id) {
     return '$baseUrl/auth/guest-meals/$id';
   }
@@ -114,7 +116,7 @@ class ApiUrls {
   static String adminEditGuestMeals(String id) {
     return '$baseUrl/admin/guest-meals/$id';
   }
-    // ################## MEETINGS API ##################
+  // ################## MEETINGS API ##################
 
   /// Get all meetings
   static String getMeetings() {
@@ -126,13 +128,11 @@ class ApiUrls {
     return '$baseUrl/admin/meetings';
   }
 
-   // ################## GUEST MEALS FOR MESS STAFF ##################
+  // ################## GUEST MEALS FOR MESS STAFF ##################
 
   static String getBulkMealsForMessStaff() {
     return '$baseUrl/mess-staff/guest-meals';
   }
-
-  
 
   // ################## RECEPTION APIs ##################
 
@@ -162,9 +162,17 @@ class ApiUrls {
     return '$baseUrl/reception/checkouts/today';
   }
 
-
-
   static String getAttendanceByDate(String date) {
     return '$baseUrl/reception/attendance/by-date?date=$date';
+  }
+
+  
+
+  static String getUserMeetings() {
+    return '$baseUrl/auth/meetings'; // GET - show meetings
+  }
+
+  static String createUserMeeting() {
+    return '$baseUrl/auth/dept-meetings'; // POST - create meeting (deptHead only)
   }
 }

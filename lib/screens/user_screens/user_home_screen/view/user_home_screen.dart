@@ -3,13 +3,18 @@ import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/user_meeting_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart' as UserMeeting;
 import '../widgets/month_calendar_view.dart';
 import '../widgets/home_list_view.dart';
 import '../widgets/today_fab.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
+import 'dart:ui';
 import 'dart:async';
+import 'package:lucide_icons/lucide_icons.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -29,11 +34,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final canteenProvider =
           Provider.of<CanteenHomeProvider>(context, listen: false);
+      final meetingProvider =
+          Provider.of<MeetingListProvider>(context, listen: false);
+      
       // Fetch meals data when screen loads
       canteenProvider.fetchUserMeals(context);
       _scrollToToday(canteenProvider);
       _setupViewModeListener();
       canteenProvider.fetchBanner();
+      
+      // Fetch meetings for all users
+      meetingProvider.fetchMeetings(context);
     });
   }
 
@@ -137,6 +148,59 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
 
+  // Helper method to build detailed food text
+  String _buildFoodDetailsText(UserMeeting.MeetingModel meeting) {
+    List<String> foodItems = [];
+    
+    if (meeting.breakfast > 0) {
+      foodItems.add('Breakfast (${meeting.breakfast})');
+    }
+    if (meeting.midmorningSnacks > 0) {
+      foodItems.add('Morning Snacks (${meeting.midmorningSnacks})');
+    }
+    if (meeting.lunch > 0) {
+      foodItems.add('Lunch (${meeting.lunch})');
+    }
+    if (meeting.eveningsnacks > 0) {
+      foodItems.add('Evening Snacks (${meeting.eveningsnacks})');
+    }
+    if (meeting.dinner > 0) {
+      foodItems.add('Dinner (${meeting.dinner})');
+    }
+    
+    if (foodItems.isEmpty) {
+      return 'No food specified';
+    }
+    
+    return foodItems.join(', ');
+  }
+
+  // Helper method to get status color and text
+  Map<String, dynamic> _getStatusDetails(UserMeeting.MeetingModel meeting) {
+    if (meeting.isPending) {
+      return {
+        'text': 'Pending',
+        'color': ColorClass.orangeDark,
+        'backgroundColor': ColorClass.orangeLighter,
+        'icon': LucideIcons.clock,
+      };
+    } else if (meeting.isApproved) {
+      return {
+        'text': 'Approved',
+        'color': ColorClass.greenDark,
+        'backgroundColor': ColorClass.greenLighter,
+        'icon': LucideIcons.checkCircle,
+      };
+    } else {
+      return {
+        'text': 'Rejected',
+        'color': ColorClass.redDark,
+        'backgroundColor': ColorClass.redLighter,
+        'icon': LucideIcons.xCircle,
+      };
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final canteenProvider = Provider.of<CanteenHomeProvider>(context);
@@ -167,7 +231,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             // 3. Mark Meal Widget
             _buildMarkMealWidget(context, canteenProvider),
             const SizedBox(height: 16),
-            // 4. All Users Widget
+            // 4. Meetings Widget (NEW)
+            _buildMeetingsWidget(context),
+            const SizedBox(height: 16),
+            // 5. All Users Widget
             _buildAllUsersWidget(context, canteenProvider),
             const SizedBox(height: 24),
           ],
@@ -366,6 +433,325 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // NEW: Meetings Widget
+  Widget _buildMeetingsWidget(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showMeetingsBottomSheet(context),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: ColorClass.brandDarkGreen,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.event, color: ColorClass.white, size: 32),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'View All Meetings',
+                style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 16, color: ColorClass.white),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: ColorClass.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // NEW: Show Meetings Bottom Sheet
+  void _showMeetingsBottomSheet(BuildContext context) {
+    // Refresh meetings when opening
+    final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
+    meetingProvider.fetchMeetings(context);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.8,
+          minChildSize: 0.6,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Consumer<MeetingListProvider>(
+                builder: (context, provider, _) {
+                  return Column(
+                    children: [
+                      // Header
+                      Container(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'All Meetings',
+                              style: TextStyleClass.poppinsSemiBold(
+                                  fontSize: 18, color: ColorClass.brandDarkGreen),
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () => provider.fetchMeetings(context),
+                                  icon: const Icon(Icons.refresh,
+                                      size: 30, color: ColorClass.brandDarkGreen),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close, size: 30),
+                                  onPressed: () => Navigator.pop(context),
+                                  color: ColorClass.brandDarkGreen,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Content
+                      Expanded(
+                        child: _buildMeetingsContent(provider, scrollController),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMeetingsContent(MeetingListProvider provider, ScrollController scrollController) {
+    if (provider.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text("Loading meetings..."),
+          ],
+        ),
+      );
+    }
+
+    if (provider.errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Text(
+                provider.errorMessage,
+                textAlign: TextAlign.center,
+                style: TextStyleClass.poppinsMedium(
+                  fontSize: 16,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorClass.brandDarkGreen,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => provider.fetchMeetings(context),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (provider.meetings.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.event_busy,
+              size: 48,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No meetings available',
+              style: TextStyleClass.poppinsMedium(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      controller: scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: provider.meetings.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final meeting = provider.meetings[index];
+        return _buildMeetingCard(meeting);
+      },
+    );
+  }
+
+  Widget _buildMeetingCard(UserMeeting.MeetingModel meeting) {
+    final formattedStartDate = DateFormat('EEEE, MMMM d, yyyy').format(meeting.startDatetime);
+    final formattedStartTime = DateFormat('h:mm a').format(meeting.startDatetime);
+    final formattedEndTime = DateFormat('h:mm a').format(meeting.endDatetime);
+    final statusDetails = _getStatusDetails(meeting);
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: ColorClass.brandWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: statusDetails['backgroundColor'].withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: statusDetails['backgroundColor'].withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        meeting.title,
+                        style: TextStyleClass.poppinsSemiBold(
+                          fontSize: 16,
+                          color: ColorClass.brandDarkGreen,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        meeting.description,
+                        style: TextStyleClass.poppinsRegular(
+                          fontSize: 14,
+                          color: ColorClass.neutral500,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusDetails['backgroundColor'],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        statusDetails['icon'],
+                        size: 12,
+                        color: statusDetails['color'],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        statusDetails['text'],
+                        style: TextStyleClass.poppinsSemiBold(
+                          fontSize: 10,
+                          color: statusDetails['color'],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Meeting Details
+            _buildDetailRow(LucideIcons.calendar, formattedStartDate),
+            const SizedBox(height: 4),
+            _buildDetailRow(LucideIcons.clock, '$formattedStartTime - $formattedEndTime'),
+            const SizedBox(height: 4),
+            _buildDetailRow(LucideIcons.mapPin, meeting.hall),
+            const SizedBox(height: 4),
+            _buildDetailRow(LucideIcons.users, '${meeting.noOfPersons} attendees'),
+            const SizedBox(height: 4),
+            _buildDetailRow(LucideIcons.building, meeting.department),
+            
+            if (meeting.foodRequired) ...[
+              const SizedBox(height: 4),
+              _buildDetailRow(LucideIcons.utensils, _buildFoodDetailsText(meeting)),
+            ],
+            
+            const SizedBox(height: 8),
+            Text(
+              'Created: ${DateFormat('MMM d, h:mm a').format(meeting.createdAt)}',
+              style: TextStyleClass.poppinsRegular(
+                fontSize: 11,
+                color: ColorClass.neutral400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 12,
+          color: ColorClass.neutral400,
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyleClass.poppinsRegular(
+              fontSize: 12,
+              color: ColorClass.neutral500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
