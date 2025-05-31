@@ -23,8 +23,8 @@ class CanteenHomeProvider extends ChangeNotifier {
   // CanteenHomePageProvider properties
   DateTime _selectedDate = DateTime.now();
   List<DateTime> _allDays = [];
-  int _currentYear = DateTime.now().year;
-  bool _isLoadingNextYear = false;
+  final int _currentYear = DateTime.now().year;
+  final bool _isLoadingNextYear = false;
 
   // MealProvider properties
   List<MealModel> _meals = [];
@@ -75,7 +75,7 @@ class CanteenHomeProvider extends ChangeNotifier {
   }
 
   void setMode(HomeViewMode mode) {
-    log('setMode called: ' + mode.toString(), name: 'CanteenHomeProvider');
+    log('setMode called: $mode', name: 'CanteenHomeProvider');
     _mode = mode;
     notifyListeners();
   }

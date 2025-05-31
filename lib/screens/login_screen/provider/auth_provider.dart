@@ -857,7 +857,7 @@ class AuthProvider extends ChangeNotifier {
       if (e is! Exception) {
         throw Exception('Authentication failed. Please try again later.');
       }
-      throw e;
+      rethrow;
     }
   }
 }

@@ -1,4 +1,3 @@
-/// Provider for managing admin messages (fetch, create, send)
 // part of the public API for manager_screen
 import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/manager_screen/models/message_model.dart';

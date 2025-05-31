@@ -9,7 +9,6 @@ import '../widgets/today_fab.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:ui';
 import 'dart:async';
 
 class UserHomeScreen extends StatefulWidget {
@@ -383,7 +382,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         final canteenProvider = Provider.of<CanteenHomeProvider>(context);
-        print('Current HomeViewMode: ' + canteenProvider.mode.toString());
+        debugPrint('Current HomeViewMode: ${canteenProvider.mode}');
 
         // Ensure scroll to today when in list mode
         if (canteenProvider.mode == HomeViewMode.list) {

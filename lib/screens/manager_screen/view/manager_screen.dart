@@ -23,7 +23,6 @@ import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
 import 'package:hira_plus/screens/manager_screen/view/manager_bulk_food_list_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/meeting_management_screen.dart';
 import 'package:hira_plus/routes/app_routes.dart';
@@ -486,10 +485,6 @@ class ManagerScreen extends StatelessWidget {
                                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    final result = await showDialog(
-                                      context: context,
-                                      builder: (context) => BannerDialog(),
-                                    );
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.all(20),
@@ -677,13 +672,13 @@ class ManagerScreen extends StatelessWidget {
       'Users',
       'Settings'
     ];
-    DateTime? _lastBackPressed;
+    DateTime? lastBackPressed;
     return WillPopScope(
       onWillPop: () async {
-        if (_lastBackPressed == null ||
-            DateTime.now().difference(_lastBackPressed!) >
+        if (lastBackPressed == null ||
+            DateTime.now().difference(lastBackPressed!) >
                 Duration(seconds: 2)) {
-          _lastBackPressed = DateTime.now();
+          lastBackPressed = DateTime.now();
           toastification.show(
             context: context,
             title: Text('Tap again to exit'),

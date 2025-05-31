@@ -611,7 +611,7 @@ class MonthCalendarView extends StatelessWidget {
             const SnackBar(
               content: Text('Meal preferences updated successfully'),
               backgroundColor: Colors.green,
-              duration: const Duration(seconds: 1),
+              duration: Duration(seconds: 1),
             ),
           );
         }

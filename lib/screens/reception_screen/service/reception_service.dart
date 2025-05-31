@@ -194,7 +194,7 @@ class ReceptionService {
       final url = ApiUrls.getAttendanceByDate(date);
       log('🔗 Fetching attendance by date: $url');
       final response = await HttpServiceUtils.fetchData(url, true);
-      log('📦 Raw attendance response for $date: ' + response.toString());
+      log('📦 Raw attendance response for $date: $response');
       if (response != null && response is List) {
         return response.map((item) => ReceptionAttendance.fromJson(item)).toList();
       } else if (response != null && response['data'] is List) {

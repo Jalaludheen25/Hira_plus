@@ -206,18 +206,6 @@ class MessStaffMealProvider extends ChangeNotifier {
     }
   }
 
-  String _getMealTypeLabel(int mealType) {
-    switch (mealType) {
-      case 0:
-        return 'Breakfast';
-      case 1:
-        return 'Lunch';
-      case 2:
-        return 'Dinner';
-      default:
-        return 'Unknown';
-    }
-  }
 
   // Clear all data
   Future<void> clearData() async {

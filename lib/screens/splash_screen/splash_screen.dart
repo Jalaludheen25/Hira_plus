@@ -3,9 +3,7 @@ import 'package:hira_plus/screens/forced_update_screen/provider/version_check_pr
 import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
-import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/icons_class.dart';
-import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
@@ -230,7 +228,7 @@ class _SplashScreenState extends State<SplashScreen>
                 builder: (context, child) {
                   return FadeTransition(
                     opacity: _fadeAnimation,
-                    child: Container(
+                    child: SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: _buildImageWithFallback(
                         IconClass.splashImage,

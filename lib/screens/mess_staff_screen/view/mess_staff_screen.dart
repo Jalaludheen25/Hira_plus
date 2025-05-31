@@ -26,7 +26,6 @@ import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/progress_dialog.dart';
-import '../widgets/detailed_list.dart';
 import '../widgets/bottom_button.dart';
 import 'package:hira_plus/screens/profile_screen/widgets/profile_card.dart';
 import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
@@ -348,7 +347,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         ];
 
         // Get today's guest meals
-        final todayGuestMeals = messBulkMealProvider.getTodayGuestMeals();
+        messBulkMealProvider.getTodayGuestMeals();
 
         if (mealProvider.isLoading && messBulkMealProvider.isLoading) {
           return const SafeArea(
@@ -800,8 +799,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   style: pw.TextStyle(
                       fontSize: 24, fontWeight: pw.FontWeight.bold)),
               pw.SizedBox(height: 8),
-              pw.Text('Date: ' +
-                  DateTime.now().toString().substring(0, 10),
+              pw.Text('Date: ${DateTime.now().toString().substring(0, 10)}',
                   style: pw.TextStyle(fontSize: 14)),
               pw.SizedBox(height: 8),
               pw.Row(

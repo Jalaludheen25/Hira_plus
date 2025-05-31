@@ -4,11 +4,9 @@ import 'package:hira_plus/screens/manager_screen/models/manager_guest_meal_model
 import 'package:hira_plus/utils/service_utils.dart';
 import 'package:intl/intl.dart';
 import 'dart:developer' as developer;
-import 'package:logger/logger.dart';
 import 'dart:io';
 
 class ManagerBulkFoodProvider extends ChangeNotifier {
-  final Logger _logger = Logger();
   bool _isLoading = false;
   String _errorMessage = '';
 
@@ -211,7 +209,7 @@ class ManagerBulkFoodProvider extends ChangeNotifier {
       
       // Check for existing booking locally first
       if (hasExistingBooking(date, department)) {
-        final existingBooking = getExistingBooking(date, department);
+        getExistingBooking(date, department);
         developer.log('⚠️ Local duplicate booking detected', name: 'ManagerBulkFoodProvider');
         
         _setError('A booking already exists for $department on ${DateFormat('MMM d, yyyy').format(date)}. Please update the existing booking or choose a different date.');

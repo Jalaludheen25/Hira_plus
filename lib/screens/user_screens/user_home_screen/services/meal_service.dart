@@ -158,7 +158,7 @@ class MealService {
   Future<BannerModel?> fetchBanner() async {
     try {
       final url = ApiUrls.getBanner();
-      log('Fetching banner from: ' + url);
+      log('Fetching banner from: $url');
       final response = await HttpServiceUtils.fetchData(url, true);
       if (response == null || response is! List || response.isEmpty) {
         log('No banner data received');
@@ -167,7 +167,7 @@ class MealService {
 
       // Convert all banners to BannerModel objects
       final banners =
-          (response as List).map((json) => BannerModel.fromJson(json)).toList();
+          (response).map((json) => BannerModel.fromJson(json)).toList();
 
       // Sort banners by updatedAt date in descending order (most recent first)
       banners.sort((a, b) => b.updatedAt.compareTo(a.updatedAt));

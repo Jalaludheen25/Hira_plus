@@ -287,7 +287,7 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
             const SizedBox(height: 16),
 
             // Meal breakdown
-            Container(
+            SizedBox(
               width: double.infinity,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

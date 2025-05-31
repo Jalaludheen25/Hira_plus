@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
-import 'package:hira_plus/utils/service_utils.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';

@@ -12,20 +12,20 @@ class BannerDialog extends StatelessWidget {
   const BannerDialog({Key? key}) : super(key: key);
 
   Future<void> _pickImage(BuildContext context) async {
-    print('[BannerDialog] 📸 Starting image picker process');
+    debugPrint('[BannerDialog] 📸 Starting image picker process');
 
     // First check the current permission status
     var status = await Permission.photos.status;
-    print('[BannerDialog] 🔐 Current photo permission status: $status');
+    debugPrint('[BannerDialog] 🔐 Current photo permission status: $status');
 
     if (status.isDenied) {
       // If denied for the first time, request permission
       status = await Permission.photos.request();
-      print('[BannerDialog] 🔐 Requested permission status: $status');
+      debugPrint('[BannerDialog] 🔐 Requested permission status: $status');
     }
 
     if (status.isGranted) {
-      print('[BannerDialog] ✅ Permission granted, opening gallery');
+      debugPrint('[BannerDialog] ✅ Permission granted, opening gallery');
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
@@ -34,17 +34,17 @@ class BannerDialog extends StatelessWidget {
         final fileSize = await file.length();
         final fileExtension = pickedFile.path.split('.').last.toLowerCase();
 
-        print(
+        debugPrint(
             '[BannerDialog] 📁 File selected: ${pickedFile.path}, Size: $fileSize bytes, Type: $fileExtension');
 
         Provider.of<BannerUploadProvider>(context, listen: false)
             .setImage(file);
-        print('[BannerDialog] ✅ File set successfully');
+        debugPrint('[BannerDialog] ✅ File set successfully');
       } else {
-        print('[BannerDialog] ❌ No image selected by user');
+        debugPrint('[BannerDialog] ❌ No image selected by user');
       }
     } else if (status.isPermanentlyDenied) {
-      print('[BannerDialog] 🚫 Permission permanently denied');
+      debugPrint('[BannerDialog] 🚫 Permission permanently denied');
 
       // Show a dialog explaining why we need permission and how to enable it
       showDialog(
@@ -69,7 +69,7 @@ class BannerDialog extends StatelessWidget {
         ),
       );
     } else {
-      print('[BannerDialog] ❌ Permission denied: $status');
+      debugPrint('[BannerDialog] ❌ Permission denied: $status');
       toastification.show(
         context: context,
         title: const Text('Permission denied to access photos.'),
@@ -85,22 +85,22 @@ class BannerDialog extends StatelessWidget {
   void _submit(BuildContext context) async {
     final provider = Provider.of<BannerUploadProvider>(context, listen: false);
 
-    print('[BannerDialog] 🚀 Starting banner submission');
-    print('[BannerDialog] 📋 Title: "${provider.title}"');
-    print(
+    debugPrint('[BannerDialog] 🚀 Starting banner submission');
+    debugPrint('[BannerDialog] 📋 Title: "${provider.title}"');
+    debugPrint(
         '[BannerDialog] 🖼️ Image selected: ${provider.selectedImage != null}');
 
     if (provider.selectedImage != null) {
       final file = provider.selectedImage!;
       final fileSize = await file.length();
-      print(
+      debugPrint(
           '[BannerDialog] 📊 Image details: Path=${file.path}, Size=$fileSize bytes');
     }
 
     final error = await provider.submitBanner();
 
     if (error == null) {
-      print('[BannerDialog] ✅ Banner created successfully!');
+      debugPrint('[BannerDialog] ✅ Banner created successfully!');
       Navigator.of(context).pop(true);
       toastification.show(
         context: context,
@@ -113,7 +113,7 @@ class BannerDialog extends StatelessWidget {
         // foregroundColor: ColorClass.white,
       );
     } else {
-      print('[BannerDialog] ❌ Banner creation failed: $error');
+      debugPrint('[BannerDialog] ❌ Banner creation failed: $error');
       toastification.show(
         context: context,
         title: Text(error),
@@ -130,7 +130,7 @@ class BannerDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) {
-        print('[BannerDialog] 🏗️ Creating BannerUploadProvider');
+        debugPrint('[BannerDialog] 🏗️ Creating BannerUploadProvider');
         return BannerUploadProvider();
       },
       child: Consumer<BannerUploadProvider>(
@@ -151,7 +151,7 @@ class BannerDialog extends StatelessWidget {
                   // Title input field
                   TextField(
                     onChanged: (value) {
-                      print('[BannerDialog] 📝 Title changed: "$value"');
+                      debugPrint('[BannerDialog] 📝 Title changed: "$value"');
                       provider.setTitle(value);
                     },
                     decoration: const InputDecoration(
@@ -249,7 +249,7 @@ class BannerDialog extends StatelessWidget {
                     onPressed: provider.isLoading
                         ? null
                         : () {
-                            print('[BannerDialog] ❌ Dialog cancelled by user');
+                            debugPrint('[BannerDialog] ❌ Dialog cancelled by user');
                             Navigator.of(context).pop(false);
                           },
                     child: const Text('Cancel'),

@@ -867,7 +867,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _tabViews = <Widget>[
+    final List<Widget> tabViews = <Widget>[
       _buildUsersTab(),
       _buildCheckInOutTab(),
       _buildProfileTab(),
@@ -878,7 +878,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: ColorClass.white,
-        body: _tabViews[_selectedIndex],
+        body: tabViews[_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: ColorClass.brandWhite,
           selectedItemColor: ColorClass.brandDarkGreen,
