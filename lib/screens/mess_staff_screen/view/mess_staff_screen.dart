@@ -96,6 +96,152 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     super.dispose();
   }
 
+  // Show detailed list bottom sheet
+  void _showDetailedListBottomSheet(
+    BuildContext context,
+    String mealLabel,
+    List<Map<String, String>> details,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: ColorClass.brandWhite,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              decoration: BoxDecoration(
+                color: ColorClass.neutral300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '$mealLabel - Detailed List',
+                    style: TextStyleClass.poppinsSemiBold(fontSize: 18),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      LucideIcons.x,
+                      color: ColorClass.neutral500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Count
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Total: ${details.length}',
+                    style: TextStyleClass.poppinsBold(
+                      fontSize: 16,
+                      color: ColorClass.brandDarkGreen,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // List content
+            Expanded(
+              child: details.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            LucideIcons.users,
+                            size: 48,
+                            color: ColorClass.neutral300,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No users found for this meal',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 16,
+                              color: ColorClass.neutral400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: details.length,
+                      itemBuilder: (context, index) {
+                        final item = details[index];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: ColorClass.neutral200,
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['name'] ?? '',
+                                style: TextStyleClass.poppinsMedium(fontSize: 16),
+                              ),
+                              if (item['type']?.isNotEmpty == true) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  item['type']!,
+                                  style: TextStyleClass.poppinsRegular(
+                                    fontSize: 13,
+                                    color: ColorClass.neutral400,
+                                  ),
+                                ),
+                              ],
+                              if (item['room']?.isNotEmpty == true) ...[
+                                const SizedBox(height: 1),
+                                Text(
+                                  item['room']!,
+                                  style: TextStyleClass.poppinsRegular(
+                                    fontSize: 13,
+                                    color: ColorClass.neutral400,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Define the pages for the bottom navigation - now just 2 tabs
   List<Widget> _pages(BuildContext context) => [
         // Home tab (previously Meal Summary)
@@ -253,63 +399,18 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                     count: mealSummary[index]['count'] as int,
                                     isSelected: selectedMeal == index,
                                     onTap: () {
-                                      if (selectedMeal == index) {
-                                        _selectedMealNotifier.value = null; // Deselect if tapped again
-                                        mealProvider.selectMeal(0); // Reset to first meal for share/print
-                                      } else {
-                                        _selectedMealNotifier.value = index;
-                                        mealProvider.selectMeal(index); // Update provider for share/print
-                                      }
+                                      // Update selection state and show bottom sheet
+                                      _selectedMealNotifier.value = index;
+                                      final detailedLists = mealProvider.getMealDetailsList(index);
+                                      final mealLabel = mealSummary[index]['label'] as String;
+                                      mealProvider.selectMeal(index); // Update provider for share/print
+                                      _showDetailedListBottomSheet(context, mealLabel, detailedLists);
                                     },
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-
-                        // Detailed List Section (only show if meal is selected)
-                        ValueListenableBuilder<int?>(
-                          valueListenable: _selectedMealNotifier,
-                          builder: (context, selectedMeal, _) {
-                            if (selectedMeal == null) return const SizedBox.shrink();
-                            
-                            final count = mealSummary[selectedMeal]['count'] as int;
-                            if (count <= 0) return const SizedBox.shrink();
-                            
-                            final detailedLists = mealProvider.getMealDetailsList(selectedMeal);
-                            
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 16),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Detailed List',
-                                          style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                                      Text(
-                                        'Total: ${detailedLists.length}',
-                                        style: TextStyleClass.poppinsBold(
-                                          fontSize: 16,
-                                          color: ColorClass.brandDarkGreen,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Container(
-                                    height: 220,
-                                    child: SingleChildScrollView(
-                                      child: DetailedList(details: detailedLists),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
                         ),
 
                         // Bulk Meals Section
