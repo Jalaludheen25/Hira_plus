@@ -524,7 +524,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                               try {
                                 if (authProvider.selectedRole == 'Mess Staff') {
-                                  // For Mess Staff, use specific authentication method
                                   await authProvider.authenticateMessStaff();
                                   if (!mounted) return;
                                   developer.log(
@@ -532,14 +531,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                       name: 'LoginScreen');
                                 } else if (authProvider.selectedRole ==
                                     'Manager') {
-                                  // For Manager role, use proper manager authentication
                                   await authProvider.authenticateManager();
                                   if (!mounted) return;
                                   developer.log(
                                       '✅ Manager authentication successful',
                                       name: 'LoginScreen');
+                                } else if (authProvider.selectedRole == 'Reception') {
+                                  await authProvider.authenticateReception();
+                                  if (!mounted) return;
+                                  developer.log(
+                                      '✅ Reception authentication successful',
+                                      name: 'LoginScreen');
                                 } else {
-                                  // For other roles, use simulation
                                   await authProvider.simulateSuccessfulAuth();
                                   if (!mounted) return;
                                   developer.log(
@@ -555,7 +558,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     '🚀 Redirecting to ${authProvider.selectedRole} screen',
                                     name: 'LoginScreen');
 
-                                // Save user type to shared preferences
                                 await SharedUtils.setString(
                                     'user_type', authProvider.selectedRole);
 
@@ -567,11 +569,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                 } else if (authProvider.selectedRole ==
                                     'Manager') {
                                   navigatePRToGlobal(route: Routes.manager);
+                                } else if (authProvider.selectedRole == 'Reception') {
+                                  navigatePRToGlobal(route: Routes.reception);
                                 } else {
                                   navigatePRToGlobal(route: Routes.bottomNav);
                                 }
 
-                                // Reset the verification state
                                 if (mounted) {
                                   authProvider.setShowOTPField(false);
                                 }
@@ -776,6 +779,9 @@ class _LoginScreenState extends State<LoginScreen> {
       case 'Mess Staff':
         return const Icon(LucideIcons.utensils,
             color: ColorClass.brandDarkGreen, size: 22);
+      case 'Reception':
+        return const Icon(LucideIcons.conciergeBell,
+            color: ColorClass.brandDarkGreen, size: 22);
       default:
         return const Icon(LucideIcons.user,
             color: ColorClass.brandDarkGreen, size: 22);
@@ -793,6 +799,7 @@ class _RoleSelectionSheet extends StatelessWidget {
       {'label': 'User', 'icon': LucideIcons.user},
       {'label': 'Manager', 'icon': LucideIcons.shieldCheck},
       {'label': 'Mess Staff', 'icon': LucideIcons.utensils},
+      {'label': 'Reception', 'icon': LucideIcons.conciergeBell},
     ];
 
     developer.log('📋 Building role selection sheet, current: $selectedRole',

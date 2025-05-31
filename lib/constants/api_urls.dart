@@ -41,7 +41,10 @@ class ApiUrls {
   static String getMessStaffLogin() {
     return '$baseUrl/mess-staff/login';
   }
-
+  // ################## DEPARTMENT API ##################
+  static String getDepartments() {
+    return '$baseUrl/admin/departments';
+  }
   // ################## CONTACTS ##################
   static String getContacts() {
     return '$baseUrl/auth/users';
@@ -101,5 +104,67 @@ class ApiUrls {
   
   static String editGuestMeals(String id) {
     return '$baseUrl/auth/guest-meals/$id';
+  }
+
+  // ################## ADMIN GUEST MEALS (BULK BOOKING) ##################
+  static String adminGuestMeals() {
+    return '$baseUrl/admin/guest-meals';
+  }
+
+  static String adminEditGuestMeals(String id) {
+    return '$baseUrl/admin/guest-meals/$id';
+  }
+    // ################## MEETINGS API ##################
+
+  /// Get all meetings
+  static String getMeetings() {
+    return '$baseUrl/admin/meetings';
+  }
+
+  /// Create a new meeting
+  static String createMeeting() {
+    return '$baseUrl/admin/meetings';
+  }
+
+   // ################## GUEST MEALS FOR MESS STAFF ##################
+
+  static String getBulkMealsForMessStaff() {
+    return '$baseUrl/mess-staff/guest-meals';
+  }
+
+  
+
+  // ################## RECEPTION APIs ##################
+
+  static String getReceptionLogin() {
+    return '$baseUrl/reception/login';
+  }
+
+  static String getAllReceptionUsers() {
+    return '$baseUrl/reception/users/all';
+  }
+
+  static String checkInUser(String userId) {
+    return '$baseUrl/reception/check-in/$userId';
+  }
+
+  static String checkOutUser(String userId) {
+    return '$baseUrl/reception/checkout/$userId';
+  }
+
+  // Get today's check-ins
+  static String getTodayCheckIns() {
+    return '$baseUrl/reception/check-ins/today';
+  }
+
+  // Get today's check-outs
+  static String getTodayCheckOuts() {
+    return '$baseUrl/reception/checkouts/today';
+  }
+
+
+
+  static String getAttendanceByDate(String date) {
+    return '$baseUrl/reception/attendance/by-date?date=$date';
   }
 }

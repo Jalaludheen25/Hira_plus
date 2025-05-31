@@ -5,18 +5,29 @@ import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
 import 'package:hira_plus/screens/manager_screen/provider/users_by_meals_provider.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/settings_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
-import 'package:hira_plus/screens/mess_staff_screen/widgets/detailed_list.dart';
-import 'package:hira_plus/screens/mess_staff_screen/widgets/meal_summary_widget.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/profile_card.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shake_flutter/enums/shake_screen.dart';
+import 'package:shake_flutter/shake_flutter.dart';
+import 'package:toastification/toastification.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
-import 'package:toastification/toastification.dart';
-import 'dart:async';
+import 'package:hira_plus/screens/manager_screen/view/manager_bulk_food_list_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/meeting_management_screen.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'dart:developer' as developer;
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -67,8 +78,226 @@ class ManagerScreen extends StatelessWidget {
     }
   }
 
+  // Show detailed list bottom sheet
+  void _showDetailedListBottomSheet(
+    BuildContext context,
+    String mealLabel,
+    List<Map<String, String>> details,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: ColorClass.brandWhite,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              decoration: BoxDecoration(
+                color: ColorClass.neutral300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '$mealLabel - Detailed List',
+                    style: TextStyleClass.poppinsSemiBold(fontSize: 18),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      LucideIcons.x,
+                      color: ColorClass.neutral500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Count
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'Total: ${details.length}',
+                    style: TextStyleClass.poppinsBold(
+                      fontSize: 16,
+                      color: ColorClass.brandDarkGreen,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 8),
+            
+            // List content
+            Expanded(
+              child: details.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            LucideIcons.users,
+                            size: 48,
+                            color: ColorClass.neutral300,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No users found for this meal',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 16,
+                              color: ColorClass.neutral400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: details.length,
+                      itemBuilder: (context, index) {
+                        final item = details[index];
+                        return Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: ColorClass.neutral200,
+                                width: 0.5,
+                              ),
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['name'] ?? '',
+                                style: TextStyleClass.poppinsMedium(fontSize: 16),
+                              ),
+                              if (item['type']?.isNotEmpty == true) ...[
+                                const SizedBox(height: 2),
+                                Text(
+                                  item['type']!,
+                                  style: TextStyleClass.poppinsRegular(
+                                    fontSize: 13,
+                                    color: ColorClass.neutral400,
+                                  ),
+                                ),
+                              ],
+                              if (item['room']?.isNotEmpty == true) ...[
+                                const SizedBox(height: 1),
+                                Text(
+                                  item['room']!,
+                                  style: TextStyleClass.poppinsRegular(
+                                    fontSize: 13,
+                                    color: ColorClass.neutral400,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMealCard({
+    required IconData icon,
+    required String label,
+    required int count,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final hasCount = count > 0;
+    return GestureDetector(
+      onTap: hasCount ? onTap : null,
+      child: Container(
+        width: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 2),
+        decoration: BoxDecoration(
+          color: isSelected ? ColorClass.brandLightGreen : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? ColorClass.brandLightGreen
+                : ColorClass.neutral200,
+            width: 1.5,
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: ColorClass.brandLightGreen.withOpacity(0.08),
+                spreadRadius: 1,
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 28,
+              color: hasCount
+                  ? ColorClass.brandDarkGreen
+                  : ColorClass.neutral300,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyleClass.poppinsRegular(
+                fontSize: 12,
+                color: hasCount
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              count.toString(),
+              style: TextStyleClass.poppinsBold(
+                fontSize: 16,
+                color: hasCount
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildDashboardTab(BuildContext context) {
-    final selectedMealNotifier = ValueNotifier<int>(0);
+    final selectedMealNotifier = ValueNotifier<int?>(null);
     final dateSelectNotifier = DateTimeNotifier(DateTime.now());
 
     // Fetch meal data for current date
@@ -97,105 +326,318 @@ class ManagerScreen extends StatelessWidget {
             child: mealProvider.isLoading
                 ? const Center(child: CupertinoActivityIndicator())
                 : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Date selection row
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Meal Summary',
-                                style: TextStyleClass.poppinsSemiBold(
-                                    fontSize: 18)),
-                            GestureDetector(
-                              onTap: () =>
-                                  selectDate(context, dateSelectNotifier),
-                              child: Row(
-                                children: [
-                                  Text(
-                                    DateFormat('dd MMM yyyy').format(
-                                        DateTime.parse(
-                                            mealProvider.currentDate)),
-                                    style: TextStyleClass.poppinsMedium(
-                                        fontSize: 14),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Icon(Icons.calendar_today, size: 16),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      // Meal summary widgets
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: ValueListenableBuilder<int>(
-                          valueListenable: selectedMealNotifier,
-                          builder: (context, selectedMeal, _) => Wrap(
-                            spacing: 12.0,
-                            runSpacing: 12.0,
-                            children: List.generate(
-                                mealSummary.length,
-                                (index) => GestureDetector(
-                                      onTap: () {
-                                        selectedMealNotifier.value = index;
-                                      },
-                                      child: MealSummaryWidget(
-                                        icon: mealSummary[index]['icon']
-                                            as IconData,
-                                        label: mealSummary[index]['label']
-                                            as String,
-                                        count:
-                                            mealSummary[index]['count'] as int,
-                                        isSelected: selectedMeal == index,
-                                      ),
-                                    )),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Detailed list section
                       Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                          child: ValueListenableBuilder<int>(
-                            valueListenable: selectedMealNotifier,
-                            builder: (context, selectedMeal, _) {
-                              final details =
-                                  getDetailedList(selectedMeal, mealProvider);
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Detailed List',
-                                          style: TextStyleClass.poppinsSemiBold(
-                                              fontSize: 18)),
-                                      Text(
-                                        'Total: ${details.length}',
-                                        style: TextStyleClass.poppinsBold(
-                                            fontSize: 18,
-                                            color: ColorClass.brandDarkGreen),
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Date selection row
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Meal Summary',
+                                        style: TextStyleClass.poppinsSemiBold(
+                                            fontSize: 18)),
+                                    GestureDetector(
+                                      onTap: () =>
+                                          selectDate(context, dateSelectNotifier),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            DateFormat('dd MMM yyyy').format(
+                                                DateTime.parse(
+                                                    mealProvider.currentDate)),
+                                            style: TextStyleClass.poppinsMedium(
+                                                fontSize: 14),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          const Icon(Icons.calendar_today, size: 16),
+                                        ],
                                       ),
-                                    ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              
+                              // Meal Cards Row - Fixed layout like mess staff
+                              SizedBox(
+                                height: 110,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                  child: ValueListenableBuilder<int?>(
+                                    valueListenable: selectedMealNotifier,
+                                    builder: (context, selectedMeal, _) => Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      children: List.generate(
+                                        mealSummary.length,
+                                        (index) => _buildMealCard(
+                                          icon: mealSummary[index]['icon'] as IconData,
+                                          label: mealSummary[index]['label'] as String,
+                                          count: mealSummary[index]['count'] as int,
+                                          isSelected: selectedMeal == index,
+                                          onTap: () {
+                                            // Update selection state and show bottom sheet
+                                            selectedMealNotifier.value = index;
+                                            final details = getDetailedList(index, mealProvider);
+                                            final mealLabel = mealSummary[index]['label'] as String;
+                                            _showDetailedListBottomSheet(context, mealLabel, details);
+                                          },
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                  const SizedBox(height: 15),
-                                  Expanded(
-                                    child: details.isEmpty
-                                        ? const Center(
-                                            child: Text(
-                                                'No users found for this meal'),
-                                          )
-                                        : DetailedList(details: details),
+                                ),
+                              ),
+
+                              // Quick Actions Section
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                                child: Text(
+                                  'Quick Actions',
+                                  style: TextStyleClass.poppinsSemiBold(fontSize: 18),
+                                ),
+                              ),
+                              
+                              // Bulk Food Booking Card
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ManagerBulkFoodListScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: ColorClass.brandLightGreen,
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: ColorClass.brandLightGreen.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Icon(
+                                            LucideIcons.utensils,
+                                            size: 28,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Bulk Food Booking',
+                                                style: TextStyleClass.poppinsSemiBold(
+                                                  fontSize: 18,
+                                                  color: ColorClass.brandDarkGreen,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Book meals for guests in bulk',
+                                                style: TextStyleClass.poppinsRegular(
+                                                  fontSize: 14,
+                                                  color: ColorClass.neutral500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Icon(
+                                          LucideIcons.chevronRight,
+                                          color: ColorClass.brandDarkGreen,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              );
-                            },
+                                ),
+                              ),
+                              
+                              // Banner Creation Card
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                child: GestureDetector(
+                                  onTap: () async {
+                                    final result = await showDialog(
+                                      context: context,
+                                      builder: (context) => BannerDialog(),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: ColorClass.brandLightGreen,
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: ColorClass.brandLightGreen.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Icon(
+                                            LucideIcons.image,
+                                            size: 28,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Create Banner',
+                                                style: TextStyleClass.poppinsSemiBold(
+                                                  fontSize: 18,
+                                                  color: ColorClass.brandDarkGreen,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Create promotional banners',
+                                                style: TextStyleClass.poppinsRegular(
+                                                  fontSize: 14,
+                                                  color: ColorClass.neutral500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Icon(
+                                          LucideIcons.chevronRight,
+                                          color: ColorClass.brandDarkGreen,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // NEW: Meeting Management Card
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const MeetingManagementScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: ColorClass.brandLightGreen,
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: ColorClass.brandLightGreen.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Icon(
+                                            LucideIcons.calendar,
+                                            size: 28,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Meeting Management',
+                                                style: TextStyleClass.poppinsSemiBold(
+                                                  fontSize: 18,
+                                                  color: ColorClass.brandDarkGreen,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Schedule & manage meetings',
+                                                style: TextStyleClass.poppinsRegular(
+                                                  fontSize: 14,
+                                                  color: ColorClass.neutral500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Icon(
+                                          LucideIcons.chevronRight,
+                                          color: ColorClass.brandDarkGreen,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              
+                              // Add bottom padding for better spacing
+                              const SizedBox(height: 30),
+                            ],
                           ),
                         ),
                       ),
@@ -238,7 +680,9 @@ class ManagerScreen extends StatelessWidget {
     DateTime? _lastBackPressed;
     return WillPopScope(
       onWillPop: () async {
-        if (_lastBackPressed == null || DateTime.now().difference(_lastBackPressed!) > Duration(seconds: 2)) {
+        if (_lastBackPressed == null ||
+            DateTime.now().difference(_lastBackPressed!) >
+                Duration(seconds: 2)) {
           _lastBackPressed = DateTime.now();
           toastification.show(
             context: context,
@@ -308,20 +752,6 @@ class ManagerScreen extends StatelessWidget {
           currentIndex: navProvider.selectedIndex,
           onTap: navProvider.setIndex,
         ),
-        floatingActionButton: navProvider.selectedIndex == 0
-            ? FloatingActionButton.extended(
-                onPressed: () async {
-                  final result = await showDialog(
-                    context: context,
-                    builder: (context) =>  BannerDialog (),
-                  );
-                  // Optionally handle result
-                },
-                icon: const Icon(Icons.add_photo_alternate,color: ColorClass.white,),
-                label:  Text('Create Banner',style: TextStyleClass.poppinsMedium(fontSize: 16,color: ColorClass.white),),
-                backgroundColor: ColorClass.brandDarkGreen,
-              )
-            : null,
       ),
     );
   }
@@ -329,4 +759,181 @@ class ManagerScreen extends StatelessWidget {
 
 class DateTimeNotifier extends ValueNotifier<DateTime> {
   DateTimeNotifier(DateTime value) : super(value);
+}
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final profileProvider =
+          Provider.of<ProfileScreenProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      // Get auth token
+      final token = await authProvider.getAuthToken();
+      final userType = await authProvider.getUserType() ?? 'Manager';
+
+      // Set user type immediately for display
+      profileProvider.setUserInfo(userType: userType);
+
+      if (token != null && token.isNotEmpty) {
+        try {
+          await profileProvider.fetchAndSetProfile(
+              token: token, userType: userType);
+          developer.log('✅ Profile data fetched for Manager',
+              name: 'ManagerScreen');
+        } catch (e) {
+          developer.log('❌ Failed to fetch manager profile: $e',
+              name: 'ManagerScreen');
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileScreenProvider>(context);
+
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        ProfileCard(
+          userName: profileProvider.userName,
+          phone: profileProvider.phone,
+          department: profileProvider.department,
+          designation: profileProvider.designation,
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              // Rest of settings items remain unchanged
+              CustomDrawerItem(
+                title: 'Feedback',
+                icon: LucideIcons.messageCircle,
+                onTap: () async {
+                  final Uri emailLaunchUri = Uri(
+                    scheme: 'mailto',
+                    path: 'mail@d4dx.co',
+                  );
+                  await launchUrl(emailLaunchUri);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Privacy Policy',
+                icon: LucideIcons.shieldCheck,
+                onTap: () async {
+                  final Uri url = Uri.parse(
+                      'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Contact Us',
+                icon: LucideIcons.phone,
+                onTap: () {
+                  navigatorKey.currentState!.pushNamed(Routes.contactUs);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'About Us',
+                icon: LucideIcons.info,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('About Us'),
+                      content:
+                          const Text('This is dummy content for About Us.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Raise a bug',
+                icon: LucideIcons.bug,
+                onTap: () {
+                  Shake.show(ShakeScreen.home);
+                },
+              ),
+              const Divider(),
+              CustomDrawerItem(
+                title: 'Logout',
+                icon: LucideIcons.logOut,
+                isDestructive: true,
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    builder: (BuildContext context) {
+                      return LogoutConfirmationBottomSheet(
+                        onLogout: () async {
+                          final logger = Logger();
+                          logger.i('🔄 [LOGOUT] Manager initiated logout process');
+                          developer.log('🔄 Manager initiated logout process', 
+                              name: 'ManagerScreen');
+
+                          // Reset bottom nav to initial index
+                          Provider.of<BottomNavProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .setIndex(0);
+
+                          // Call the AuthProvider logout method to clear shared preferences
+                          await Provider.of<AuthProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .logout();
+
+                          logger.i('🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+                          developer.log('🟢 Successfully cleared auth token and preferences', 
+                              name: 'ManagerScreen');
+
+                          toastification.show(
+                            context: context,
+                            title: Text('Logged out successfully'),
+                            type: ToastificationType.success,
+                            autoCloseDuration: const Duration(seconds: 2),
+                          );
+
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            logger.i('🧭 [NAVIGATION] Redirecting to login screen');
+                            developer.log('🚀 Redirecting to login screen', 
+                                name: 'ManagerScreen');
+                            navigatePRToGlobal(
+                              route: Routes.login,
+                            );
+                          });
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        PoweredBySection(),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
 }

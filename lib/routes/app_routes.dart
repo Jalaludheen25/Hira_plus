@@ -18,4 +18,5 @@ class Routes {
   static const String notifications = '/user/notifications';
   static const String bookings = '/bookings';
   static const String bulkFoodBooking = '/booking/bulk_food';
+  static const String reception = '/reception';
 }

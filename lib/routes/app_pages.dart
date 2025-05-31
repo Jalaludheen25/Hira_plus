@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/view/user_home_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/user_screens/notifications/view/user_notifications_screen.dart';
+import 'package:hira_plus/screens/reception_screen/view/reception_screen.dart';
 
 Map<String, WidgetBuilder> getRoutes() {
   return {
@@ -33,6 +34,7 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.notifications: (context) => const UserNotificationsScreen(),
     Routes.bookings: (context) => const BookingScreen(),
     Routes.bulkFoodBooking: (context) => const BulkFoodBookingScreen(),
+    Routes.reception: (context) => const ReceptionScreen(),
   };
 }
 
