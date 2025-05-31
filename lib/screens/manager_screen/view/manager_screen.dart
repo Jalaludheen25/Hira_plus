@@ -5,18 +5,29 @@ import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
 import 'package:hira_plus/screens/manager_screen/provider/users_by_meals_provider.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/settings_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
-import 'package:hira_plus/screens/mess_staff_screen/widgets/detailed_list.dart';
+import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
+import 'package:hira_plus/screens/profile_screen/widgets/profile_card.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/widgets/custom_drawer.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:shake_flutter/enums/shake_screen.dart';
+import 'package:shake_flutter/shake_flutter.dart';
+import 'package:toastification/toastification.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
-import 'package:toastification/toastification.dart';
-import 'dart:async';
 import 'package:hira_plus/screens/manager_screen/view/manager_bulk_food_list_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/meeting_management_screen.dart';
+import 'package:hira_plus/routes/app_routes.dart';
+import 'dart:developer' as developer;
 
 class ManagerScreen extends StatelessWidget {
   const ManagerScreen({Key? key}) : super(key: key);
@@ -545,6 +556,84 @@ class ManagerScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
+
+                              // NEW: Meeting Management Card
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const MeetingManagementScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: ColorClass.brandLightGreen,
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: ColorClass.brandLightGreen.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          child: Icon(
+                                            LucideIcons.calendar,
+                                            size: 28,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Meeting Management',
+                                                style: TextStyleClass.poppinsSemiBold(
+                                                  fontSize: 18,
+                                                  color: ColorClass.brandDarkGreen,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Schedule & manage meetings',
+                                                style: TextStyleClass.poppinsRegular(
+                                                  fontSize: 14,
+                                                  color: ColorClass.neutral500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Icon(
+                                          LucideIcons.chevronRight,
+                                          color: ColorClass.brandDarkGreen,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                               
                               // Add bottom padding for better spacing
                               const SizedBox(height: 30),
@@ -670,4 +759,181 @@ class ManagerScreen extends StatelessWidget {
 
 class DateTimeNotifier extends ValueNotifier<DateTime> {
   DateTimeNotifier(DateTime value) : super(value);
+}
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final profileProvider =
+          Provider.of<ProfileScreenProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+      // Get auth token
+      final token = await authProvider.getAuthToken();
+      final userType = await authProvider.getUserType() ?? 'Manager';
+
+      // Set user type immediately for display
+      profileProvider.setUserInfo(userType: userType);
+
+      if (token != null && token.isNotEmpty) {
+        try {
+          await profileProvider.fetchAndSetProfile(
+              token: token, userType: userType);
+          developer.log('✅ Profile data fetched for Manager',
+              name: 'ManagerScreen');
+        } catch (e) {
+          developer.log('❌ Failed to fetch manager profile: $e',
+              name: 'ManagerScreen');
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileScreenProvider>(context);
+
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        ProfileCard(
+          userName: profileProvider.userName,
+          phone: profileProvider.phone,
+          department: profileProvider.department,
+          designation: profileProvider.designation,
+        ),
+        const SizedBox(height: 12),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            children: [
+              // Rest of settings items remain unchanged
+              CustomDrawerItem(
+                title: 'Feedback',
+                icon: LucideIcons.messageCircle,
+                onTap: () async {
+                  final Uri emailLaunchUri = Uri(
+                    scheme: 'mailto',
+                    path: 'mail@d4dx.co',
+                  );
+                  await launchUrl(emailLaunchUri);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Privacy Policy',
+                icon: LucideIcons.shieldCheck,
+                onTap: () async {
+                  final Uri url = Uri.parse(
+                      'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Contact Us',
+                icon: LucideIcons.phone,
+                onTap: () {
+                  navigatorKey.currentState!.pushNamed(Routes.contactUs);
+                },
+              ),
+              CustomDrawerItem(
+                title: 'About Us',
+                icon: LucideIcons.info,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('About Us'),
+                      content:
+                          const Text('This is dummy content for About Us.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              CustomDrawerItem(
+                title: 'Raise a bug',
+                icon: LucideIcons.bug,
+                onTap: () {
+                  Shake.show(ShakeScreen.home);
+                },
+              ),
+              const Divider(),
+              CustomDrawerItem(
+                title: 'Logout',
+                icon: LucideIcons.logOut,
+                isDestructive: true,
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    builder: (BuildContext context) {
+                      return LogoutConfirmationBottomSheet(
+                        onLogout: () async {
+                          final logger = Logger();
+                          logger.i('🔄 [LOGOUT] Manager initiated logout process');
+                          developer.log('🔄 Manager initiated logout process', 
+                              name: 'ManagerScreen');
+
+                          // Reset bottom nav to initial index
+                          Provider.of<BottomNavProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .setIndex(0);
+
+                          // Call the AuthProvider logout method to clear shared preferences
+                          await Provider.of<AuthProvider>(
+                                  navigatorKey.currentContext!,
+                                  listen: false)
+                              .logout();
+
+                          logger.i('🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+                          developer.log('🟢 Successfully cleared auth token and preferences', 
+                              name: 'ManagerScreen');
+
+                          toastification.show(
+                            context: context,
+                            title: Text('Logged out successfully'),
+                            type: ToastificationType.success,
+                            autoCloseDuration: const Duration(seconds: 2),
+                          );
+
+                          Future.delayed(const Duration(milliseconds: 500), () {
+                            logger.i('🧭 [NAVIGATION] Redirecting to login screen');
+                            developer.log('🚀 Redirecting to login screen', 
+                                name: 'ManagerScreen');
+                            navigatePRToGlobal(
+                              route: Routes.login,
+                            );
+                          });
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        PoweredBySection(),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
 }

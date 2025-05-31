@@ -41,7 +41,10 @@ class ApiUrls {
   static String getMessStaffLogin() {
     return '$baseUrl/mess-staff/login';
   }
-
+  // ################## DEPARTMENT API ##################
+  static String getDepartments() {
+    return '$baseUrl/admin/departments';
+  }
   // ################## CONTACTS ##################
   static String getContacts() {
     return '$baseUrl/auth/users';
@@ -110,6 +113,17 @@ class ApiUrls {
 
   static String adminEditGuestMeals(String id) {
     return '$baseUrl/admin/guest-meals/$id';
+  }
+    // ################## MEETINGS API ##################
+
+  /// Get all meetings
+  static String getMeetings() {
+    return '$baseUrl/admin/meetings';
+  }
+
+  /// Create a new meeting
+  static String createMeeting() {
+    return '$baseUrl/admin/meetings';
   }
 
    // ################## GUEST MEALS FOR MESS STAFF ##################
