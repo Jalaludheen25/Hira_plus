@@ -168,6 +168,18 @@ class MonthCalendarView extends StatelessWidget {
                 final hasDinner =
                     mealProvider.isMealMarked(currentDate, 'dinner');
 
+                // Check if date is restricted (past or today after 6 AM)
+                final now = DateTime.now();
+                final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
+                final checkDate = DateTime(
+                    currentDate.year, currentDate.month, currentDate.day);
+                final isPast =
+                    checkDate.isBefore(DateTime(now.year, now.month, now.day));
+                final isRestrictedToday = checkDate.isAtSameMomentAs(
+                        DateTime(now.year, now.month, now.day)) &&
+                    now.isAfter(cutoffTime);
+                final isRestricted = isPast || isRestrictedToday;
+
                 return GestureDetector(
                   onTap: () => _showMealBottomSheet(
                       context, currentDate, hasBreakfast, hasLunch, hasDinner),
@@ -181,41 +193,53 @@ class MonthCalendarView extends StatelessWidget {
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: isToday
-                            ? ColorClass.brandLightGreen
-                            : ColorClass.neutral200,
+                        color: isRestricted
+                            ? ColorClass
+                                .neutral300 // Lighter color for restricted dates
+                            : isToday
+                                ? ColorClass.brandLightGreen
+                                : ColorClass.neutral200,
                         width: 1.5,
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            currentDate.day.toString(),
-                            style: TextStyleClass.poppinsMedium(
-                              fontSize: 16,
-                              color: isToday
-                                  ? ColorClass.brandDarkGreen
-                                  : currentDate.weekday == DateTime.sunday
-                                      ? Colors.red
-                                      : ColorClass.textMain900,
+                    child: Opacity(
+                      opacity: isRestricted
+                          ? 0.7
+                          : 1.0, // Faded appearance for restricted dates
+                      child: Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              currentDate.day.toString(),
+                              style: TextStyleClass.poppinsMedium(
+                                fontSize: 16,
+                                color: isToday
+                                    ? ColorClass.brandDarkGreen
+                                    : currentDate.weekday == DateTime.sunday
+                                        ? Colors.red
+                                        : isRestricted
+                                            ? ColorClass
+                                                .neutral400 // Lighter text for restricted dates
+                                            : ColorClass.textMain900,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          FittedBox(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildMealIndicator('B', hasBreakfast, isToday),
-                                _buildMealIndicator('L', hasLunch, isToday),
-                                _buildMealIndicator('D', hasDinner, isToday),
-                              ],
+                            const SizedBox(height: 2),
+                            FittedBox(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildMealIndicator(
+                                      'B', hasBreakfast, isToday),
+                                  _buildMealIndicator('L', hasLunch, isToday),
+                                  _buildMealIndicator('D', hasDinner, isToday),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -229,6 +253,58 @@ class MonthCalendarView extends StatelessWidget {
 
   void _showMealBottomSheet(BuildContext context, DateTime date,
       bool hasBreakfast, bool hasLunch, bool hasDinner) {
+    // Check if date is in the past or if it's today and past 6 AM (restriction logic)
+    final now = DateTime.now();
+
+    // Set cutoff time to 6:00 AM today
+    final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
+    final checkDate = DateTime(date.year, date.month, date.day);
+
+    // Check if the date is in the past or if it's today and past 6 AM
+    final isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
+    final isRestrictedToday =
+        checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) &&
+            now.isAfter(cutoffTime);
+    final isRestricted = isPast || isRestrictedToday;
+
+    // If restricted, show warning dialog instead of the meal selection sheet
+    if (isRestricted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text(
+            'Cannot Modify Meals',
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 14,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+          content: Text(
+            isRestrictedToday
+                ? 'Meal preferences for today cannot be modified after 6:00 AM.'
+                : 'Meal preferences for past dates cannot be modified.',
+            style: TextStyleClass.poppinsRegular(
+              fontSize: 12,
+              color: ColorClass.textMain900,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'OK',
+                style: TextStyleClass.poppinsMedium(
+                  fontSize: 12,
+                  color: ColorClass.brandDarkGreen,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     // Track original and current meal states
     Map<String, bool> originalMealStates = {
       'breakfast': hasBreakfast,
@@ -410,6 +486,12 @@ class MonthCalendarView extends StatelessWidget {
 
   Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
     final bool isTodayAndSelected = isToday && isSelected;
+
+    // Get current date/time to check restrictions
+    final now = DateTime.now();
+    final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
+    final isPastOrRestricted = now.isAfter(cutoffTime) && isToday;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2),
       width: 16,
@@ -422,12 +504,15 @@ class MonthCalendarView extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Center(
-        child: Text(
-          label,
-          style: TextStyleClass.poppinsRegular(
-            fontSize: 10,
-            color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+      child: Opacity(
+        opacity: isPastOrRestricted ? 0.7 : 1.0, // Fade if restricted
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyleClass.poppinsRegular(
+              fontSize: 10,
+              color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+            ),
           ),
         ),
       ),
@@ -448,6 +533,9 @@ class MonthCalendarView extends StatelessWidget {
           'Updating meals for date: ${date.toIso8601String().split('T')[0]}');
       debugPrint('Breakfast: $breakfast, Lunch: $lunch, Dinner: $dinner');
 
+      // Show a loading indicator
+      final loadingOverlay = _showLoadingOverlay(context);
+
       // Make the API call to update all meals at once
       final result = await mealProvider.updateMeal(
         context,
@@ -456,6 +544,9 @@ class MonthCalendarView extends StatelessWidget {
         lunch: lunch,
         dinner: dinner,
       );
+
+      // Hide loading indicator
+      loadingOverlay.remove();
 
       if (result != null) {
         debugPrint('✅ Successfully updated meals: ${result.id}');
@@ -466,6 +557,7 @@ class MonthCalendarView extends StatelessWidget {
             const SnackBar(
               content: Text('Meal preferences updated successfully'),
               backgroundColor: Colors.green,
+              duration: const Duration(seconds: 1),
             ),
           );
         }
@@ -493,5 +585,35 @@ class MonthCalendarView extends StatelessWidget {
         );
       }
     }
+  }
+
+  // Helper method to show a loading overlay
+  OverlayEntry _showLoadingOverlay(BuildContext context) {
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: Container(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(overlayEntry);
+    return overlayEntry;
   }
 }
