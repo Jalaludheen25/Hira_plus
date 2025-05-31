@@ -194,11 +194,16 @@ class ReceptionService {
       final url = ApiUrls.getAttendanceByDate(date);
       log('🔗 Fetching attendance by date: $url');
       final response = await HttpServiceUtils.fetchData(url, true);
+      log('📦 Raw attendance response for $date: ' + response.toString());
       if (response != null && response is List) {
         return response.map((item) => ReceptionAttendance.fromJson(item)).toList();
       } else if (response != null && response['data'] is List) {
-        // In case API wraps data in a 'data' field
         return (response['data'] as List)
+            .map((item) => ReceptionAttendance.fromJson(item))
+            .toList();
+      } else if (response != null && response['records'] is List) {
+        // Handle case where attendance data is in 'records' field
+        return (response['records'] as List)
             .map((item) => ReceptionAttendance.fromJson(item))
             .toList();
       }
