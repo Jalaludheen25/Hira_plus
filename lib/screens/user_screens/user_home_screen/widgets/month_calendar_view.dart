@@ -202,45 +202,69 @@ class MonthCalendarView extends StatelessWidget {
                         width: 1.5,
                       ),
                     ),
-                    child: Opacity(
-                      opacity: isRestricted
-                          ? 0.7
-                          : 1.0, // Faded appearance for restricted dates
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              currentDate.day.toString(),
-                              style: TextStyleClass.poppinsMedium(
-                                fontSize: 16,
-                                color: isToday
-                                    ? ColorClass.brandDarkGreen
-                                    : currentDate.weekday == DateTime.sunday
-                                        ? Colors.red
-                                        : isRestricted
-                                            ? ColorClass
-                                                .neutral400 // Lighter text for restricted dates
-                                            : ColorClass.textMain900,
-                              ),
+                    child: Stack(
+                      children: [
+                        Opacity(
+                          opacity: isRestricted
+                              ? 0.7
+                              : 1.0, // Faded appearance for restricted dates
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  currentDate.day.toString(),
+                                  style: TextStyleClass.poppinsMedium(
+                                    fontSize: 16,
+                                    color: isToday
+                                        ? ColorClass.brandDarkGreen
+                                        : currentDate.weekday == DateTime.sunday
+                                            ? Colors.red
+                                            : isRestricted
+                                                ? ColorClass
+                                                    .neutral400 // Lighter text for restricted dates
+                                                : ColorClass.textMain900,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                FittedBox(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _buildMealIndicator(
+                                          'B', hasBreakfast, isToday),
+                                      _buildMealIndicator(
+                                          'L', hasLunch, isToday),
+                                      _buildMealIndicator(
+                                          'D', hasDinner, isToday),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 2),
-                            FittedBox(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildMealIndicator(
-                                      'B', hasBreakfast, isToday),
-                                  _buildMealIndicator('L', hasLunch, isToday),
-                                  _buildMealIndicator('D', hasDinner, isToday),
-                                ],
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                        // Add lock icon overlay for restricted dates
+                        if (isRestricted)
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: Container(
+                              padding: const EdgeInsets.all(1),
+                              decoration: BoxDecoration(
+                                color: ColorClass.neutral200.withOpacity(0.7),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.lock,
+                                size: 10,
+                                color: ColorClass.neutral500,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 );
@@ -281,8 +305,8 @@ class MonthCalendarView extends StatelessWidget {
           ),
           content: Text(
             isRestrictedToday
-                ? 'Meal preferences for today cannot be modified after 6:00 AM.'
-                : 'Meal preferences for past dates cannot be modified.',
+                ? 'Can\'t modify meal for today after 6:00 AM.'
+                : 'Can\'t modify meal for past dates.',
             style: TextStyleClass.poppinsRegular(
               fontSize: 12,
               color: ColorClass.textMain900,
@@ -492,6 +516,39 @@ class MonthCalendarView extends StatelessWidget {
     final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
     final isPastOrRestricted = now.isAfter(cutoffTime) && isToday;
 
+    // For restricted dates, show different styling
+    if (isPastOrRestricted) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 2),
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(
+          color: isSelected ? ColorClass.neutral300 : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: ColorClass.neutral300,
+            width: 1,
+          ),
+        ),
+        child: Center(
+          child: isSelected
+              ? Text(
+                  label,
+                  style: TextStyleClass.poppinsRegular(
+                    fontSize: 10,
+                    color: ColorClass.neutral400,
+                  ),
+                )
+              : Icon(
+                  Icons.lock,
+                  color: ColorClass.neutral400,
+                  size: 8,
+                ),
+        ),
+      );
+    }
+
+    // Normal meal indicator for non-restricted dates
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2),
       width: 16,
@@ -504,15 +561,12 @@ class MonthCalendarView extends StatelessWidget {
           width: 1,
         ),
       ),
-      child: Opacity(
-        opacity: isPastOrRestricted ? 0.7 : 1.0, // Fade if restricted
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyleClass.poppinsRegular(
-              fontSize: 10,
-              color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
-            ),
+      child: Center(
+        child: Text(
+          label,
+          style: TextStyleClass.poppinsRegular(
+            fontSize: 10,
+            color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
           ),
         ),
       ),

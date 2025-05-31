@@ -305,49 +305,81 @@ class HomeListView extends StatelessWidget {
             now.isAfter(cutoffTime);
     final isRestricted = isPast || isRestrictedToday;
 
+    // Use different styles for restricted dates
+    if (isRestricted) {
+      return GestureDetector(
+        onTap: () {
+          // Show restriction dialog when user tries to interact with restricted dates
+          showDialog(
+            context: context,
+            builder: (BuildContext context) => AlertDialog(
+              title: Text(
+                'Cannot Modify Meals',
+                style: TextStyleClass.poppinsSemiBold(
+                  fontSize: 14,
+                  color: ColorClass.brandDarkGreen,
+                ),
+              ),
+              content: Text(
+                isRestrictedToday
+                    ? 'Can\'t modify meal for today after 6:00 AM.'
+                    : 'Can\'t modify meal for past dates.',
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 12,
+                  color: ColorClass.textMain900,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'OK',
+                    style: TextStyleClass.poppinsMedium(
+                      fontSize: 12,
+                      color: ColorClass.brandDarkGreen,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        child: Transform.scale(
+          scale: size / 24.0,
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: isChecked ? ColorClass.neutral300 : Colors.transparent,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: ColorClass.neutral300,
+                width: 1.5,
+              ),
+            ),
+            child: isChecked
+                ? const Icon(
+                    Icons.check,
+                    color: ColorClass.neutral400,
+                    size: 18,
+                  )
+                : Icon(
+                    Icons.lock,
+                    color: ColorClass.neutral400,
+                    size: 12,
+                  ),
+          ),
+        ),
+      );
+    }
+
+    // Normal checkbox for non-restricted dates
     return Transform.scale(
       scale: size / 24.0,
       child: Checkbox(
         value: isChecked,
         onChanged: (newValue) {
-          if (isRestricted) {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: Text(
-                  'Cannot Modify Meals',
-                  style: TextStyleClass.poppinsSemiBold(
-                    fontSize: 14,
-                    color: ColorClass.brandDarkGreen,
-                  ),
-                ),
-                content: Text(
-                  isRestrictedToday
-                      ? 'Meal preferences for today cannot be modified after 6:00 AM.'
-                      : 'Meal preferences for past dates cannot be modified.',
-                  style: TextStyleClass.poppinsRegular(
-                    fontSize: 12,
-                    color: ColorClass.textMain900,
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'OK',
-                      style: TextStyleClass.poppinsMedium(
-                        fontSize: 12,
-                        color: ColorClass.brandDarkGreen,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            _updateMeal(
-                context, mealProvider, date, mealType, newValue ?? false);
-          }
+          _updateMeal(context, mealProvider, date, mealType, newValue ?? false);
         },
         activeColor: ColorClass.brandLightGreen,
         checkColor: ColorClass.brandDarkGreen,
