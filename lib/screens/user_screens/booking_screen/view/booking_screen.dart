@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/view/bulk_food_list_screen.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meating_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class BookingScreen extends StatelessWidget {
@@ -24,6 +25,22 @@ class BookingScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 24),
+            // Meeting Booking Card
+            _buildBookingCard(
+              context: context,
+              title: 'Meeting Booking',
+              subtitle: 'Schedule and manage your meetings',
+              icon: LucideIcons.calendar,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserMeetingScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
             // Bulk Food Booking Card
             _buildBookingCard(
               context: context,
@@ -40,22 +57,7 @@ class BookingScreen extends StatelessWidget {
               },
             ),
             const SizedBox(height: 16),
-            // Hall Booking Card (Dummy)
-            _buildBookingCard(
-              context: context,
-              title: 'Hall Booking',
-              subtitle: 'Book halls for events (Coming Soon)',
-              icon: LucideIcons.building,
-              onTap: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Hall booking feature coming soon!'),
-                    backgroundColor: ColorClass.brandDarkGreen,
-                  ),
-                );
-              },
-              isEnabled: false,
-            ),
+            
           ],
         ),
       ),

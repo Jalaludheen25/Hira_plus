@@ -178,8 +178,8 @@ class _SplashScreenState extends State<SplashScreen>
                               opacity: _fadeAnimation,
                               child: _buildImageWithFallback(
                                 IconClass.splashLogo,
-                                width: 180,
-                                height: 180,
+                                width: 160,
+                                height: 160,
                                 fallbackIcon: Icons.home_work,
                                 fallbackColor: Colors.white,
                               ),
