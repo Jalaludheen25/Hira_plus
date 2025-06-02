@@ -244,4 +244,18 @@ class MeetingProvider extends ChangeNotifier {
     _errorMessage = '';
     notifyListeners();
   }
+
+  /// Deletes a meeting by ID
+  Future<bool> deleteMeeting(BuildContext context, String meetingId) async {
+    try {
+      final success = await _meetingService.deleteMeeting(context, meetingId);
+      if (success) {
+        removeMeetingFromList(meetingId);
+      }
+      return success;
+    } catch (e) {
+      log('❌ Error deleting meeting in provider: $e', name: 'MeetingProvider');
+      return false;
+    }
+  }
 }

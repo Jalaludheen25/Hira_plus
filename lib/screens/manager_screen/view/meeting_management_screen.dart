@@ -532,18 +532,36 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
             TextButton(
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
-                
-                _logger.i('🗑️ [API] Attempting to delete meeting with id: ${meeting.id}');
+
+                _logger.i('🗑️ [API] Attempting to delete meeting with id: [4m${meeting.id}[24m');
                 developer.log('🗑️ Attempting to delete meeting with id: ${meeting.id}', name: 'MeetingManagementScreen');
-                
-                // Note: You'll need to implement deleteMeeting in your provider
-                // final success = await provider.deleteMeeting(context, meeting.id);
-                
+
+                // Show loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                );
+
+                final success = await provider.deleteMeeting(context, meeting.id);
+
+                // Hide loading indicator
                 if (mounted) {
+                  Navigator.of(context).pop();
+                }
+
+                if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Delete functionality coming soon'),
-                      backgroundColor: Colors.orange,
+                    SnackBar(
+                      content: Text('Meeting "${meeting.title}" deleted successfully'),
+                      backgroundColor: ColorClass.greenBase,
+                    ),
+                  );
+                } else if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to delete meeting "${meeting.title}"'),
+                      backgroundColor: ColorClass.redBase,
                     ),
                   );
                 }

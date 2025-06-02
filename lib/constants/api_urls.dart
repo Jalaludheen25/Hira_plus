@@ -128,6 +128,16 @@ class ApiUrls {
     return '$baseUrl/admin/meetings';
   }
 
+  /// Edit a meeting (admin)
+  static String adminEditMeeting(String meetingId) {
+    return '$baseUrl/admin/meetings/$meetingId';
+  }
+
+  /// Delete a meeting (admin)
+  static String adminDeleteMeeting(String meetingId) {
+    return '$baseUrl/admin/meetings/$meetingId';
+  }
+
   // ################## GUEST MEALS FOR MESS STAFF ##################
 
   static String getBulkMealsForMessStaff() {
@@ -174,5 +184,13 @@ class ApiUrls {
 
   static String createUserMeeting() {
     return '$baseUrl/auth/dept-meetings'; // POST - create meeting (deptHead only)
+  }
+   static String editMeeting(String meetingId) {
+    return '$baseUrl/auth/dept-meetings/$meetingId'; // PUT - edit meeting
+  }
+
+  // Delete meeting endpoint  
+  static String deleteMeeting(String meetingId) {
+    return '$baseUrl/auth/dept-meetings/$meetingId'; // DELETE - delete meeting
   }
 }

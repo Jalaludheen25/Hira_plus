@@ -328,6 +328,40 @@ class MeetingListProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Deletes a meeting by ID (DeptHead only)
+  Future<void> deleteMeeting(BuildContext context, String meetingId) async {
+    try {
+      _isLoading = true;
+      _errorMessage = '';
+      notifyListeners();
+      final success = await _meetingService.deleteMeeting(context, meetingId);
+      if (success) {
+        await fetchMeetings(context);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Meeting deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      _errorMessage = 'Failed to delete meeting. Please try again.';
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete meeting: \\${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();

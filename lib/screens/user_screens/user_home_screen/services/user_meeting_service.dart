@@ -191,4 +191,33 @@ class MeetingService {
       rethrow;
     }
   }
+
+  /// Deletes a meeting by ID (DeptHead only)
+  Future<bool> deleteMeeting(BuildContext context, String meetingId) async {
+    try {
+      final authToken = await SharedUtils.getString('auth_token');
+      if (authToken.isEmpty) {
+        throw HttpException('Authentication required. Please login again.');
+      }
+      final url = ApiUrls.deleteMeeting(meetingId); // Should resolve to 'auth/dept-meetings/{id}'
+      final response = await HttpServiceUtils.deleteData(url, context);
+      if (response == null) {
+        throw HttpException('Empty response from server');
+      }
+      Map<String, dynamic> responseData;
+      if (response is String) {
+        responseData = jsonDecode(response);
+      } else {
+        responseData = response;
+      }
+      if (responseData['success'] == true) {
+        return true;
+      } else {
+        throw HttpException(responseData['message'] ?? 'Failed to delete meeting');
+      }
+    } catch (e) {
+      log('❌ Error deleting meeting: $e');
+      rethrow;
+    }
+  }
 }

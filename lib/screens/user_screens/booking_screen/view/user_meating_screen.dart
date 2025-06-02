@@ -8,9 +8,12 @@ import 'package:hira_plus/screens/user_screens/booking_screen/provider/user_meet
 import 'package:lucide_icons/lucide_icons.dart';
 import 'dart:developer' as developer;
 import 'package:logger/logger.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart';
 
 class UserMeetingScreen extends StatefulWidget {
-  const UserMeetingScreen({Key? key}) : super(key: key);
+  final MeetingModel? meeting;
+  final bool isEdit;
+  const UserMeetingScreen({Key? key, this.meeting, this.isEdit = false}) : super(key: key);
 
   @override
   State<UserMeetingScreen> createState() => _UserMeetingScreenState();
@@ -49,6 +52,21 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     super.initState();
     _logger.i('🏗️ [INIT] Initializing Create User Meeting Screen');
     developer.log('🏗️ Initializing Create User Meeting Screen', name: 'CreateUserMeetingScreen');
+    if (widget.isEdit && widget.meeting != null) {
+      final m = widget.meeting!;
+      _titleController.text = m.title;
+      _descriptionController.text = m.description;
+      _noOfPersonsController.text = m.noOfPersons.toString();
+      _breakfastController.text = m.breakfast.toString();
+      _midmorningSnacksController.text = m.midmorningSnacks.toString();
+      _lunchController.text = m.lunch.toString();
+      _eveningsnacksController.text = m.eveningsnacks.toString();
+      _dinnerController.text = m.dinner.toString();
+      _startDatetime = m.startDatetime;
+      _endDatetime = m.endDatetime;
+      _foodRequired = m.foodRequired;
+      _selectedHall = m.hall;
+    }
   }
 
   @override
@@ -74,7 +92,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
         backgroundColor: ColorClass.brandWhite,
         appBar: AppBar(
           title: Text(
-            'Create Meeting',
+            widget.isEdit ? 'Edit Meeting' : 'Create Meeting',
             style: TextStyleClass.poppinsSemiBold(
               fontSize: 20,
               color: ColorClass.white,
@@ -274,7 +292,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
                         child: provider.isLoading
                             ? const CupertinoActivityIndicator(color: Colors.white)
                             : Text(
-                                'Create Meeting',
+                                widget.isEdit ? 'Update Meeting' : 'Create Meeting',
                                 style: TextStyleClass.poppinsSemiBold(fontSize: 16),
                               ),
                       );
@@ -525,13 +543,13 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Meeting "${meeting.title}" created successfully'),
+          content: Text('Meeting "${meeting.title}" ${widget.isEdit ? 'updated' : 'created'} successfully'),
           backgroundColor: ColorClass.greenBase,
         ),
       );
       
-      // Navigate back
-      Navigator.pop(context);
+      // Navigate back to the list screen
+      Navigator.pop(context, widget.isEdit ? true : null);
     }
   }
 }

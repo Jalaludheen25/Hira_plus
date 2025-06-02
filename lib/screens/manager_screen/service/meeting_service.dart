@@ -159,4 +159,23 @@ class MeetingService {
       rethrow;
     }
   }
+
+  /// Deletes a meeting by ID
+  Future<bool> deleteMeeting(BuildContext context, String meetingId) async {
+    try {
+      final url = ApiUrls.adminDeleteMeeting(meetingId);
+      final response = await HttpServiceUtils.deleteData(url, context);
+      if (response == null) {
+        throw HttpException('Failed to delete meeting: Empty response');
+      }
+      final responseData = response is String ? jsonDecode(response) : response;
+      if (responseData['success'] != true) {
+        throw HttpException(responseData['message'] ?? 'Failed to delete meeting');
+      }
+      return true;
+    } catch (e) {
+      log('❌ Error deleting meeting: $e', name: 'MeetingService');
+      rethrow;
+    }
+  }
 }

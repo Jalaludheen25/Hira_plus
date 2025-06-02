@@ -15,6 +15,7 @@ import 'package:intl/intl.dart';
 import 'dart:ui';
 import 'dart:async';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meating_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -554,7 +555,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.error_outline,
+            Icons.error_outline,
               size: 48,
               color: Colors.red,
             ),
@@ -625,14 +626,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final formattedStartTime = DateFormat('h:mm a').format(meeting.startDatetime);
     final formattedEndTime = DateFormat('h:mm a').format(meeting.endDatetime);
     final statusDetails = _getStatusDetails(meeting);
+    final isDeptHead = Provider.of<AuthProvider>(context, listen: false).isDeptHead;
+    final isCreatedByManager = meeting.createdBy.toLowerCase() == 'admin' || meeting.createdBy.toLowerCase() == 'manager';
+    final canShowEdit = isDeptHead && !isCreatedByManager;
+    final canShowDelete = canShowEdit && !meeting.isApproved;
+    final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
     
     return Container(
       decoration: BoxDecoration(
         color: ColorClass.brandWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: statusDetails['backgroundColor'].withOpacity(0.3),
-          width: 1,
+          color: ColorClass.brandLightGreen,
+          width: 2,
         ),
         boxShadow: [
           BoxShadow(
@@ -727,6 +733,91 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 color: ColorClass.neutral400,
               ),
             ),
+            // DeptHead action buttons (edit/delete) styled as in MeetingManagementScreen
+            if (canShowEdit) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => UserMeetingScreen(
+                              meeting: meeting,
+                              isEdit: true,
+                            ),
+                          ),
+                        );
+                        if (result == true) {
+                          await meetingProvider.fetchMeetings(context);
+                        }
+                      },
+                      icon: Icon(LucideIcons.edit, size: 14, color: ColorClass.brandDarkGreen),
+                      label: Text(
+                        'Edit',
+                        style: TextStyleClass.poppinsMedium(
+                          fontSize: 12,
+                          color: ColorClass.brandDarkGreen,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: ColorClass.brandLightGreen),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                  if (canShowDelete) ...[
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Delete Meeting'),
+                              content: Text('Are you sure you want to delete this meeting?'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed == true) {
+                            await meetingProvider.deleteMeeting(context, meeting.id);
+                          }
+                        },
+                        icon: Icon(LucideIcons.trash2, size: 14, color: ColorClass.redDark),
+                        label: Text(
+                          'Delete',
+                          style: TextStyleClass.poppinsMedium(
+                            fontSize: 12,
+                            color: ColorClass.redDark,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: ColorClass.redLight),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
           ],
         ),
       ),
