@@ -55,5 +55,7 @@
 	<string>We need access to your camera to upload banners.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>We need to save images to your photo library.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app includes libraries that may request location access, but we do not use your location.</string>
 </dict>
 </plist>
