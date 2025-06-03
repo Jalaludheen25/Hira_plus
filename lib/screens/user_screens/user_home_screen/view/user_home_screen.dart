@@ -3,7 +3,7 @@ import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/provider/user_meeting_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meeting_list_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart' as UserMeeting;
 import '../widgets/month_calendar_view.dart';
 import '../widgets/home_list_view.dart';
@@ -232,7 +232,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             // 3. Mark Meal Widget
             _buildMarkMealWidget(context, canteenProvider),
             const SizedBox(height: 16),
-            // 4. Meetings Widget (NEW)
+            // 4. Meetings Widget (Enhanced with edit/delete)
             _buildMeetingsWidget(context),
             const SizedBox(height: 16),
             // 5. All Users Widget
@@ -437,7 +437,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  // NEW: Meetings Widget
+  // Enhanced Meetings Widget with edit/delete functionality
   Widget _buildMeetingsWidget(BuildContext context) {
     return GestureDetector(
       onTap: () => _showMeetingsBottomSheet(context),
@@ -466,7 +466,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  // NEW: Show Meetings Bottom Sheet
+  // Enhanced Show Meetings Bottom Sheet with edit/delete functionality
   void _showMeetingsBottomSheet(BuildContext context) {
     // Refresh meetings when opening
     final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
@@ -555,7 +555,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-            Icons.error_outline,
+              Icons.error_outline,
               size: 48,
               color: Colors.red,
             ),
@@ -609,13 +609,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       );
     }
 
+    // Sort meetings by latest first
+    final sortedMeetings = List<UserMeeting.MeetingModel>.from(provider.meetings)
+      ..sort((a, b) => b.startDatetime.compareTo(a.startDatetime));
+
     return ListView.separated(
       controller: scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: provider.meetings.length,
+      itemCount: sortedMeetings.length,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final meeting = provider.meetings[index];
+        final meeting = sortedMeetings[index];
         return _buildMeetingCard(meeting);
       },
     );
@@ -627,9 +631,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final formattedEndTime = DateFormat('h:mm a').format(meeting.endDatetime);
     final statusDetails = _getStatusDetails(meeting);
     final isDeptHead = Provider.of<AuthProvider>(context, listen: false).isDeptHead;
-    final isCreatedByManager = meeting.createdBy.toLowerCase() == 'admin' || meeting.createdBy.toLowerCase() == 'manager';
-    final canShowEdit = isDeptHead && !isCreatedByManager;
-    final canShowDelete = canShowEdit && !meeting.isApproved;
+    final canShowEdit = isDeptHead && meeting.isPending;
+    final canShowDelete = canShowEdit;
     final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
     
     return Container(
@@ -733,7 +736,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 color: ColorClass.neutral400,
               ),
             ),
-            // DeptHead action buttons (edit/delete) styled as in MeetingManagementScreen
+            // DeptHead action buttons (edit/delete) with enhanced validation
             if (canShowEdit) ...[
               const SizedBox(height: 12),
               Row(
@@ -741,18 +744,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => UserMeetingScreen(
-                              meeting: meeting,
-                              isEdit: true,
-                            ),
-                          ),
-                        );
-                        if (result == true) {
-                          await meetingProvider.fetchMeetings(context);
-                        }
+                        await _handleEditMeeting(context, meeting, meetingProvider);
                       },
                       icon: Icon(LucideIcons.edit, size: 14, color: ColorClass.brandDarkGreen),
                       label: Text(
@@ -776,26 +768,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: Text('Delete Meeting'),
-                              content: Text('Are you sure you want to delete this meeting?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: Text('Cancel'),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, true),
-                                  child: Text('Delete', style: TextStyle(color: Colors.red)),
-                                ),
-                              ],
-                            ),
-                          );
-                          if (confirmed == true) {
-                            await meetingProvider.deleteMeeting(context, meeting.id);
-                          }
+                          await _handleDeleteMeeting(context, meeting, meetingProvider);
                         },
                         icon: Icon(LucideIcons.trash2, size: 14, color: ColorClass.redDark),
                         label: Text(
@@ -844,6 +817,204 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         ),
       ],
     );
+  }
+
+  // Enhanced edit meeting handler with validation
+  Future<void> _handleEditMeeting(BuildContext context, UserMeeting.MeetingModel meeting, MeetingListProvider meetingProvider) async {
+    try {
+      // Debug the meeting first
+      _debugMeetingBeforeEdit(meeting);
+      
+      // Additional validation before navigating to edit
+      if (!meeting.isPending) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Only pending meetings can be edited. This meeting is ${meeting.status}.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: Card(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Validating meeting...'),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Refresh meetings to ensure data is current
+      await meetingProvider.fetchMeetings(context);
+      
+      // Check if meeting still exists and get updated data
+      UserMeeting.MeetingModel? refreshedMeeting;
+      try {
+        refreshedMeeting = meetingProvider.meetings.firstWhere(
+          (m) => m.id == meeting.id,
+        );
+      } catch (e) {
+        // Close loading dialog
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Meeting not found. It may have been deleted.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Close loading dialog
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      // Final validation on refreshed data
+      if (!refreshedMeeting.isPending) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Meeting status changed to ${refreshedMeeting.status}. Only pending meetings can be edited.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Navigate to edit screen with refreshed data
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => UserMeetingScreen(
+            meeting: refreshedMeeting, // Use refreshed data
+            isEdit: true,
+          ),
+        ),
+      );
+      
+      if (result == true) {
+        await meetingProvider.fetchMeetings(context);
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Cannot edit meeting: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  // Enhanced delete meeting handler with validation
+  Future<void> _handleDeleteMeeting(BuildContext context, UserMeeting.MeetingModel meeting, MeetingListProvider meetingProvider) async {
+    try {
+      // Additional validation for delete
+      if (!meeting.isPending) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Only pending meetings can be deleted. This meeting is ${meeting.status}.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Delete Meeting'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Are you sure you want to delete this meeting?'),
+              SizedBox(height: 8),
+              Text('Meeting: ${meeting.title}', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Date: ${DateFormat('MMM d, yyyy').format(meeting.startDatetime)}'),
+              SizedBox(height: 8),
+              Text('This action cannot be undone.', style: TextStyle(color: Colors.red, fontSize: 12)),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+      );
+      
+      if (confirmed == true) {
+        try {
+          await meetingProvider.deleteMeeting(context, meeting.id);
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete meeting: ${e.toString()}'),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Debug method for troubleshooting
+  void _debugMeetingBeforeEdit(UserMeeting.MeetingModel meeting) {
+    final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    print('🔍 === MEETING DEBUG INFO ===');
+    print('Meeting ID: ${meeting.id}');
+    print('Meeting Title: ${meeting.title}');
+    print('Meeting Status: ${meeting.status}');
+    print('Is Pending: ${meeting.isPending}');
+    print('Created By: ${meeting.createdBy}');
+    print('Department: ${meeting.department}');
+    print('Created At: ${meeting.createdAt}');
+    print('Current User Type: ${authProvider.userType}');
+    print('Is Dept Head: ${authProvider.isDeptHead}');
+    print('Can Show Edit: ${authProvider.isDeptHead && meeting.isPending}');
+    print('🔍 === END DEBUG INFO ===');
+    
+    // Run detailed debug if method exists
+    if (meetingProvider.debugMeetingStatus != null) {
+      meetingProvider.debugMeetingStatus!(context, meeting.id);
+    }
   }
 
   void _showMealMarkBottomSheet(

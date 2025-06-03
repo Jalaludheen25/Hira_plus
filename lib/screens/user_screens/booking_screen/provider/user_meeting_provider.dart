@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
-import 'package:hira_plus/screens/manager_screen/models/meating_model.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 import 'dart:developer' as developer;
 import 'dart:convert';
@@ -118,6 +118,59 @@ class UserMeetingProvider extends ChangeNotifier {
         );
       }
       
+      return null;
+    }
+  }
+
+  /// Update an existing meeting (deptHead only)
+  Future<MeetingModel?> updateMeeting(
+    BuildContext context,
+    String meetingId,
+    Map<String, dynamic> meetingData,
+  ) async {
+    try {
+      _logger.i('🔄 [API] Updating user meeting: $meetingId');
+      developer.log('🔄 Updating user meeting: $meetingId', name: 'UserMeetingProvider');
+      _isLoading = true;
+      _errorMessage = '';
+      notifyListeners();
+      final url = ApiUrls.editMeeting(meetingId); // PUT endpoint
+      final response = await HttpServiceUtils.putData(url, meetingData, context);
+      if (response != null) {
+        Map<String, dynamic> responseData;
+        if (response is String) {
+          responseData = jsonDecode(response);
+        } else {
+          responseData = response as Map<String, dynamic>;
+        }
+        MeetingModel? updatedMeeting;
+        if (responseData.containsKey('meeting')) {
+          updatedMeeting = MeetingModel.fromJson(responseData['meeting']);
+        } else if (responseData.containsKey('data')) {
+          updatedMeeting = MeetingModel.fromJson(responseData['data']);
+        } else {
+          updatedMeeting = MeetingModel.fromJson(responseData);
+        }
+        _isLoading = false;
+        notifyListeners();
+        return updatedMeeting;
+      } else {
+        throw Exception('Empty response from server');
+      }
+    } catch (e) {
+      _logger.e('❌ [ERROR] Failed to update meeting: $e');
+      developer.log('❌ Failed to update meeting: $e', name: 'UserMeetingProvider');
+      _isLoading = false;
+      _errorMessage = 'Failed to update meeting. Please try again.';
+      notifyListeners();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update meeting: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       return null;
     }
   }

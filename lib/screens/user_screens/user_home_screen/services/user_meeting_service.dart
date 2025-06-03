@@ -105,6 +105,128 @@ class MeetingService {
     }
   }
 
+  /// Deletes a meeting by ID (DeptHead only)
+  /// Returns true if successful, throws exception if failed
+  Future<bool> deleteMeeting(BuildContext context, String meetingId) async {
+    try {
+      log('🗑️ Starting delete process for meeting: $meetingId', name: 'MeetingService');
+      
+      final authToken = await SharedUtils.getString('auth_token');
+      if (authToken.isEmpty) {
+        log('❌ No auth token found', name: 'MeetingService');
+        throw HttpException('Authentication required. Please login again.');
+      }
+      
+      final url = ApiUrls.deleteMeeting(meetingId); // DELETE auth/dept-meetings/{meetingId}
+      log('🌐 DELETE URL: $url', name: 'MeetingService');
+      
+      // Make DELETE request
+      final response = await HttpServiceUtils.deleteData(url, context);
+      log('📡 Delete response received', name: 'MeetingService');
+      
+      if (response == null) {
+        log('❌ Empty response from delete API', name: 'MeetingService');
+        throw HttpException('Empty response from server');
+      }
+      
+      // Parse response
+      Map<String, dynamic> responseData;
+      if (response is String) {
+        responseData = jsonDecode(response);
+      } else {
+        responseData = response;
+      }
+      
+      log('📄 Delete response data: $responseData', name: 'MeetingService');
+      
+      if (responseData['success'] == true) {
+        log('✅ Meeting deleted successfully', name: 'MeetingService');
+        return true;
+      } else {
+        final errorMessage = responseData['message'] ?? 'Failed to delete meeting';
+        log('❌ Delete failed: $errorMessage', name: 'MeetingService');
+        throw HttpException(errorMessage);
+      }
+    } on HttpException catch (e) {
+      log('❌ HTTP error deleting meeting: $e', name: 'MeetingService');
+      rethrow;
+    } catch (e) {
+      log('❌ Unexpected error deleting meeting: $e', name: 'MeetingService');
+      rethrow;
+    }
+  }
+
+  /// Updates a meeting by ID (DeptHead only)
+  /// Returns updated MeetingModel if successful, throws exception if failed
+  Future<MeetingModel?> updateMeeting(BuildContext context, String meetingId, Map<String, dynamic> meetingData) async {
+    try {
+      log('📝 Starting update process for meeting: $meetingId', name: 'MeetingService');
+      log('📦 Update data: $meetingData', name: 'MeetingService');
+      
+      final authToken = await SharedUtils.getString('auth_token');
+      if (authToken.isEmpty) {
+        log('❌ No auth token found', name: 'MeetingService');
+        throw HttpException('Authentication required. Please login again.');
+      }
+      
+      final url = ApiUrls.editMeeting(meetingId); // PUT auth/dept-meetings/{meetingId}
+      log('🌐 PUT URL: $url', name: 'MeetingService');
+      
+      // Make PUT request
+      final response = await HttpServiceUtils.putData(url, meetingData, context);
+      log('📡 Update response received', name: 'MeetingService');
+      
+      if (response == null) {
+        log('❌ Empty response from update API', name: 'MeetingService');
+        throw HttpException('Empty response from server');
+      }
+      
+      // Parse response
+      Map<String, dynamic> responseData;
+      if (response is String) {
+        responseData = jsonDecode(response);
+      } else {
+        responseData = response;
+      }
+      
+      log('📄 Update response data keys: ${responseData.keys.toList()}', name: 'MeetingService');
+      
+      if (responseData['success'] == true) {
+        // Try to find the updated meeting data in different possible response formats
+        Map<String, dynamic>? updatedMeetingData;
+        
+        if (responseData['meeting'] != null) {
+          updatedMeetingData = responseData['meeting'];
+        } else if (responseData['data'] != null) {
+          updatedMeetingData = responseData['data'];
+        } else if (responseData.containsKey('_id')) {
+          // Sometimes the meeting data is directly in the response
+          updatedMeetingData = responseData;
+        }
+        
+        if (updatedMeetingData != null) {
+          log('✅ Meeting updated successfully', name: 'MeetingService');
+          log('📝 Updated meeting data: $updatedMeetingData', name: 'MeetingService');
+          return MeetingModel.fromJson(updatedMeetingData);
+        } else {
+          log('⚠️ Update successful but no meeting data returned', name: 'MeetingService');
+          return null;
+        }
+      } else {
+        final errorMessage = responseData['message'] ?? 'Failed to update meeting';
+        log('❌ Update failed: $errorMessage', name: 'MeetingService');
+        throw HttpException(errorMessage);
+      }
+    } on HttpException catch (e) {
+      log('❌ HTTP error updating meeting: $e', name: 'MeetingService');
+      rethrow;
+    } catch (e) {
+      log('❌ Unexpected error updating meeting: $e', name: 'MeetingService');
+      log('📍 Error type: ${e.runtimeType}', name: 'MeetingService');
+      rethrow;
+    }
+  }
+
   /// Helper method to verify auth token validity
   Future<bool> _verifyAuthToken() async {
     try {
@@ -188,35 +310,6 @@ class MeetingService {
           .toList();
     } catch (e) {
       log('❌ Error fetching meetings by status: $e');
-      rethrow;
-    }
-  }
-
-  /// Deletes a meeting by ID (DeptHead only)
-  Future<bool> deleteMeeting(BuildContext context, String meetingId) async {
-    try {
-      final authToken = await SharedUtils.getString('auth_token');
-      if (authToken.isEmpty) {
-        throw HttpException('Authentication required. Please login again.');
-      }
-      final url = ApiUrls.deleteMeeting(meetingId); // Should resolve to 'auth/dept-meetings/{id}'
-      final response = await HttpServiceUtils.deleteData(url, context);
-      if (response == null) {
-        throw HttpException('Empty response from server');
-      }
-      Map<String, dynamic> responseData;
-      if (response is String) {
-        responseData = jsonDecode(response);
-      } else {
-        responseData = response;
-      }
-      if (responseData['success'] == true) {
-        return true;
-      } else {
-        throw HttpException(responseData['message'] ?? 'Failed to delete meeting');
-      }
-    } catch (e) {
-      log('❌ Error deleting meeting: $e');
       rethrow;
     }
   }

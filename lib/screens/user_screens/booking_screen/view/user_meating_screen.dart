@@ -280,7 +280,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
                   child: Consumer<UserMeetingProvider>(
                     builder: (context, provider, _) {
                       return ElevatedButton(
-                        onPressed: provider.isLoading ? null : _createMeeting,
+                        onPressed: provider.isLoading ? null : _saveMeeting,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: ColorClass.brandDarkGreen,
                           foregroundColor: Colors.white,
@@ -511,16 +511,49 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     }
   }
 
-  void _createMeeting() async {
+  void _saveMeeting() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
     final provider = Provider.of<UserMeetingProvider>(context, listen: false);
-    
-    _logger.i('📤 [ACTION] Creating meeting: ${_titleController.text.trim()}');
-    developer.log('📤 Creating meeting: ${_titleController.text.trim()}', name: 'CreateUserMeetingScreen');
-    
+    final isEditing = widget.isEdit && widget.meeting != null;
+
+    if (isEditing) {
+      // Prepare meeting data for update
+      final meetingData = {
+        'title': _titleController.text.trim(),
+        'description': _descriptionController.text.trim(),
+        'startDatetime': _startDatetime.toIso8601String(),
+        'endDatetime': _endDatetime.toIso8601String(),
+        'hall': _selectedHall ?? 'Auditorium',
+        'noOfPersons': int.parse(_noOfPersonsController.text),
+        'foodRequired': _foodRequired,
+        'breakfast': int.parse(_breakfastController.text),
+        'midmorningSnacks': int.parse(_midmorningSnacksController.text),
+        'lunch': int.parse(_lunchController.text),
+        'eveningsnacks': int.parse(_eveningsnacksController.text),
+        'dinner': int.parse(_dinnerController.text),
+        'department': widget.meeting?.department ?? '',
+      };
+      final updatedMeeting = await provider.updateMeeting(
+        context,
+        widget.meeting!.id,
+        meetingData,
+      );
+      if (updatedMeeting != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Meeting "${updatedMeeting.title}" updated successfully'),
+            backgroundColor: ColorClass.greenBase,
+          ),
+        );
+        Navigator.pop(context, true);
+      }
+      return;
+    }
+
+    // Create new meeting (not editing)
     final meeting = await provider.createMeeting(
       context,
       title: _titleController.text.trim(),
@@ -538,18 +571,13 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     );
 
     if (meeting != null && mounted) {
-      _logger.i('✅ [SUCCESS] Meeting created successfully: ${meeting.title}');
-      developer.log('✅ Meeting created successfully: ${meeting.title}', name: 'CreateUserMeetingScreen');
-      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Meeting "${meeting.title}" ${widget.isEdit ? 'updated' : 'created'} successfully'),
+          content: Text('Meeting "${meeting.title}" created successfully'),
           backgroundColor: ColorClass.greenBase,
         ),
       );
-      
-      // Navigate back to the list screen
-      Navigator.pop(context, widget.isEdit ? true : null);
+      Navigator.pop(context, true);
     }
   }
 }

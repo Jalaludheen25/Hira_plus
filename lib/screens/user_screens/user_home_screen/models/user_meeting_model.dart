@@ -17,6 +17,7 @@ class MeetingModel {
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int? v; // for __v
 
   MeetingModel({
     required this.id,
@@ -37,11 +38,12 @@ class MeetingModel {
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
+    this.v,
   });
 
   factory MeetingModel.fromJson(Map<String, dynamic> json) {
     return MeetingModel(
-      id: json['_id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       startDatetime: DateTime.tryParse(json['startDatetime'] ?? '') ?? DateTime.now(),
@@ -54,11 +56,12 @@ class MeetingModel {
       lunch: json['lunch'] ?? 0,
       eveningsnacks: json['eveningsnacks'] ?? 0,
       dinner: json['dinner'] ?? 0,
-      department: json['department'] ?? '',
+      department: json['department']?.toString() ?? '',
       status: json['status'] ?? '',
-      createdBy: json['createdBy'] ?? '',
+      createdBy: json['createdBy']?.toString() ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
+      v: json['__v'] ?? json['v'],
     );
   }
 
@@ -82,6 +85,7 @@ class MeetingModel {
       'createdBy': createdBy,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      '__v': v,
     };
   }
 

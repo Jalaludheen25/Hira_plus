@@ -23,6 +23,7 @@ class AuthProvider extends ChangeNotifier {
   String _department = '';
   String _designation = '';
   bool _isDeptHead = false;
+  String _userId = '';
 
   String get phone => _phone;
   String get username => _username;
@@ -35,6 +36,7 @@ class AuthProvider extends ChangeNotifier {
   String get department => _department;
   String get designation => _designation;
   bool get isDeptHead => _isDeptHead;
+  String get userId => _userId;
 
   // Helper method to determine if current role uses OTP or password
   bool get isOtpBasedAuth => _selectedRole == 'User';
@@ -110,6 +112,13 @@ class AuthProvider extends ChangeNotifier {
       _isDeptHead = value;
       developer.log('👑 isDeptHead set to: $value', name: 'AuthProvider');
       SharedUtils.setBoolean('is_dept_head', value);
+      notifyListeners();
+    }
+  }
+
+  void setUserId(String value) {
+    if (_userId != value) {
+      _userId = value;
       notifyListeners();
     }
   }
@@ -351,6 +360,7 @@ class AuthProvider extends ChangeNotifier {
 
           final isDeptHead = userDetails['isDeptHead'] ?? false;
           setIsDeptHead(isDeptHead);
+          setUserId(userDetails['_id'] ?? userDetails['id'] ?? '');
         }
 
         // Store token and update login status
@@ -419,6 +429,9 @@ class AuthProvider extends ChangeNotifier {
         final user = data['user'];
         final isDeptHead = user != null && user['isDeptHead'] == true;
         setIsDeptHead(isDeptHead);
+        if (user != null) {
+          setUserId(user['_id'] ?? user['id'] ?? '');
+        }
 
         // Update ProfileScreenProvider with user info
         final profileProvider =
