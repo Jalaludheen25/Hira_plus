@@ -193,4 +193,13 @@ class ApiUrls {
   static String deleteMeeting(String meetingId) {
     return '$baseUrl/auth/dept-meetings/$meetingId'; // DELETE - delete meeting
   }
+
+    // ################## MEETING FOOD REQUIREMENTS ##################
+
+  static String getMeetingFoodRequirements({
+    required String startDate,
+    required String endDate,
+  }) {
+    return '$baseUrl/mess-staff/meeting-food-requirements?startDate=$startDate&endDate=$endDate';
+  }
 }
