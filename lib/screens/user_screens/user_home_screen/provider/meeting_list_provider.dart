@@ -187,14 +187,9 @@ class MeetingListProvider extends ChangeNotifier {
       final success = await _meetingService.deleteMeeting(context, meetingId);
       if (success) {
         log('✅ Meeting deleted successfully, refreshing list', name: 'MeetingListProvider');
-        
         // Remove the meeting from local list immediately for better UX
         _meetings.removeWhere((meeting) => meeting.id == meetingId);
         await _saveMeetingsToCache(); // Update cache
-        
-        // Also fetch latest data from server
-        await fetchMeetings(context);
-        
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -203,17 +198,29 @@ class MeetingListProvider extends ChangeNotifier {
             ),
           );
         }
+        // Only fetch meetings if delete was successful
+        await fetchMeetings(context);
       }
     } catch (e) {
       log('❌ Error deleting meeting: $e', name: 'MeetingListProvider');
       _errorMessage = 'Failed to delete meeting. Please try again.';
+      final errorStr = e.toString().toLowerCase();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to delete meeting: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (errorStr.contains('not found') || errorStr.contains('cannot be deleted')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("You can't delete this meeting."),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete meeting: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     } finally {
       _isLoading = false;
@@ -313,56 +320,6 @@ class MeetingListProvider extends ChangeNotifier {
       return 'Network error. Please check your internet connection.';
     }
     return 'Failed to update meeting. Please try again later.';
-  }
-
-  /// Debug method to check meeting status and permissions
-  Future<void> debugMeetingStatus(BuildContext context, String meetingId) async {
-    try {
-      log('🔍 DEBUG: Checking meeting status for ID: $meetingId', name: 'MeetingDebug');
-      
-      // 1. Check if meeting exists in local list
-      final localMeeting = _meetings.firstWhere(
-        (meeting) => meeting.id == meetingId,
-        orElse: () => throw Exception('Meeting not found'),
-      );
-      
-      if (localMeeting != null) {
-        log('✅ DEBUG: Meeting found in local list', name: 'MeetingDebug');
-        log('📋 DEBUG: Meeting status: ${localMeeting.status}', name: 'MeetingDebug');
-        log('📋 DEBUG: Meeting title: ${localMeeting.title}', name: 'MeetingDebug');
-        log('📋 DEBUG: Created by: ${localMeeting.createdBy}', name: 'MeetingDebug');
-        log('📋 DEBUG: Department: ${localMeeting.department}', name: 'MeetingDebug');
-        log('📋 DEBUG: Can edit?: ${localMeeting.isPending}', name: 'MeetingDebug');
-      } else {
-        log('❌ DEBUG: Meeting NOT found in local list', name: 'MeetingDebug');
-      }
-      
-      // 2. Check current user permissions
-      final authToken = await SharedUtils.getString('auth_token');
-      final userType = await SharedUtils.getString('user_type');
-      log('🔑 DEBUG: User type: $userType', name: 'MeetingDebug');
-      log('🔑 DEBUG: Has auth token: ${authToken.isNotEmpty}', name: 'MeetingDebug');
-      
-      // 3. Try to fetch fresh data from server
-      log('🔄 DEBUG: Fetching fresh meeting data...', name: 'MeetingDebug');
-      await fetchMeetings(context);
-      
-      // 4. Check again after refresh
-      final refreshedMeeting = _meetings.firstWhere(
-        (meeting) => meeting.id == meetingId,
-        orElse: () => throw Exception('Meeting not found after refresh'),
-      );
-      
-      if (refreshedMeeting != null) {
-        log('✅ DEBUG: Meeting found after refresh', name: 'MeetingDebug');
-        log('📋 DEBUG: Updated status: ${refreshedMeeting.status}', name: 'MeetingDebug');
-      } else {
-        log('❌ DEBUG: Meeting STILL not found after refresh - likely deleted', name: 'MeetingDebug');
-      }
-      
-    } catch (e) {
-      log('💥 DEBUG: Error during debug check: $e', name: 'MeetingDebug');
-    }
   }
 
   /// Refresh a specific meeting from server

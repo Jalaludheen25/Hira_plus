@@ -181,504 +181,510 @@ class _LoginScreenState extends State<LoginScreen> {
                 stops: [0.0, 0.6, 1.0],
               ),
             ),
-            child: SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Back arrow - only show when on OTP/password screen
-                    if (authProvider.showOTPField)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: GestureDetector(
-                          onTap: () {
-                            // Clear OTP and password fields when going back
-                            authProvider.setOtp('');
-                            authProvider.setPassword('');
-                            
-                            // Go back to the first screen
-                            authProvider.setShowOTPField(false);
-                            
-                            developer.log('⬅️ Navigating back to input screen', 
-                                name: 'LoginScreen');
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: ColorClass.brandLightGreen.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.arrow_back_ios_new,
-                              color: ColorClass.brandLightGreen,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                    const SizedBox(height: 120),
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: ColorClass.brandLightGreen.withOpacity(0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Image.asset(
-                          IconClass.hiraPlus,
-                          width: 48,
-                          height: 48,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Center(
-                      child: Column(
-                        children: [
-                          ShaderMask(
-                            shaderCallback: (bounds) => LinearGradient(
-                              colors: [
-                                ColorClass.brandLightGreen,
-                                ColorClass.brandLightGreen.withOpacity(0.8),
-                              ],
-                            ).createShader(bounds),
-                            child: const Text(
-                              'Mess Connect',
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                height: 1.2, // Proper line height to prevent clipping
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                FocusScope.of(context).unfocus();
+              },
+              child: SafeArea(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Back arrow - only show when on OTP/password screen
+                        if (authProvider.showOTPField)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 20),
+                            child: GestureDetector(
+                              onTap: () {
+                                // Clear OTP and password fields when going back
+                                authProvider.setOtp('');
+                                authProvider.setPassword('');
+                                
+                                // Go back to the first screen
+                                authProvider.setShowOTPField(false);
+                                
+                                developer.log('⬅️ Navigating back to input screen', 
+                                    name: 'LoginScreen');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: ColorClass.brandLightGreen.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Icon(
+                                  Icons.arrow_back_ios_new,
+                                  color: ColorClass.brandLightGreen,
+                                  size: 20,
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Your Digital Mess Companion',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: ColorClass.brandLightGreen.withOpacity(0.8),
-                              letterSpacing: 0.5,
+
+                        const SizedBox(height: 120),
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: ColorClass.brandLightGreen.withOpacity(0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Image.asset(
+                              IconClass.hiraPlus,
+                              width: 48,
+                              height: 48,
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-
-                    if (!authProvider.showOTPField)
-                      GestureDetector(
-                        onTap: () async {
-                          final selected = await showModalBottomSheet<String>(
-                            context: context,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(20)),
-                            ),
-                            builder: (context) => _RoleSelectionSheet(
-                                selectedRole: authProvider.selectedRole),
-                          );
-                          if (selected != null &&
-                              selected != authProvider.selectedRole) {
-                            developer.log(
-                                '👤 Role selection changed: $selected',
-                                name: 'LoginScreen');
-
-                            // Clear text fields when role changes
-                            bool wasOtpAuth =
-                                authProvider.selectedRole == 'User';
-                            bool willBeOtpAuth = selected == 'User';
-
-                            if (wasOtpAuth != willBeOtpAuth) {
-                              _phoneController.clear();
-                              _usernameController.clear();
-                              _passwordController.clear();
-
-                              developer.log(
-                                  '🧹 Cleared input fields due to auth type change',
-                                  name: 'LoginScreen');
-                            }
-
-                            // Update the role
-                            authProvider.setSelectedRole(selected);
-                          }
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 20),
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: ColorClass.brandWhite,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color:
-                                    ColorClass.brandLightGreen.withOpacity(0.1),
-                                spreadRadius: 2,
-                                blurRadius: 15,
-                                offset: const Offset(0, 4),
+                        ),
+                        const SizedBox(height: 32),
+                        Center(
+                          child: Column(
+                            children: [
+                              ShaderMask(
+                                shaderCallback: (bounds) => LinearGradient(
+                                  colors: [
+                                    ColorClass.brandLightGreen,
+                                    ColorClass.brandLightGreen.withOpacity(0.8),
+                                  ],
+                                ).createShader(bounds),
+                                child: const Text(
+                                  'Mess Connect',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    height: 1.2, // Proper line height to prevent clipping
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Your Digital Mess Companion',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: ColorClass.brandLightGreen.withOpacity(0.8),
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ],
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  _roleIcon(authProvider.selectedRole),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    authProvider.selectedRole,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16),
+                        ),
+                        const SizedBox(height: 48),
+
+                        if (!authProvider.showOTPField)
+                          GestureDetector(
+                            onTap: () async {
+                              final selected = await showModalBottomSheet<String>(
+                                context: context,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20)),
+                                ),
+                                builder: (context) => _RoleSelectionSheet(
+                                    selectedRole: authProvider.selectedRole),
+                              );
+                              if (selected != null &&
+                                  selected != authProvider.selectedRole) {
+                                developer.log(
+                                    '👤 Role selection changed: $selected',
+                                    name: 'LoginScreen');
+
+                                // Clear text fields when role changes
+                                bool wasOtpAuth =
+                                    authProvider.selectedRole == 'User';
+                                bool willBeOtpAuth = selected == 'User';
+
+                                if (wasOtpAuth != willBeOtpAuth) {
+                                  _phoneController.clear();
+                                  _usernameController.clear();
+                                  _passwordController.clear();
+
+                                  developer.log(
+                                      '🧹 Cleared input fields due to auth type change',
+                                      name: 'LoginScreen');
+                                }
+
+                                // Update the role
+                                authProvider.setSelectedRole(selected);
+                              }
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 20),
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: ColorClass.brandWhite,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color:
+                                        ColorClass.brandLightGreen.withOpacity(0.1),
+                                    spreadRadius: 2,
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              const Icon(Icons.keyboard_arrow_down_rounded,
-                                  color: ColorClass.brandDarkGreen, size: 28),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                    // Conditionally show phone number or username field
-                    if (!authProvider.showOTPField)
-                      Container(
-                        decoration: BoxDecoration(
-                          color: ColorClass.brandWhite,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  ColorClass.brandLightGreen.withOpacity(0.1),
-                              spreadRadius: 2,
-                              blurRadius: 15,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: useOtpAuth
-                            ? _buildPhoneField(authProvider)
-                            : _buildUsernameField(authProvider),
-                      ),
-
-                    // Show either OTP or password field on the second screen
-                    if (authProvider.showOTPField)
-                      useOtpAuth
-                          ? _buildOTPField(context, authProvider)
-                          : _buildPasswordField(context, authProvider),
-
-                    const SizedBox(height: 32),
-
-                    // Continue Button - shown in initial screen
-                    if (!authProvider.showOTPField)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorClass.brandLightGreen,
-                            foregroundColor: ColorClass.brandDarkGreen,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: () async {
-                            if (useOtpAuth) {
-                              if (!isValidPhoneNumber(
-                                  _phoneController.text.trim())) {
-                                developer.log('❌ Invalid phone number',
-                                    name: 'LoginScreen');
-                                toastification.show(
-                                  context: context,
-                                  title: const Text(
-                                      'Please enter a valid 10-digit phone number'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-                              authProvider
-                                  .setPhone(_phoneController.text.trim());
-                              try {
-                                await authProvider
-                                    .requestOtp(_phoneController.text.trim());
-                                toastification.show(
-                                  context: context,
-                                  title: const Text('OTP sent successfully'),
-                                  type: ToastificationType.success,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                              } catch (e) {
-                                toastification.show(
-                                  context: context,
-                                  title: Text(
-                                      'Failed to send OTP: ${e.toString()}'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-                            } else {
-                              if (!isValidUsername(
-                                  _usernameController.text.trim())) {
-                                developer.log('❌ Invalid username',
-                                    name: 'LoginScreen');
-                                toastification.show(
-                                  context: context,
-                                  title: const Text(
-                                      'Please enter a valid username (at least 3 characters)'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-                              authProvider
-                                  .setUsername(_usernameController.text.trim());
-                            }
-
-                            // Log the transition
-                            developer.log(
-                                '➡️ Moving to ${useOtpAuth ? "OTP" : "password"} entry screen',
-                                name: 'LoginScreen');
-
-                            authProvider.setShowOTPField(true);
-                          },
-                          child: const Text('Continue',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-
-                    // Validate Button - shown in verification screen
-                    if (authProvider.showOTPField)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ColorClass.brandLightGreen,
-                            foregroundColor: ColorClass.brandDarkGreen,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          onPressed: () async {
-                            // Validate based on authentication type
-                            if (useOtpAuth) {
-                              // Handle OTP validation
-                              if (authProvider.phone == '9998887776') {
-                                // For test user, any OTP is valid
-                                // Just ensure it's not empty
-                                if (authProvider.otp.isEmpty) {
-                                  toastification.show(
-                                    context: context,
-                                    title: const Text('Please enter OTP'),
-                                    type: ToastificationType.error,
-                                    autoCloseDuration:
-                                        const Duration(seconds: 2),
-                                  );
-                                  return;
-                                }
-                              } else if (authProvider.otp.length != 6) {
-                                _logger.w(
-                                    '🟠 [VALIDATION] Invalid OTP length: ${authProvider.otp.length}');
-                                developer.log(
-                                    '❌ Invalid OTP length: ${authProvider.otp.length}',
-                                    name: 'LoginScreen');
-
-                                toastification.show(
-                                  context: context,
-                                  title: const Text(
-                                      'Please enter a valid 6-digit OTP'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-
-                              try {
-                                await authProvider.fetchVerifyOtpToken(context);
-                                developer.log(
-                                    '✅ User authentication successful',
-                                    name: 'LoginScreen');
-
-                                if (!mounted) return;
-
-                                // Save user type to shared preferences
-                                await SharedUtils.setString(
-                                    'user_type', authProvider.selectedRole);
-
-                                if (!mounted) return;
-
-                                // Navigate to bottom nav for User role
-                                navigatePRToGlobal(route: Routes.bottomNav);
-
-                                // Reset the verification state
-                                if (mounted) {
-                                  authProvider.setShowOTPField(false);
-                                }
-
-                                _logger.i('🔄 [STATE] Login flow completed');
-                                developer.log(
-                                    '✅ Login flow completed successfully',
-                                    name: 'LoginScreen');
-                              } catch (e) {
-                                developer.log('❌ User authentication error: $e',
-                                    name: 'LoginScreen', error: e);
-
-                                toastification.show(
-                                  context: context,
-                                  title: Text(
-                                      'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-                            } else {
-                              // Handle password validation
-                              if (!isValidPassword(_passwordController.text)) {
-                                developer.log('❌ Invalid password format',
-                                    name: 'LoginScreen');
-
-                                toastification.show(
-                                  context: context,
-                                  title: const Text(
-                                      'Password must be at least 4 characters'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-
-                              try {
-                                if (authProvider.selectedRole == 'Mess Staff') {
-                                  await authProvider.authenticateMessStaff();
-                                  if (!mounted) return;
-                                  developer.log(
-                                      '✅ Mess Staff authentication successful',
-                                      name: 'LoginScreen');
-                                } else if (authProvider.selectedRole ==
-                                    'Manager') {
-                                  await authProvider.authenticateManager();
-                                  if (!mounted) return;
-                                  developer.log(
-                                      '✅ Manager authentication successful',
-                                      name: 'LoginScreen');
-                                } else if (authProvider.selectedRole == 'Reception') {
-                                  await authProvider.authenticateReception();
-                                  if (!mounted) return;
-                                  developer.log(
-                                      '✅ Reception authentication successful',
-                                      name: 'LoginScreen');
-                                } else {
-                                  await authProvider.simulateSuccessfulAuth();
-                                  if (!mounted) return;
-                                  developer.log(
-                                      '✅ Authentication successful for ${authProvider.selectedRole}',
-                                      name: 'LoginScreen');
-                                }
-
-                                if (!mounted) return;
-
-                                _logger.i(
-                                    '🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
-                                developer.log(
-                                    '🚀 Redirecting to ${authProvider.selectedRole} screen',
-                                    name: 'LoginScreen');
-
-                                await SharedUtils.setString(
-                                    'user_type', authProvider.selectedRole);
-
-                                if (!mounted) return;
-
-                                // Navigate to appropriate screen based on role
-                                if (authProvider.selectedRole == 'Mess Staff') {
-                                  navigatePRToGlobal(route: Routes.messStaff);
-                                } else if (authProvider.selectedRole ==
-                                    'Manager') {
-                                  navigatePRToGlobal(route: Routes.manager);
-                                } else if (authProvider.selectedRole == 'Reception') {
-                                  navigatePRToGlobal(route: Routes.reception);
-                                } else {
-                                  navigatePRToGlobal(route: Routes.bottomNav);
-                                }
-
-                                if (mounted) {
-                                  authProvider.setShowOTPField(false);
-                                }
-                                _logger.i('🔄 [STATE] Login flow completed');
-                                developer.log(
-                                    '✅ Login flow completed successfully',
-                                    name: 'LoginScreen');
-                              } catch (e) {
-                                if (!mounted) return;
-
-                                developer.log('❌ Authentication error: $e',
-                                    name: 'LoginScreen', error: e);
-
-                                toastification.show(
-                                  context: context,
-                                  title: Text(
-                                      'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
-                                  type: ToastificationType.error,
-                                  autoCloseDuration: const Duration(seconds: 2),
-                                );
-                                return;
-                              }
-                            }
-                          },
-                          child: Text(useOtpAuth ? 'Validate' : 'Login',
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-
-                    const SizedBox(height: 24),
-
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: ColorClass.brandLightGreen.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 16,
-                              color:
-                                  ColorClass.brandLightGreen.withOpacity(0.8),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Need help? Contact Hira Manager',
-                              style: TextStyle(
-                                color:
-                                    ColorClass.brandLightGreen.withOpacity(0.8),
-                                fontSize: 12,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      _roleIcon(authProvider.selectedRole),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        authProvider.selectedRole,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 16),
+                                      ),
+                                    ],
+                                  ),
+                                  const Icon(Icons.keyboard_arrow_down_rounded,
+                                      color: ColorClass.brandDarkGreen, size: 28),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
+
+                        // Conditionally show phone number or username field
+                        if (!authProvider.showOTPField)
+                          Container(
+                            decoration: BoxDecoration(
+                              color: ColorClass.brandWhite,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      ColorClass.brandLightGreen.withOpacity(0.1),
+                                  spreadRadius: 2,
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: useOtpAuth
+                                ? _buildPhoneField(authProvider)
+                                : _buildUsernameField(authProvider),
+                          ),
+
+                        // Show either OTP or password field on the second screen
+                        if (authProvider.showOTPField)
+                          useOtpAuth
+                              ? _buildOTPField(context, authProvider)
+                              : _buildPasswordField(context, authProvider),
+
+                        const SizedBox(height: 32),
+
+                        // Continue Button - shown in initial screen
+                        if (!authProvider.showOTPField)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorClass.brandLightGreen,
+                                foregroundColor: ColorClass.brandDarkGreen,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onPressed: () async {
+                                if (useOtpAuth) {
+                                  if (!isValidPhoneNumber(
+                                      _phoneController.text.trim())) {
+                                    developer.log('❌ Invalid phone number',
+                                        name: 'LoginScreen');
+                                    toastification.show(
+                                      context: context,
+                                      title: const Text(
+                                          'Please enter a valid 10-digit phone number'),
+                                      type: ToastificationType.error,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                    return;
+                                  }
+                                  authProvider
+                                      .setPhone(_phoneController.text.trim());
+                                  try {
+                                    await authProvider
+                                        .requestOtp(_phoneController.text.trim());
+                                    toastification.show(
+                                      context: context,
+                                      title: const Text('OTP sent successfully'),
+                                      type: ToastificationType.success,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                  } catch (e) {
+                                    toastification.show(
+                                      context: context,
+                                      title: Text(
+                                          'Failed to send OTP: ${e.toString()}'),
+                                      type: ToastificationType.error,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                    return;
+                                  }
+                                } else {
+                                  if (!isValidUsername(
+                                      _usernameController.text.trim())) {
+                                    developer.log('❌ Invalid username',
+                                        name: 'LoginScreen');
+                                    toastification.show(
+                                      context: context,
+                                      title: const Text(
+                                          'Please enter a valid username (at least 3 characters)'),
+                                      type: ToastificationType.error,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                    return;
+                                  }
+                                  authProvider
+                                      .setUsername(_usernameController.text.trim());
+                                }
+
+                                // Log the transition
+                                developer.log(
+                                    '➡️ Moving to ${useOtpAuth ? "OTP" : "password"} entry screen',
+                                    name: 'LoginScreen');
+
+                                authProvider.setShowOTPField(true);
+                              },
+                              child: const Text('Continue',
+                                  style: TextStyle(
+                                      fontSize: 18, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+
+                        // Validate Button - shown in verification screen
+                        if (authProvider.showOTPField)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorClass.brandLightGreen,
+                                foregroundColor: ColorClass.brandDarkGreen,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onPressed: () async {
+                                // Validate based on authentication type
+                                if (useOtpAuth) {
+                                  // Handle OTP validation
+                                  if (authProvider.phone == '9998887776') {
+                                    // For test user, any OTP is valid
+                                    // Just ensure it's not empty
+                                    if (authProvider.otp.isEmpty) {
+                                      toastification.show(
+                                        context: context,
+                                        title: const Text('Please enter OTP'),
+                                        type: ToastificationType.error,
+                                        autoCloseDuration:
+                                            const Duration(seconds: 2),
+                                      );
+                                      return;
+                                    }
+                                  } else if (authProvider.otp.length != 6) {
+                                    _logger.w(
+                                        '🟠 [VALIDATION] Invalid OTP length: ${authProvider.otp.length}');
+                                    developer.log(
+                                        '❌ Invalid OTP length: ${authProvider.otp.length}',
+                                        name: 'LoginScreen');
+
+                                    toastification.show(
+                                      context: context,
+                                      title: const Text(
+                                          'Please enter a valid 6-digit OTP'),
+                                      type: ToastificationType.error,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    await authProvider.fetchVerifyOtpToken(context);
+                                    developer.log(
+                                        '✅ User authentication successful',
+                                        name: 'LoginScreen');
+
+                                    if (!mounted) return;
+
+                                    // Save user type to shared preferences
+                                    await SharedUtils.setString(
+                                        'user_type', authProvider.selectedRole);
+
+                                    if (!mounted) return;
+
+                                    // Navigate to bottom nav for User role
+                                    navigatePRToGlobal(route: Routes.bottomNav);
+
+                                    // Reset the verification state
+                                    if (mounted) {
+                                      authProvider.setShowOTPField(false);
+                                    }
+
+                                    _logger.i('🔄 [STATE] Login flow completed');
+                                    developer.log(
+                                        '✅ Login flow completed successfully',
+                                        name: 'LoginScreen');
+                                  } catch (e) {
+                                    developer.log('❌ User authentication error: $e',
+                                        name: 'LoginScreen', error: e);
+
+                                    toastification.show(
+                                      context: context,
+                                      title: Text(
+                                          'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
+                                      type: ToastificationType.error,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                    return;
+                                  }
+                                } else {
+                                  // Handle password validation
+                                  if (!isValidPassword(_passwordController.text)) {
+                                    developer.log('❌ Invalid password format',
+                                        name: 'LoginScreen');
+
+                                    toastification.show(
+                                      context: context,
+                                      title: const Text(
+                                          'Password must be at least 4 characters'),
+                                      type: ToastificationType.error,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    if (authProvider.selectedRole == 'Mess Staff') {
+                                      await authProvider.authenticateMessStaff();
+                                      if (!mounted) return;
+                                      developer.log(
+                                          '✅ Mess Staff authentication successful',
+                                          name: 'LoginScreen');
+                                    } else if (authProvider.selectedRole ==
+                                        'Manager') {
+                                      await authProvider.authenticateManager();
+                                      if (!mounted) return;
+                                      developer.log(
+                                          '✅ Manager authentication successful',
+                                          name: 'LoginScreen');
+                                    } else if (authProvider.selectedRole == 'Reception') {
+                                      await authProvider.authenticateReception();
+                                      if (!mounted) return;
+                                      developer.log(
+                                          '✅ Reception authentication successful',
+                                          name: 'LoginScreen');
+                                    } else {
+                                      await authProvider.simulateSuccessfulAuth();
+                                      if (!mounted) return;
+                                      developer.log(
+                                          '✅ Authentication successful for ${authProvider.selectedRole}',
+                                          name: 'LoginScreen');
+                                    }
+
+                                    if (!mounted) return;
+
+                                    _logger.i(
+                                        '🟢 [NAVIGATION] Redirecting to ${authProvider.selectedRole} screen');
+                                    developer.log(
+                                        '🚀 Redirecting to ${authProvider.selectedRole} screen',
+                                        name: 'LoginScreen');
+
+                                    await SharedUtils.setString(
+                                        'user_type', authProvider.selectedRole);
+
+                                    if (!mounted) return;
+
+                                    // Navigate to appropriate screen based on role
+                                    if (authProvider.selectedRole == 'Mess Staff') {
+                                      navigatePRToGlobal(route: Routes.messStaff);
+                                    } else if (authProvider.selectedRole ==
+                                        'Manager') {
+                                      navigatePRToGlobal(route: Routes.manager);
+                                    } else if (authProvider.selectedRole == 'Reception') {
+                                      navigatePRToGlobal(route: Routes.reception);
+                                    } else {
+                                      navigatePRToGlobal(route: Routes.bottomNav);
+                                    }
+
+                                    if (mounted) {
+                                      authProvider.setShowOTPField(false);
+                                    }
+                                    _logger.i('🔄 [STATE] Login flow completed');
+                                    developer.log(
+                                        '✅ Login flow completed successfully',
+                                        name: 'LoginScreen');
+                                  } catch (e) {
+                                    if (!mounted) return;
+
+                                    developer.log('❌ Authentication error: $e',
+                                        name: 'LoginScreen', error: e);
+
+                                    toastification.show(
+                                      context: context,
+                                      title: Text(
+                                          'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
+                                      type: ToastificationType.error,
+                                      autoCloseDuration: const Duration(seconds: 2),
+                                    );
+                                    return;
+                                  }
+                                }
+                              },
+                              child: Text(useOtpAuth ? 'Validate' : 'Login',
+                                  style: const TextStyle(
+                                      fontSize: 18, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+
+                        const SizedBox(height: 24),
+
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: ColorClass.brandLightGreen.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.info_outline,
+                                  size: 16,
+                                  color:
+                                      ColorClass.brandLightGreen.withOpacity(0.8),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Need help? Contact Hira Manager',
+                                  style: TextStyle(
+                                    color:
+                                        ColorClass.brandLightGreen.withOpacity(0.8),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
           ),
         );
       },
@@ -794,7 +800,7 @@ class _LoginScreenState extends State<LoginScreen> {
         return const Icon(LucideIcons.utensils,
             color: ColorClass.brandDarkGreen, size: 22);
       case 'Reception':
-        return const Icon(LucideIcons.conciergeBell,
+        return const Icon(LucideIcons.personStanding,
             color: ColorClass.brandDarkGreen, size: 22);
       default:
         return const Icon(LucideIcons.user,
@@ -813,7 +819,7 @@ class _RoleSelectionSheet extends StatelessWidget {
       {'label': 'User', 'icon': LucideIcons.user},
       {'label': 'Manager', 'icon': LucideIcons.shieldCheck},
       {'label': 'Mess Staff', 'icon': LucideIcons.utensils},
-      {'label': 'Reception', 'icon': LucideIcons.conciergeBell},
+      {'label': 'Reception', 'icon': LucideIcons.personStanding},
     ];
 
     developer.log('📋 Building role selection sheet, current: $selectedRole',

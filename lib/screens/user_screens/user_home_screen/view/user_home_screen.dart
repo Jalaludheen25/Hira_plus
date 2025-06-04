@@ -680,6 +680,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Created by: ${meeting.createdBy}',
+                        style: TextStyleClass.poppinsRegular(
+                          fontSize: 11,
+                          color: ColorClass.neutral400,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -822,9 +830,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   // Enhanced edit meeting handler with validation
   Future<void> _handleEditMeeting(BuildContext context, UserMeeting.MeetingModel meeting, MeetingListProvider meetingProvider) async {
     try {
-      // Debug the meeting first
-      _debugMeetingBeforeEdit(meeting);
-      
       // Additional validation before navigating to edit
       if (!meeting.isPending) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -836,30 +841,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         return;
       }
 
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => Center(
-          child: Card(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Validating meeting...'),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-
       // Refresh meetings to ensure data is current
       await meetingProvider.fetchMeetings(context);
-      
       // Check if meeting still exists and get updated data
       UserMeeting.MeetingModel? refreshedMeeting;
       try {
@@ -867,11 +850,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           (m) => m.id == meeting.id,
         );
       } catch (e) {
-        // Close loading dialog
-        if (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
-        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Meeting not found. It may have been deleted.'),
@@ -880,12 +858,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         );
         return;
       }
-
-      // Close loading dialog
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-
       // Final validation on refreshed data
       if (!refreshedMeeting.isPending) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -896,7 +868,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         );
         return;
       }
-
       // Navigate to edit screen with refreshed data
       final result = await Navigator.push(
         context,
@@ -907,16 +878,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ),
         ),
       );
-      
       if (result == true) {
         await meetingProvider.fetchMeetings(context);
       }
     } catch (e) {
-      // Close loading dialog if still open
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Cannot edit meeting: ${e.toString()}'),
@@ -940,7 +905,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         );
         return;
       }
-
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(
@@ -954,7 +918,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               Text('Meeting: ${meeting.title}', style: TextStyle(fontWeight: FontWeight.bold)),
               Text('Date: ${DateFormat('MMM d, yyyy').format(meeting.startDatetime)}'),
               SizedBox(height: 8),
-              Text('This action cannot be undone.', style: TextStyle(color: Colors.red, fontSize: 12)),
             ],
           ),
           actions: [
@@ -969,7 +932,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ],
         ),
       );
-      
       if (confirmed == true) {
         try {
           await meetingProvider.deleteMeeting(context, meeting.id);
@@ -990,30 +952,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           backgroundColor: Colors.red,
         ),
       );
-    }
-  }
-
-  // Debug method for troubleshooting
-  void _debugMeetingBeforeEdit(UserMeeting.MeetingModel meeting) {
-    final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
-    print('🔍 === MEETING DEBUG INFO ===');
-    print('Meeting ID: ${meeting.id}');
-    print('Meeting Title: ${meeting.title}');
-    print('Meeting Status: ${meeting.status}');
-    print('Is Pending: ${meeting.isPending}');
-    print('Created By: ${meeting.createdBy}');
-    print('Department: ${meeting.department}');
-    print('Created At: ${meeting.createdAt}');
-    print('Current User Type: ${authProvider.userType}');
-    print('Is Dept Head: ${authProvider.isDeptHead}');
-    print('Can Show Edit: ${authProvider.isDeptHead && meeting.isPending}');
-    print('🔍 === END DEBUG INFO ===');
-    
-    // Run detailed debug if method exists
-    if (meetingProvider.debugMeetingStatus != null) {
-      meetingProvider.debugMeetingStatus!(context, meeting.id);
     }
   }
 

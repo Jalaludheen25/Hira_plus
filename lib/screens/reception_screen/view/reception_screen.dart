@@ -882,7 +882,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: ColorClass.brandWhite,
           selectedItemColor: ColorClass.brandDarkGreen,
-          unselectedItemColor: const Color.fromARGB(255, 63, 94, 43),
+          unselectedItemColor: ColorClass.neutral400,
           currentIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
           items: const <BottomNavigationBarItem>[
