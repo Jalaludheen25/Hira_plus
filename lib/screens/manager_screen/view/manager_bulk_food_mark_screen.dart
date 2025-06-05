@@ -11,6 +11,8 @@ import 'package:hira_plus/screens/manager_screen/provider/manager_bulk_food_prov
 import 'dart:developer' as developer;
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/manager_screen/models/manager_guest_meal_model.dart';
+import 'package:hira_plus/utils/service_utils.dart';
+import 'package:hira_plus/screens/manager_screen/provider/department_provider.dart';
 
 class ManagerBulkFoodMarkScreen extends StatefulWidget {
   final String? department;
@@ -38,7 +40,8 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
     super.initState();
     _logger.i('🏗️ [INIT] Initializing Manager Bulk Food Mark Screen');
     developer.log('🏗️ Initializing Manager Bulk Food Mark Screen', name: 'ManagerBulkFoodMarkScreen');
-    
+    // Fetch departments via provider
+    Future.microtask(() => Provider.of<DepartmentProvider>(context, listen: false).fetchDepartments(context));
     // If editing, pre-fill all fields
     if (widget.editingMeal != null) {
       final meal = widget.editingMeal!;
@@ -46,19 +49,19 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
       _editingId = meal.id;
       _selectedDate = meal.date;
       _departmentController.text = meal.department;
+      // Set selected department in provider after fetch
+      Future.microtask(() => Provider.of<DepartmentProvider>(context, listen: false).selectDepartment(meal.department));
       _breakfastController.text = meal.breakfastCount.toString();
       _lunchController.text = meal.lunchCount.toString();
       _dinnerController.text = meal.dinnerCount.toString();
-      
       _logger.i('✏️ [EDIT] Pre-filling form for editing meal: ${meal.id}');
       developer.log('✏️ Pre-filling form for editing meal: ${meal.id}', name: 'ManagerBulkFoodMarkScreen');
     } else if (widget.department != null && widget.department!.isNotEmpty) {
       _departmentController.text = widget.department!;
+      Future.microtask(() => Provider.of<DepartmentProvider>(context, listen: false).selectDepartment(widget.department!));
       _logger.d('📝 [INIT] Pre-filled department: ${widget.department}');
       developer.log('📝 Pre-filled department: ${widget.department}', name: 'ManagerBulkFoodMarkScreen');
     }
-    
-    // Check for duplicates when date or department changes
     _departmentController.addListener(_checkForDuplicates);
   }
 
@@ -528,16 +531,73 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                     ),
                   ),
                 
-                const SizedBox(height: 32),
+                // const SizedBox(height: 32),
                 
-                _buildSectionTitle('Department Information'),
+                // _buildSectionTitle('Department Information'),
                 const SizedBox(height: 16),
-                _buildTextFieldWithIcon(
-                  controller: _departmentController,
-                  label: 'Department Name',
-                  icon: LucideIcons.building,
-                  hint: 'Enter department name',
-                  showWarning: _showDuplicateWarning,
+                Consumer<DepartmentProvider>(
+                  builder: (context, deptProvider, _) {
+                    if (deptProvider.isLoading) {
+                      return Container(
+                        height: 56,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: ColorClass.neutral300),
+                          borderRadius: BorderRadius.circular(12),
+                          color: ColorClass.neutral100,
+                        ),
+                        child: const Center(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(width: 12),
+                              Text('Loading departments...'),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                    if (deptProvider.error != null) {
+                      return Text(
+                        deptProvider.error!,
+                        style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.redBase),
+                      );
+                    }
+                    return DropdownButtonFormField<String>(
+                      value: deptProvider.selectedDepartment,
+                      decoration: InputDecoration(
+                        labelText: 'Select Department',
+                        prefixIcon: Icon(LucideIcons.building, color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandDarkGreen),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandLightGreen, width: 1.5),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandLightGreen, width: 1.5),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandDarkGreen, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: ColorClass.brandWhite,
+                      ),
+                      items: deptProvider.departments.map((String department) {
+                        return DropdownMenuItem<String>(
+                          value: department,
+                          child: Text(department),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          deptProvider.selectDepartment(newValue);
+                          _departmentController.text = newValue;
+                          _checkForDuplicates();
+                        }
+                      },
+                    );
+                  },
                 ),
                 
                 const SizedBox(height: 32),
@@ -591,62 +651,6 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
         fontSize: 18,
         color: ColorClass.brandDarkGreen,
       ),
-    );
-  }
-
-  Widget _buildTextFieldWithIcon({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required String hint,
-    bool showWarning = false,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyleClass.poppinsMedium(
-            fontSize: 14,
-            color: showWarning ? ColorClass.redBase : ColorClass.brandDarkGreen,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          decoration: BoxDecoration(
-            color: ColorClass.brandWhite,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: showWarning ? ColorClass.redBase : ColorClass.brandLightGreen,
-              width: 1.5,
-            ),
-          ),
-          child: TextFormField(
-            controller: controller,
-            style: TextStyleClass.poppinsMedium(
-              fontSize: 16,
-              color: showWarning ? ColorClass.redBase : ColorClass.brandDarkGreen,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyleClass.poppinsRegular(
-                fontSize: 16,
-                color: ColorClass.neutral400,
-              ),
-              prefixIcon: Icon(
-                icon,
-                color: showWarning ? ColorClass.redBase : ColorClass.brandDarkGreen,
-                size: 24,
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

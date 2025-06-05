@@ -1,4 +1,5 @@
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/screens/manager_screen/provider/department_provider.dart';
 import 'package:hira_plus/screens/manager_screen/provider/meeting_provider.dart';
 import 'package:hira_plus/screens/mess_staff_screen/provider/meeting_food_provider.dart';
 import 'package:hira_plus/screens/mess_staff_screen/provider/mess_bulk_meal_provider.dart';
@@ -33,5 +34,6 @@ List<SingleChildWidget> getProviders() {
     ChangeNotifierProvider(create: (context) => UserMeetingProvider()),
     ChangeNotifierProvider(create: (context) => MeetingListProvider()),
     ChangeNotifierProvider(create: (context) => MeetingFoodProvider()),
+    ChangeNotifierProvider(create: (context) => DepartmentProvider()),
   ];
 }

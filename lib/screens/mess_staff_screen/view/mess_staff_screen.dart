@@ -101,7 +101,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   // Show detailed list bottom sheet for regular meals
-  void _showDetailedListBottomSheet(
+  void  _showDetailedListBottomSheet(
     BuildContext context,
     String mealLabel,
     List<Map<String, String>> details,

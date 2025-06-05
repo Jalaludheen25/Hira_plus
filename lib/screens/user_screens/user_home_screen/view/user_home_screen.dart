@@ -629,7 +629,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final formattedStartDate = DateFormat('EEEE, MMMM d, yyyy').format(meeting.startDatetime);
     final formattedStartTime = DateFormat('h:mm a').format(meeting.startDatetime);
     final formattedEndTime = DateFormat('h:mm a').format(meeting.endDatetime);
-    final statusDetails = _getStatusDetails(meeting);
+    final   statusDetails = _getStatusDetails(meeting);
     final isDeptHead = Provider.of<AuthProvider>(context, listen: false).isDeptHead;
     final canShowEdit = isDeptHead && meeting.isPending;
     final canShowDelete = canShowEdit;
