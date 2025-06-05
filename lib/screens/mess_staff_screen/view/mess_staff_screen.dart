@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/mess_staff_screen/provider/meeting_food_provider.dart';
 import 'package:hira_plus/screens/mess_staff_screen/provider/mess_bulk_meal_provider.dart';
-import 'package:hira_plus/screens/mess_staff_screen/widgets/bulk_meal_card_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
@@ -26,13 +25,11 @@ import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/progress_dialog.dart';
-import '../widgets/bottom_button.dart';
 import 'package:hira_plus/screens/profile_screen/widgets/profile_card.dart';
 import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/mess_staff_screen/models/meeting_food_model.dart';
-import 'package:hira_plus/screens/mess_staff_screen/widgets/meeting_food_widget.dart';
 
 class MessStaffScreen extends StatefulWidget {
   const MessStaffScreen({super.key});
@@ -1610,16 +1607,18 @@ Future<void> generateAndShareAllPdf(
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+        
           backgroundColor: ColorClass.brandDarkGreen,
           iconTheme: const IconThemeData(color: Colors.white),
           title: Text(
+            
             tabTitles[navProvider.selectedIndex],
             style: TextStyleClass.poppinsSemiBold(
               fontSize: 20,
               color: ColorClass.white,
             ),
           ),
-          centerTitle: true,
+          centerTitle: false,
           elevation: 0,
         ),
         body: Stack(
@@ -1651,6 +1650,7 @@ Future<void> generateAndShareAllPdf(
               ),
               label: 'Home',
             ),
+            
             BottomNavigationBarItem(
               icon: Icon(LucideIcons.settings,
                   size: 22, color: ColorClass.neutral400),
