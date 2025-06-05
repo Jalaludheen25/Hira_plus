@@ -227,17 +227,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         const SizedBox(height: 120),
                         Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: ColorClass.brandLightGreen.withOpacity(0.15),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Image.asset(
-                              IconClass.hiraPlus,
-                              width: 48,
-                              height: 48,
-                            ),
+                          child: Image.asset(
+                            IconClass.splashLogo,
+                            width: 58,
+                            height: 58,
                           ),
                         ),
                         const SizedBox(height: 32),

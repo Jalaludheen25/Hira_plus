@@ -27,8 +27,6 @@ class ReceptionScreen extends StatefulWidget {
 }
 
 class _ReceptionScreenState extends State<ReceptionScreen> {
-  int _selectedIndex = 0;
-
   @override
   void initState() {
     super.initState();
@@ -444,7 +442,6 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
             //   //       provider.setAttendanceSelectedDate(picked, context);
             //   //     }
             //   //   },
-            //   // ),
             // ],
           ),
           backgroundColor: ColorClass.white,
@@ -867,6 +864,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<ReceptionProvider>(context);
     final List<Widget> tabViews = <Widget>[
       _buildUsersTab(),
       _buildCheckInOutTab(),
@@ -878,27 +876,32 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: ColorClass.white,
-        body: tabViews[_selectedIndex],
+        body: tabViews[provider.tabIndex],
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: ColorClass.brandWhite,
           selectedItemColor: ColorClass.brandDarkGreen,
           unselectedItemColor: ColorClass.neutral400,
-          currentIndex: _selectedIndex,
-          onTap: (index) => setState(() => _selectedIndex = index),
+          currentIndex: provider.tabIndex,
+          onTap: (index) async {
+            if (index == 1) {
+              await provider.fetchAttendanceByDate(context);
+            }
+            provider.setTabIndex(index);
+          },
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(Icons.how_to_reg),
-              activeIcon: Icon(Icons.how_to_reg,size: 30,),
+              icon: Icon(Icons.how_to_reg,size: 22,),
+              activeIcon: Icon(Icons.how_to_reg,size: 28,),
               label: 'Attendance',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.assessment),
-              activeIcon: Icon(Icons.assessment,size: 30,),
+              icon: Icon(Icons.assessment,size: 22,),
+              activeIcon: Icon(Icons.assessment,size: 28,),
               label: 'Reports',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              activeIcon: Icon(Icons.person,size: 30,),
+              icon: Icon(Icons.person,size: 22,),
+              activeIcon: Icon(Icons.person,size: 28,),
               label: 'Profile',
             ),
           ],

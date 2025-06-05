@@ -1781,7 +1781,7 @@ Future<void> generateAndShareAllPdf(
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: ColorClass.brandWhite,
           selectedItemColor: ColorClass.brandDarkGreen,
-          unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
+          unselectedItemColor: ColorClass.neutral400,
           currentIndex: navProvider.selectedIndex,
           unselectedLabelStyle: TextStyleClass.poppinsSemiBold(
             fontSize: 14,
@@ -1790,17 +1790,17 @@ Future<void> generateAndShareAllPdf(
           items: const [
             BottomNavigationBarItem(
               icon: Icon(LucideIcons.home,
-                  size: 28, color: Color.fromARGB(255, 63, 94, 43)),
+                  size: 22, color: ColorClass.neutral400),
               activeIcon: Icon(
                 LucideIcons.home,
-                size: 32,
+                size: 28,
               ),
               label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: Icon(LucideIcons.settings,
-                  size: 28, color: Color.fromARGB(255, 63, 94, 43)),
-              activeIcon: Icon(LucideIcons.settings, size: 32),
+                  size: 22, color: ColorClass.neutral400),
+              activeIcon: Icon(LucideIcons.settings, size: 28),
               label: 'Settings',
             ),
           ],

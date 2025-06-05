@@ -26,6 +26,16 @@ class ReceptionProvider extends ChangeNotifier {
   String _attendanceError = '';
   DateTime _attendanceSelectedDate = DateTime.now();
 
+  // Tab index state for ReceptionScreen
+  int _tabIndex = 0;
+  int get tabIndex => _tabIndex;
+  void setTabIndex(int index) {
+    if (_tabIndex != index) {
+      _tabIndex = index;
+      notifyListeners();
+    }
+  }
+
   List<ReceptionUser> get users => _users;
   bool get isLoading => _isLoading;
   String get error => _error;
@@ -129,11 +139,10 @@ class ReceptionProvider extends ChangeNotifier {
   Future<void> _loadSavedStatesForDate(DateTime date) async {
     try {
       final dateKey = DateFormat('yyyy-MM-dd').format(date);
-      
       // Clear current states
       _checkInState.clear();
       _checkOutState.clear();
-      
+
       // Load check-in states for this date
       final checkInJson = await SharedUtils.getString('checkin_$dateKey');
       if (checkInJson.isNotEmpty) {
@@ -152,7 +161,40 @@ class ReceptionProvider extends ChangeNotifier {
         });
       }
 
-      log('📅 Loaded attendance states for $dateKey');
+      // --- Persistent check-in until check-out logic ---
+      // For each user, if not checked out on or before this date, check previous days for check-in
+      for (final user in _users) {
+        final userId = user.id;
+        if (!(_checkInState[userId] ?? false) && !(_checkOutState[userId] ?? false)) {
+          // Look back for check-in without check-out
+          DateTime prevDate = date.subtract(const Duration(days: 1));
+          while (prevDate.isAfter(DateTime(2020))) { // reasonable lower bound
+            final prevKey = DateFormat('yyyy-MM-dd').format(prevDate);
+            final prevCheckInJson = await SharedUtils.getString('checkin_$prevKey');
+            final prevCheckOutJson = await SharedUtils.getString('checkout_$prevKey');
+            bool prevCheckedIn = false;
+            bool prevCheckedOut = false;
+            if (prevCheckInJson.isNotEmpty) {
+              final prevCheckInMap = Map<String, dynamic>.from(jsonDecode(prevCheckInJson));
+              prevCheckedIn = prevCheckInMap[userId] == true;
+            }
+            if (prevCheckOutJson.isNotEmpty) {
+              final prevCheckOutMap = Map<String, dynamic>.from(jsonDecode(prevCheckOutJson));
+              prevCheckedOut = prevCheckOutMap[userId] == true;
+            }
+            if (prevCheckedIn && !prevCheckedOut) {
+              _checkInState[userId] = true;
+              break;
+            } else if (prevCheckedOut) {
+              break;
+            }
+            prevDate = prevDate.subtract(const Duration(days: 1));
+          }
+        }
+      }
+      // --- End persistent logic ---
+
+      log('📅 Loaded attendance states for $dateKey (with persistent check-in logic)');
       notifyListeners();
     } catch (e) {
       log('❌ Error loading states for date: $e');

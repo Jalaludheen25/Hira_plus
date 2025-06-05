@@ -42,7 +42,7 @@ class BottomNavigationBarScreen extends StatelessWidget {
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: ColorClass.brandWhite,
           selectedItemColor: ColorClass.brandDarkGreen,
-          unselectedItemColor: Color.fromARGB(255, 63, 94, 43),
+          unselectedItemColor: ColorClass.neutral400,
           unselectedFontSize: 14,
           selectedFontSize: 14,
           selectedLabelStyle: TextStyleClass.poppinsSemiBold(
