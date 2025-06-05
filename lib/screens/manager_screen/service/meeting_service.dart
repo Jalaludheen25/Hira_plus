@@ -178,4 +178,70 @@ class MeetingService {
       rethrow;
     }
   }
+
+  /// Updates an existing meeting (admin)
+  Future<MeetingModel> updateMeeting(
+    BuildContext context, {
+    required String meetingId,
+    required String title,
+    required String description,
+    required DateTime startDatetime,
+    required DateTime endDatetime,
+    required String hall,
+    required int noOfPersons,
+    required bool foodRequired,
+    required int breakfast,
+    required int midmorningSnacks,
+    required int lunch,
+    required int eveningsnacks,
+    required int dinner,
+    required String department,
+  }) async {
+    try {
+      log('📝 Updating meeting', name: 'MeetingService');
+      final url = ApiUrls.adminEditMeeting(meetingId);
+      log('API URL: $url', name: 'MeetingService');
+
+      final requestBody = {
+        'title': title,
+        'description': description,
+        'startDatetime': startDatetime.toIso8601String(),
+        'endDatetime': endDatetime.toIso8601String(),
+        'hall': hall,
+        'noOfPersons': noOfPersons,
+        'foodRequired': foodRequired,
+        'breakfast': breakfast,
+        'midmorningSnacks': midmorningSnacks,
+        'lunch': lunch,
+        'eveningsnacks': eveningsnacks,
+        'dinner': dinner,
+        'department': department,
+      };
+
+      log('Request body: $requestBody', name: 'MeetingService');
+
+      final response = await HttpServiceUtils.putData(url, requestBody, context);
+      log('Response received from server', name: 'MeetingService');
+
+      if (response == null) {
+        log('❌ Error: Empty response from meetings API', name: 'MeetingService');
+        throw HttpException('Failed to update meeting: Empty response');
+      }
+
+      final responseData = response is String ? jsonDecode(response) : response;
+      if (responseData['success'] != true) {
+        throw HttpException(responseData['message'] ?? 'Failed to update meeting');
+      }
+
+      final meeting = MeetingModel.fromJson(responseData['meeting']);
+      log('✅ Meeting updated successfully: [4m${meeting.id}[24m', name: 'MeetingService');
+      return meeting;
+    } on HttpException catch (e) {
+      log('❌ HTTP Error updating meeting: $e', name: 'MeetingService');
+      rethrow;
+    } catch (e) {
+      log('❌ Error updating meeting: $e', name: 'MeetingService');
+      rethrow;
+    }
+  }
 }

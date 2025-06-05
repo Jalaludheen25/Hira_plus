@@ -258,4 +258,64 @@ class MeetingProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  /// Updates an existing meeting
+  Future<MeetingModel?> updateMeeting(
+    BuildContext context, {
+    required String meetingId,
+    required String title,
+    required String description,
+    required DateTime startDatetime,
+    required DateTime endDatetime,
+    required String hall,
+    required int noOfPersons,
+    required bool foodRequired,
+    required int breakfast,
+    required int midmorningSnacks,
+    required int lunch,
+    required int eveningsnacks,
+    required int dinner,
+    required String department,
+  }) async {
+    try {
+      _isLoading = true;
+      _errorMessage = '';
+      notifyListeners();
+
+      log('📝 Updating meeting in provider', name: 'MeetingProvider');
+
+      final updatedMeeting = await _meetingService.updateMeeting(
+        context,
+        meetingId: meetingId,
+        title: title,
+        description: description,
+        startDatetime: startDatetime,
+        endDatetime: endDatetime,
+        hall: hall,
+        noOfPersons: noOfPersons,
+        foodRequired: foodRequired,
+        breakfast: breakfast,
+        midmorningSnacks: midmorningSnacks,
+        lunch: lunch,
+        eveningsnacks: eveningsnacks,
+        dinner: dinner,
+        department: department,
+      );
+
+      // Update the meeting in the local list
+      final index = _meetings.indexWhere((m) => m.id == meetingId);
+      if (index != -1) {
+        _meetings[index] = updatedMeeting;
+      }
+      _isLoading = false;
+      notifyListeners();
+      return updatedMeeting;
+    } catch (e) {
+      log('❌ Error updating meeting: $e', name: 'MeetingProvider');
+      _isLoading = false;
+      _errorMessage = 'Failed to update meeting. Please try again.';
+      notifyListeners();
+      return null;
+    }
+  }
 }

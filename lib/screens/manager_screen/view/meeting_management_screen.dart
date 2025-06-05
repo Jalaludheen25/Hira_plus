@@ -1255,23 +1255,43 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
     final provider = Provider.of<MeetingProvider>(context, listen: false);
     final isEditing = widget.editingMeeting != null;
-    
-    final meeting = await provider.createMeeting(
-      context,
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      startDatetime: _startDatetime,
-      endDatetime: _endDatetime,
-      hall: _selectedHall ?? 'Auditorium',
-      noOfPersons: int.parse(_noOfPersonsController.text),
-      foodRequired: _foodRequired,
-      breakfast: int.parse(_breakfastController.text),
-      midmorningSnacks: int.parse(_midmorningSnacksController.text),
-      lunch: int.parse(_lunchController.text),
-      eveningsnacks: int.parse(_eveningsnacksController.text),
-      dinner: int.parse(_dinnerController.text),
-      department: _selectedDepartment ?? 'IT',
-    );
+    MeetingModel? meeting;
+    if (isEditing) {
+      meeting = await provider.updateMeeting(
+        context,
+        meetingId: widget.editingMeeting!.id,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        startDatetime: _startDatetime,
+        endDatetime: _endDatetime,
+        hall: _selectedHall ?? 'Auditorium',
+        noOfPersons: int.parse(_noOfPersonsController.text),
+        foodRequired: _foodRequired,
+        breakfast: int.parse(_breakfastController.text),
+        midmorningSnacks: int.parse(_midmorningSnacksController.text),
+        lunch: int.parse(_lunchController.text),
+        eveningsnacks: int.parse(_eveningsnacksController.text),
+        dinner: int.parse(_dinnerController.text),
+        department: _selectedDepartment ?? 'IT',
+      );
+    } else {
+      meeting = await provider.createMeeting(
+        context,
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        startDatetime: _startDatetime,
+        endDatetime: _endDatetime,
+        hall: _selectedHall ?? 'Auditorium',
+        noOfPersons: int.parse(_noOfPersonsController.text),
+        foodRequired: _foodRequired,
+        breakfast: int.parse(_breakfastController.text),
+        midmorningSnacks: int.parse(_midmorningSnacksController.text),
+        lunch: int.parse(_lunchController.text),
+        eveningsnacks: int.parse(_eveningsnacksController.text),
+        dinner: int.parse(_dinnerController.text),
+        department: _selectedDepartment ?? 'IT',
+      );
+    }
 
     if (meeting != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1280,7 +1300,6 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
           backgroundColor: ColorClass.greenBase,
         ),
       );
-      
       // Navigate back to the list screen
       navigateBack(context);
     }

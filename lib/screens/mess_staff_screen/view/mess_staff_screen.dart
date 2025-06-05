@@ -46,6 +46,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   final ValueNotifier<int?> _selectedMealNotifier = ValueNotifier<int?>(null);
   final ValueNotifier<DateTime> _bulkMealDateNotifier = ValueNotifier<DateTime>(DateTime.now());
   final ValueNotifier<DateTime> _meetingFoodDateNotifier = ValueNotifier<DateTime>(DateTime.now());
+  bool _showPrintShareBar = false;
 
   @override
   void initState() {
@@ -369,73 +370,171 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         _buildSettingsTab(context),
       ];
 
-  Widget _buildMealCard({
-    required IconData icon,
-    required String label,
-    required int count,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final hasCount = count > 0;
-    return GestureDetector(
-      onTap: hasCount ? onTap : null,
-      child: Container(
-        width: 80,
-        margin: const EdgeInsets.symmetric(horizontal: 6),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 2),
-        decoration: BoxDecoration(
-          color: isSelected ? ColorClass.brandLightGreen : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? ColorClass.brandLightGreen
-                : ColorClass.neutral200,
-            width: 1.5,
+  Widget _buildMealSummaryCard(BuildContext context, List<Map<String, dynamic>> mealSummary, int? selectedMeal) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.all(0),
+      decoration: BoxDecoration(
+        color: ColorClass.brandWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: ColorClass.brandLightGreen, width: 1.2),
+      ),
+      child: Row(
+        children: List.generate(mealSummary.length, (index) {
+          final isSelected = selectedMeal == index;
+          return Expanded(
+            child: GestureDetector(
+              onTap: mealSummary[index]['count'] > 0
+                  ? () {
+                      _selectedMealNotifier.value = index;
+                      final detailedLists = Provider.of<MessStaffMealProvider>(context, listen: false).getMealDetailsList(index);
+                      final mealLabel = mealSummary[index]['label'] as String;
+                      Provider.of<MessStaffMealProvider>(context, listen: false).selectMeal(index);
+                      _showDetailedListBottomSheet(context, mealLabel, detailedLists);
+                    }
+                  : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                decoration: BoxDecoration(
+                  color: isSelected ? ColorClass.brandDarkGreen : ColorClass.brandLightGreen.withOpacity(0.4),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(index == 0 ? 16 : 0),
+                    bottomLeft: Radius.circular(index == 0 ? 16 : 0),
+                    topRight: Radius.circular(index == mealSummary.length - 1 ? 16 : 0),
+                    bottomRight: Radius.circular(index == mealSummary.length - 1 ? 16 : 0),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      mealSummary[index]['icon'],
+                      size: 28,
+                      color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      mealSummary[index]['label'],
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 13,
+                        color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      mealSummary[index]['count'].toString(),
+                      style: TextStyleClass.poppinsBold(
+                        fontSize: 18,
+                        color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  void _togglePrintShareBar() {
+    setState(() {
+      _showPrintShareBar = !_showPrintShareBar;
+    });
+  }
+
+  Widget _buildAnimatedPrintShareBar(BuildContext context) {
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      left: 0,
+      right: 0,
+      bottom: _showPrintShareBar ? 0 : -80,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: _showPrintShareBar ? 1.0 : 0.0,
+        child: Center(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(color: ColorClass.neutral200),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.share, color: ColorClass.brandDarkGreen),
+                  tooltip: 'Share',
+                  onPressed: () {
+                    _togglePrintShareBar();
+                    final mealProvider = Provider.of<MessStaffMealProvider>(context, listen: false);
+                    final messBulkMealProvider = Provider.of<MessBulkMealProvider>(context, listen: false);
+                    final meetingFoodProvider = Provider.of<MeetingFoodProvider>(context, listen: false);
+                    final selectedIndex = mealProvider.selectedMeal;
+                    final mealSummary = [
+                      {'label': 'Breakfast'},
+                      {'label': 'Lunch'},
+                      {'label': 'Dinner'},
+                    ];
+                    final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                    final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
+                    generateAndShareAllPdf(
+                      context,
+                      mealLabel,
+                      detailedLists,
+                      messBulkMealProvider,
+                      meetingFoodProvider,
+                      shareInsteadOfOpen: true,
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+                Text('Share', style: TextStyleClass.poppinsMedium(fontSize: 15, color: ColorClass.brandDarkGreen)),
+                const SizedBox(width: 24),
+                IconButton(
+                  icon: Icon(Icons.print, color: ColorClass.brandDarkGreen),
+                  tooltip: 'Print',
+                  onPressed: () {
+                    _togglePrintShareBar();
+                    final mealProvider = Provider.of<MessStaffMealProvider>(context, listen: false);
+                    final messBulkMealProvider = Provider.of<MessBulkMealProvider>(context, listen: false);
+                    final meetingFoodProvider = Provider.of<MeetingFoodProvider>(context, listen: false);
+                    final selectedIndex = mealProvider.selectedMeal;
+                    final mealSummary = [
+                      {'label': 'Breakfast'},
+                      {'label': 'Lunch'},
+                      {'label': 'Dinner'},
+                    ];
+                    final mealLabel = mealSummary[selectedIndex]['label'] as String;
+                    final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
+                    generateAndShareAllPdf(
+                      context,
+                      mealLabel,
+                      detailedLists,
+                      messBulkMealProvider,
+                      meetingFoodProvider,
+                      shareInsteadOfOpen: false,
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+                Text('Print', style: TextStyleClass.poppinsMedium(fontSize: 15, color: ColorClass.brandDarkGreen)),
+              ],
+            ),
           ),
-          boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: ColorClass.brandLightGreen.withOpacity(0.08),
-                spreadRadius: 1,
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 28,
-              color: hasCount
-                  ? ColorClass.brandDarkGreen
-                  : ColorClass.neutral300,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: TextStyleClass.poppinsRegular(
-                fontSize: 12,
-                color: hasCount
-                    ? ColorClass.brandDarkGreen
-                    : ColorClass.neutral400,
-              ),
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              count.toString(),
-              style: TextStyleClass.poppinsBold(
-                fontSize: 16,
-                color: hasCount
-                    ? ColorClass.brandDarkGreen
-                    : ColorClass.neutral400,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
         ),
       ),
     );
@@ -444,10 +543,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   Widget _buildHomeTab(BuildContext context) {
     return Consumer3<MessStaffMealProvider, MessBulkMealProvider, MeetingFoodProvider>(
       builder: (context, mealProvider, messBulkMealProvider, meetingFoodProvider, _) {
-        // Get meal counts from provider
         final mealCounts = mealProvider.getTodayMealCounts();
-
-        // Use the counts from API but keep existing structure
         final List<Map<String, dynamic>> mealSummary = [
           {
             'label': 'Breakfast',
@@ -475,14 +571,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         }
 
         return SafeArea(
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await Future.wait([
-                mealProvider.fetchMessStaffMeals(context),
-                messBulkMealProvider.fetchGuestMeals(context),
-                meetingFoodProvider.fetchMeetingFoodRequirements(context),
-              ]);
-            },
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             child: Column(
               children: [
                 Expanded(
@@ -491,112 +581,38 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Meal Summary Section
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                          child: Text('Meal Summary - Today',
-                              style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
-                        ),
-                        const SizedBox(height: 12),
-                        // Meal Cards Row - Fixed layout
-                        SizedBox(
-                          height: 110,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                            child: ValueListenableBuilder<int?>(
-                              valueListenable: _selectedMealNotifier,
-                              builder: (context, selectedMeal, _) => Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: List.generate(
-                                  mealSummary.length,
-                                  (index) => _buildMealCard(
-                                    icon: mealSummary[index]['icon'] as IconData,
-                                    label: mealSummary[index]['label'] as String,
-                                    count: mealSummary[index]['count'] as int,
-                                    isSelected: selectedMeal == index,
-                                    onTap: () {
-                                      // Update selection state and show bottom sheet
-                                      _selectedMealNotifier.value = index;
-                                      final detailedLists = mealProvider.getMealDetailsList(index);
-                                      final mealLabel = mealSummary[index]['label'] as String;
-                                      mealProvider.selectMeal(index); // Update provider for share/print
-                                      _showDetailedListBottomSheet(context, mealLabel, detailedLists);
-                                    },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Meal Summary', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    DateFormat('EEEE').format(DateTime.now()),
+                                    style: TextStyleClass.poppinsRegular(fontSize: 13, color: ColorClass.neutral400),
                                   ),
-                                ).toList(),
+                                  Text(
+                                    DateFormat('dd MMMM yyyy').format(DateTime.now()),
+                                    style: TextStyleClass.poppinsMedium(fontSize: 12, color: ColorClass.neutral400),
+                                  ),
+                                ],
                               ),
-                            ),
+                            ],
                           ),
                         ),
-                        // Bulk Meals Section
-                        _buildBulkMealsSection(context, messBulkMealProvider),
-                        // Meeting Food Widget (new implementation)
-                        const MeetingFoodWidget(),
-                        // Add bottom padding for better spacing
+                        const SizedBox(height: 12),
+                        ValueListenableBuilder<int?>(
+                          valueListenable: _selectedMealNotifier,
+                          builder: (context, selectedMeal, _) => _buildMealSummaryCard(context, mealSummary, selectedMeal),
+                        ),
+                        _buildGuestFoodBookingSection(context, messBulkMealProvider),
+                        _buildFoodForMeetingSection(context, meetingFoodProvider),
                         const SizedBox(height: 20),
                       ],
                     ),
-                  ),
-                ),
-                // Bottom Buttons (Fixed at bottom)
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      BottomButton(
-                        label: 'Share',
-                        onTap: () {
-                          final selectedIndex = mealProvider.selectedMeal;
-                          final mealSummary = [
-                            {'label': 'Breakfast'},
-                            {'label': 'Lunch'},
-                            {'label': 'Dinner'},
-                          ];
-                          final mealLabel = mealSummary[selectedIndex]['label'] as String;
-                          final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
-                          generateAndShareAllPdf(
-                            context,
-                            mealLabel,
-                            detailedLists,
-                            messBulkMealProvider,
-                            meetingFoodProvider,
-                            shareInsteadOfOpen: true
-                          );
-                        },
-                      ),
-                      BottomButton(
-                        label: 'Print',
-                        onTap: () {
-                          final selectedIndex = mealProvider.selectedMeal;
-                          final mealSummary = [
-                            {'label': 'Breakfast'},
-                            {'label': 'Lunch'},
-                            {'label': 'Dinner'},
-                          ];
-                          final mealLabel = mealSummary[selectedIndex]['label'] as String;
-                          final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
-                          generateAndShareAllPdf(
-                            context,
-                            mealLabel,
-                            detailedLists,
-                            messBulkMealProvider,
-                            meetingFoodProvider,
-                            shareInsteadOfOpen: false
-                          );
-                        },
-                      ),
-                    ],
                   ),
                 ),
               ],
@@ -607,279 +623,105 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
-  // Meeting Food Requirements Section as a separate widget
-  Widget _buildMeetingFoodSection(BuildContext context, MeetingFoodProvider meetingFoodProvider) {
-    return ValueListenableBuilder<DateTime>(
-      valueListenable: _meetingFoodDateNotifier,
-      builder: (context, selectedDate, _) {
-        // Filter meetings to only those with food requirements
-        final List<Meeting> meetings = meetingFoodProvider
-            .getMeetingsForDate(selectedDate)
-            .where((meeting) => meeting.foodCounts.activeFoodItems.isNotEmpty)
-            .toList();
-        final bool hasMeetings = meetings.isNotEmpty;
-        final meetingTotals = meetingFoodProvider.getTotalCountsForDate(selectedDate);
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 32),
-              // Meeting Food Section Header with Date Picker
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: ColorClass.brandLightGreen.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: ColorClass.brandLightGreen.withOpacity(0.3)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              LucideIcons.calendar,
-                              size: 20,
-                              color: ColorClass.brandDarkGreen,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Meeting Food Requirements',
-                              style: TextStyleClass.poppinsSemiBold(fontSize: 18),
-                            ),
-                          ],
-                        ),
-                        if (hasMeetings && meetingTotals != null && meetingTotals.totalCount > 0) ...[
-                          Row(
-                            children: [
-                              IconButton(
-                                onPressed: () => _generateMeetingFoodPdf(context, shareInsteadOfOpen: true),
-                                icon: Icon(LucideIcons.share2, color: ColorClass.brandDarkGreen, size: 20),
-                                tooltip: 'Share Meeting Food PDF',
-                              ),
-                              IconButton(
-                                onPressed: () => _generateMeetingFoodPdf(context, shareInsteadOfOpen: false),
-                                icon: Icon(LucideIcons.printer, color: ColorClass.brandDarkGreen, size: 20),
-                                tooltip: 'Print Meeting Food PDF',
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Date picker
-                    GestureDetector(
-                      onTap: () => _selectMeetingFoodDate(context, meetingFoodProvider),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: ColorClass.brandLightGreen),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(LucideIcons.calendar, size: 16, color: ColorClass.brandDarkGreen),
-                            const SizedBox(width: 8),
-                            Text(
-                              DateFormat('dd MMM yyyy').format(selectedDate),
-                              style: TextStyleClass.poppinsMedium(fontSize: 14),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(Icons.keyboard_arrow_down, color: ColorClass.brandDarkGreen, size: 16),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Show meeting food details if available
-              if (hasMeetings) ...[
-                if (meetingTotals != null && meetingTotals.totalCount > 0) ...[
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: ColorClass.brandLightGreen.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: ColorClass.brandLightGreen.withOpacity(0.2)),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Total Meeting Food:',
-                              style: TextStyleClass.poppinsMedium(fontSize: 16),
-                            ),
-                            Text(
-                              meetingTotals.totalCount.toString(),
-                              style: TextStyleClass.poppinsBold(
-                                fontSize: 18,
-                                color: ColorClass.brandDarkGreen,
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (meetingTotals.activeFoodItems.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: meetingTotals.activeFoodItems
-                                .map((foodItem) => _buildMeetingFoodCountCard(foodItem))
-                                .toList(),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                Text(
-                  'Meetings (${meetings.length})',
-                  style: TextStyleClass.poppinsSemiBold(fontSize: 16),
-                ),
-                const SizedBox(height: 8),
-                ...meetings.map((meeting) => _buildMeetingCard(meeting)).toList(),
-              ] else ...[
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Icon(
-                          LucideIcons.calendarOff,
-                          size: 48,
-                          color: ColorClass.neutral300,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No meetings for this date',
-                          style: TextStyleClass.poppinsRegular(
-                            fontSize: 14,
-                            color: ColorClass.neutral400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // Bulk Meals Section as a separate widget
-  Widget _buildBulkMealsSection(BuildContext context, MessBulkMealProvider messBulkMealProvider) {
-    if (messBulkMealProvider.guestMeals.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
+  // --- Refactored Guest Food Booking Section ---
+  Widget  _buildGuestFoodBookingSection(BuildContext context, MessBulkMealProvider messBulkMealProvider) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 32),
-          
-          // Section header with date picker
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          Row(
             children: [
-              Row(
-                children: [
-                  Icon(
-                    LucideIcons.users,
-                    size: 20,
-                    color: ColorClass.brandDarkGreen,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Bulk Food Bookings',
-                    style: TextStyleClass.poppinsSemiBold(fontSize: 18),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
+              Icon(LucideIcons.users, size: 20, color: ColorClass.brandDarkGreen),
+              const SizedBox(width: 8),
+              Text('Guest Food Booking', style: TextStyleClass.poppinsSemiBold(fontSize: 17)),
+              const Spacer(),
               ValueListenableBuilder<DateTime>(
                 valueListenable: _bulkMealDateNotifier,
-                builder: (context, selectedDate, _) => GestureDetector(
-                  onTap: () => _selectBulkMealDate(context),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: ColorClass.brandLightGreen),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.calendar, size: 16, color: ColorClass.brandDarkGreen),
-                        const SizedBox(width: 8),
-                        Text(
-                          DateFormat('dd MMM yyyy').format(selectedDate),
-                          style: TextStyleClass.poppinsMedium(fontSize: 14),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(Icons.keyboard_arrow_down, color: ColorClass.brandDarkGreen, size: 16),
-                      ],
-                    ),
+                builder: (context, selectedDate, _) => OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: ColorClass.neutral200),
+                    backgroundColor: ColorClass.brandWhite,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  ),
+                  onPressed: () => _selectBulkMealDate(context),
+                  icon: Icon(LucideIcons.calendar, size: 16, color: ColorClass.brandDarkGreen),
+                  label: Text(
+                    DateFormat('dd MMM yyyy').format(selectedDate),
+                    style: TextStyleClass.poppinsMedium(fontSize: 13, color: ColorClass.brandDarkGreen),
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          
-          // Bulk meal cards filtered by selected date
+          const SizedBox(height: 8),
           ValueListenableBuilder<DateTime>(
             valueListenable: _bulkMealDateNotifier,
             builder: (context, selectedDate, _) {
               final filteredGuestMeals = messBulkMealProvider.getGuestMealsForDate(selectedDate);
-              
               if (filteredGuestMeals.isEmpty) {
                 return Container(
+                  margin: const EdgeInsets.only(top: 12),
                   padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: ColorClass.brandLightGreen.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(
-                          LucideIcons.calendarOff,
-                          size: 48,
-                          color: ColorClass.neutral300,
-                        ),
+                        Icon(LucideIcons.calendarOff, size: 48, color: ColorClass.neutral300),
                         const SizedBox(height: 8),
-                        Text(
-                          'No bulk bookings for this date',
-                          style: TextStyleClass.poppinsRegular(
-                            fontSize: 14,
-                            color: ColorClass.neutral400,
-                          ),
-                        ),
+                        Text('No guest bookings for this date', style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.neutral400)),
                       ],
                     ),
                   ),
                 );
               }
-              
               return Column(
-                children: filteredGuestMeals.map((guestMeal) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: BulkMealCardWidget(guestMeal: guestMeal),
+                children: filteredGuestMeals.map((guestMeal) => Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(0),
+                  decoration: BoxDecoration(
+                    color: ColorClass.brandWhite,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: ColorClass.neutral200, width: 1.2),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: ColorClass.brandWhite,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(14),
+                            topRight: Radius.circular(14),
+                          ),
+                        ),
+                        child: Text(guestMeal.departmentNames, style: TextStyleClass.poppinsSemiBold(fontSize: 15, color: ColorClass.brandDarkGreen)),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: ColorClass.brandLightGreen.withOpacity(0.13),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(14),
+                            bottomRight: Radius.circular(14),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            _buildGuestMealCountCard('BREAKFAST', LucideIcons.sunMedium, guestMeal.breakfastCount),
+                            _buildGuestMealCountCard('LUNCH', LucideIcons.sun, guestMeal.lunchCount),
+                            _buildGuestMealCountCard('DINNER', LucideIcons.moon, guestMeal.dinnerCount),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 )).toList(),
               );
             },
@@ -889,231 +731,174 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
-  // Date picker for meeting food requirements
-    void _selectMeetingFoodDate(BuildContext context, MeetingFoodProvider provider) async {
-    final availableDates = provider.availableDates;
-    
-    if (availableDates.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No meeting dates available')),
-      );
-      return;
-    }
-
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _meetingFoodDateNotifier.value,
-      firstDate: availableDates.first,
-      lastDate: availableDates.last,
-      selectableDayPredicate: (date) => provider.hasDataForDate(date),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ColorClass.brandDarkGreen,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-
-    if (picked != null && picked != _meetingFoodDateNotifier.value) {
-      _meetingFoodDateNotifier.value = picked;
-    }
-  }
-
-  // Date picker for bulk meals
-  void _selectBulkMealDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _bulkMealDateNotifier.value,
-      firstDate: DateTime(2022),
-      lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ColorClass.brandDarkGreen,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null && picked != _bulkMealDateNotifier.value) {
-      _bulkMealDateNotifier.value = picked;
-    }
-  }
-
-  // Helper method to build meeting food count cards
-  Widget _buildMeetingFoodCountCard(dynamic foodItem) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: ColorClass.brandDarkGreen.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: ColorClass.brandDarkGreen.withOpacity(0.3)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+  Widget _buildGuestMealCountCard(String label, IconData icon, int count) {
+    return Expanded(
+      child: Column(
         children: [
-          Text(
-            foodItem.name,
-            style: TextStyleClass.poppinsRegular(
-              fontSize: 12,
-              color: ColorClass.brandDarkGreen,
-            ),
-          ),
-          const SizedBox(width: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: ColorClass.brandDarkGreen,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              foodItem.count.toString(),
-              style: TextStyleClass.poppinsBold(
-                fontSize: 10,
-                color: Colors.white,
-              ),
-            ),
-          ),
+          Icon(icon, size: 22, color: count > 0 ? ColorClass.brandDarkGreen : ColorClass.neutral300),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyleClass.poppinsRegular(fontSize: 11, color: count > 0 ? ColorClass.brandDarkGreen : ColorClass.neutral400)),
+          const SizedBox(height: 2),
+          Text(count.toString(), style: TextStyleClass.poppinsBold(fontSize: 15, color: count > 0 ? ColorClass.brandDarkGreen : ColorClass.neutral400)),
         ],
       ),
     );
   }
 
-  // Helper method to build meeting cards
-  Widget _buildMeetingCard(dynamic meeting) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: ColorClass.neutral200),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
+  // --- Refactored Food For Meeting Section ---
+  Widget _buildFoodForMeetingSection(BuildContext context, MeetingFoodProvider meetingFoodProvider) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Meeting title and time
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  meeting.title,
-                  style: TextStyleClass.poppinsSemiBold(fontSize: 15),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: ColorClass.brandLightGreen.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  meeting.timeRange,
-                  style: TextStyleClass.poppinsRegular(
-                    fontSize: 11,
-                    color: ColorClass.brandDarkGreen,
+              Icon(LucideIcons.calendar, size: 20, color: ColorClass.brandDarkGreen),
+              const SizedBox(width: 8),
+              Text('Food For Meeting', style: TextStyleClass.poppinsSemiBold(fontSize: 17)),
+              const Spacer(),
+              ValueListenableBuilder<DateTime>(
+                valueListenable: _meetingFoodDateNotifier,
+                builder: (context, selectedDate, _) => OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: ColorClass.neutral200),
+                    backgroundColor: ColorClass.brandWhite,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                  ),
+                  onPressed: () => _selectMeetingFoodDate(context, meetingFoodProvider),
+                  icon: Icon(LucideIcons.calendar, size: 16, color: ColorClass.brandDarkGreen),
+                  label: Text(
+                    DateFormat('dd MMM yyyy').format(selectedDate),
+                    style: TextStyleClass.poppinsMedium(fontSize: 13, color: ColorClass.brandDarkGreen),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-          
-          // Department and created by
-          Row(
-            children: [
-              Icon(LucideIcons.building, size: 14, color: ColorClass.neutral400),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  'Department: ${meeting.department}',
-                  style: TextStyleClass.poppinsRegular(
-                    fontSize: 13,
-                    color: ColorClass.neutral600,
+          ValueListenableBuilder<DateTime>(
+            valueListenable: _meetingFoodDateNotifier,
+            builder: (context, selectedDate, _) {
+              final meetings = meetingFoodProvider.getMeetingsForDate(selectedDate).where((m) => m.foodCounts.activeFoodItems.isNotEmpty).toList();
+              if (meetings.isEmpty) {
+                return Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: ColorClass.brandLightGreen.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(LucideIcons.user, size: 14, color: ColorClass.neutral400),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  'Created by: ${meeting.createdBy}',
-                  style: TextStyleClass.poppinsRegular(
-                    fontSize: 13,
-                    color: ColorClass.neutral600,
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(LucideIcons.calendarOff, size: 48, color: ColorClass.neutral300),
+                        const SizedBox(height: 8),
+                        Text('No meetings for this date', style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.neutral400)),
+                      ],
+                    ),
                   ),
-                ),
-              ),
-            ],
+                );
+              }
+              return Column(
+                children: meetings.map((meeting) {
+                  final foodItems = meeting.foodCounts.activeFoodItems;
+                  final firstRow = foodItems.take(3).toList();
+                  final secondRow = foodItems.length > 3 ? foodItems.skip(3).toList() : [];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(0),
+                    decoration: BoxDecoration(
+                      color: ColorClass.brandWhite,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: ColorClass.neutral200, width: 1.2),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: ColorClass.brandWhite,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(14),
+                              topRight: Radius.circular(14),
+                            ),
+                          ),
+                          child: Text(meeting.title, style: TextStyleClass.poppinsSemiBold(fontSize: 15, color: ColorClass.brandDarkGreen)),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                          decoration: BoxDecoration(
+                            color: ColorClass.brandLightGreen.withOpacity(0.13),
+                            borderRadius: const BorderRadius.only(
+                              bottomLeft: Radius.circular(14),
+                              bottomRight: Radius.circular(14),
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                children: firstRow.map((food) => Expanded(
+                                  child: Column(
+                                    children: [
+                                      Icon(_getFoodIcon(food.name), size: 20, color: ColorClass.brandDarkGreen),
+                                      const SizedBox(height: 2),
+                                      Text(food.name.toUpperCase(), style: TextStyleClass.poppinsRegular(fontSize: 10, color: ColorClass.brandDarkGreen)),
+                                      Text(food.count.toString(), style: TextStyleClass.poppinsBold(fontSize: 13, color: ColorClass.brandDarkGreen)),
+                                    ],
+                                  ),
+                                )).toList(),
+                              ),
+                              if (secondRow.isNotEmpty) ...[
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: secondRow.map((food) => Expanded(
+                                    child: Column(
+                                      children: [
+                                        Icon(_getFoodIcon(food.name), size: 20, color: ColorClass.brandDarkGreen),
+                                        const SizedBox(height: 2),
+                                        Text(food.name.toUpperCase(), style: TextStyleClass.poppinsRegular(fontSize: 10, color: ColorClass.brandDarkGreen)),
+                                        Text(food.count.toString(), style: TextStyleClass.poppinsBold(fontSize: 13, color: ColorClass.brandDarkGreen)),
+                                      ],
+                                    ),
+                                  )).toList(),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              );
+            },
           ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              Icon(LucideIcons.mapPin, size: 14, color: ColorClass.neutral400),
-              const SizedBox(width: 4),
-              Text(
-                'Hall: ${meeting.hall}',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 13,
-                  color: ColorClass.neutral600,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Icon(LucideIcons.users, size: 14, color: ColorClass.neutral400),
-              const SizedBox(width: 4),
-              Text(
-                'Persons: ${meeting.noOfPersons}',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 13,
-                  color: ColorClass.neutral600,
-                ),
-              ),
-            ],
-          ),
-          
-          // Food requirements for this meeting
-          if (meeting.foodCounts.activeFoodItems.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Food Requirements:',
-              style: TextStyleClass.poppinsMedium(fontSize: 13),
-            ),
-            const SizedBox(height: 6),
-            Wrap(
-              spacing: 6,
-              runSpacing: 4,
-              children: meeting.foodCounts.activeFoodItems
-                  .map((foodItem) => _buildMeetingFoodCountCard(foodItem))
-                  .toList(),
-            ),
-          ],
         ],
       ),
     );
+  }
+
+  IconData _getFoodIcon(String name) {
+    switch (name.toLowerCase()) {
+      case 'breakfast':
+        return LucideIcons.sunMedium;
+      case 'lunch':
+        return LucideIcons.sun;
+      case 'dinner':
+        return LucideIcons.moon;
+      case 'evening snacks':
+      case 'eve. snacks':
+        return LucideIcons.coffee;
+      case 'mid morning snacks':
+        return LucideIcons.coffee;
+      default:
+        return LucideIcons.utensils;
+    }
   }
 
   Widget _buildSettingsTab(BuildContext context) {
@@ -1748,6 +1533,66 @@ Future<void> generateAndShareAllPdf(
   }
 }
 
+  // Date picker for meeting food requirements
+  void _selectMeetingFoodDate(BuildContext context, MeetingFoodProvider provider) async {
+    final availableDates = provider.availableDates;
+    if (availableDates.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No meeting dates available')),
+      );
+      return;
+    }
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _meetingFoodDateNotifier.value,
+      firstDate: availableDates.first,
+      lastDate: availableDates.last,
+      selectableDayPredicate: (date) => provider.hasDataForDate(date),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: ColorClass.brandDarkGreen,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _meetingFoodDateNotifier.value) {
+      _meetingFoodDateNotifier.value = picked;
+    }
+  }
+
+  // Date picker for bulk meals
+  void _selectBulkMealDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _bulkMealDateNotifier.value,
+      firstDate: DateTime(2022),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: ColorClass.brandDarkGreen,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _bulkMealDateNotifier.value) {
+      _bulkMealDateNotifier.value = picked;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final logger = Logger();
@@ -1777,7 +1622,16 @@ Future<void> generateAndShareAllPdf(
           centerTitle: true,
           elevation: 0,
         ),
-        body: _pages(context)[navProvider.selectedIndex],
+        body: Stack(
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _togglePrintShareBar,
+              child: _pages(context)[navProvider.selectedIndex],
+            ),
+            _buildAnimatedPrintShareBar(context),
+          ],
+        ),
         bottomNavigationBar: BottomNavigationBar(
           backgroundColor: ColorClass.brandWhite,
           selectedItemColor: ColorClass.brandDarkGreen,
