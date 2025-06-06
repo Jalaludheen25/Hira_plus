@@ -32,7 +32,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = Provider.of<ReceptionProvider>(context, listen: false);
-      // Initialize provider first (loads saved states and today's attendance)
+      // Initialize provider first (loads API data)
       await provider.initialize(context);
       // Then fetch users
       provider.fetchUsers(context);
@@ -41,20 +41,22 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
 
   // Handle back button press
   Future<bool> _onWillPop() async {
-    final receptionProvider = Provider.of<ReceptionProvider>(context, listen: false);
-    
+    final receptionProvider =
+        Provider.of<ReceptionProvider>(context, listen: false);
+
     if (receptionProvider.shouldExitOnBack(context)) {
       // User pressed back twice within 2 seconds, exit the app
       SystemNavigator.pop();
       return true;
     }
-    
+
     // Don't exit the app on first back press
     return false;
   }
 
   // Method to show date picker
-  Future<void> _selectDate(BuildContext context, ReceptionProvider provider) async {
+  Future<void> _selectDate(
+      BuildContext context, ReceptionProvider provider) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: provider.selectedDate,
@@ -74,7 +76,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
         );
       },
     );
-    
+
     if (picked != null && picked != provider.selectedDate) {
       provider.setSelectedDate(picked);
       // Optionally fetch attendance data for the selected date
@@ -92,8 +94,15 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
             foregroundColor: ColorClass.white,
             elevation: 0,
             actions: [
-              // Calendar icon to select date
-              
+              // Refresh button to manually refresh check-ins
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  provider.fetchTodayCheckIns(context);
+                  provider.fetchUsers(context);
+                },
+                tooltip: 'Refresh data',
+              ),
             ],
           ),
           backgroundColor: ColorClass.white,
@@ -102,7 +111,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
               // Date display section
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: ColorClass.brandLightGreen.withOpacity(0.1),
                   border: Border(
@@ -127,7 +137,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          DateFormat('EEEE, MMMM dd, yyyy').format(provider.selectedDate),
+                          DateFormat('EEEE, MMMM dd, yyyy')
+                              .format(provider.selectedDate),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -139,7 +150,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                     GestureDetector(
                       onTap: () => _selectDate(context, provider),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: ColorClass.brandDarkGreen,
                           borderRadius: BorderRadius.circular(6),
@@ -167,10 +179,66 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                   ],
                 ),
               ),
-              
+
+              // Summary section for today's attendance
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: ColorClass.brandLightGreen.withOpacity(0.05),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.people,
+                            size: 16,
+                            color: ColorClass.brandDarkGreen,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Today: ${provider.todayCheckInsResponse.summary.todayCheckIns}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: ColorClass.brandDarkGreen,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Icon(
+                            Icons.history,
+                            size: 16,
+                            color: ColorClass.neutral600,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Previous: ${provider.todayCheckInsResponse.summary.previousDaysStillCheckedIn}',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: ColorClass.neutral600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               // Header for the checkboxes
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: ColorClass.neutral100,
                   border: Border(
@@ -222,7 +290,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                   ],
                 ),
               ),
-              
+
               // Loading or error states
               if (provider.isLoading)
                 const Expanded(
@@ -272,7 +340,10 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                 // Users list
                 Expanded(
                   child: RefreshIndicator(
-                    onRefresh: () => provider.fetchUsers(context),
+                    onRefresh: () async {
+                      await provider.fetchTodayCheckIns(context);
+                      await provider.fetchUsers(context);
+                    },
                     color: ColorClass.brandDarkGreen,
                     child: ListView.separated(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -285,9 +356,10 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                         final ReceptionUser user = provider.users[index];
                         final checkedIn = provider.isCheckedIn(user.id);
                         final checkedOut = provider.isCheckedOut(user.id);
-                        
+
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
                           child: Row(
                             children: [
                               // User info
@@ -314,7 +386,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                   ],
                                 ),
                               ),
-                              
+
                               // Check In checkbox - GREEN when checked, stays checked
                               SizedBox(
                                 width: 60,
@@ -322,10 +394,13 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                   child: Theme(
                                     data: Theme.of(context).copyWith(
                                       checkboxTheme: CheckboxThemeData(
-                                        fillColor: MaterialStateProperty.resolveWith<Color?>(
+                                        fillColor: MaterialStateProperty
+                                            .resolveWith<Color?>(
                                           (Set<MaterialState> states) {
-                                            if (states.contains(MaterialState.selected)) {
-                                              return Colors.green.shade600; // GREEN for check-in
+                                            if (states.contains(
+                                                MaterialState.selected)) {
+                                              return Colors.green
+                                                  .shade600; // GREEN for check-in
                                             }
                                             return null;
                                           },
@@ -335,20 +410,21 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                     child: Checkbox(
                                       value: checkedIn,
                                       checkColor: Colors.white,
-                                      onChanged: checkedIn 
+                                      onChanged: checkedIn
                                           ? null // Don't allow unchecking once checked in
                                           : (val) {
                                               if (val == true) {
-                                                provider.checkIn(context, user.id);
+                                                provider.checkIn(
+                                                    context, user.id);
                                               }
                                             },
                                     ),
                                   ),
                                 ),
                               ),
-                              
+
                               const SizedBox(width: 12),
-                              
+
                               // Check Out checkbox - RED when checked, stays checked
                               SizedBox(
                                 width: 60,
@@ -356,10 +432,13 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                   child: Theme(
                                     data: Theme.of(context).copyWith(
                                       checkboxTheme: CheckboxThemeData(
-                                        fillColor: MaterialStateProperty.resolveWith<Color?>(
+                                        fillColor: MaterialStateProperty
+                                            .resolveWith<Color?>(
                                           (Set<MaterialState> states) {
-                                            if (states.contains(MaterialState.selected)) {
-                                              return Colors.red.shade600; // RED for check-out
+                                            if (states.contains(
+                                                MaterialState.selected)) {
+                                              return Colors.red
+                                                  .shade600; // RED for check-out
                                             }
                                             return null;
                                           },
@@ -369,20 +448,25 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                     child: Checkbox(
                                       value: checkedOut,
                                       checkColor: Colors.white,
-                                      onChanged: checkedOut 
+                                      onChanged: checkedOut
                                           ? null // Don't allow unchecking once checked out
                                           : (val) {
                                               if (val == true) {
                                                 // Only allow check out if user is checked in
                                                 if (checkedIn) {
-                                                  provider.checkOut(context, user.id);
+                                                  provider.checkOut(
+                                                      context, user.id);
                                                 } else {
                                                   // Show error message
-                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                  ScaffoldMessenger.of(context)
+                                                      .showSnackBar(
                                                     SnackBar(
-                                                      content: Text('Please check in ${user.name} first'),
-                                                      backgroundColor: Colors.orange,
-                                                      duration: const Duration(seconds: 2),
+                                                      content: Text(
+                                                          'Please check in ${user.name} first'),
+                                                      backgroundColor:
+                                                          Colors.orange,
+                                                      duration: const Duration(
+                                                          seconds: 2),
                                                     ),
                                                   );
                                                 }
@@ -415,34 +499,14 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
             backgroundColor: ColorClass.brandDarkGreen,
             foregroundColor: ColorClass.white,
             elevation: 0,
-            // actions: [
-            //   // IconButton(
-            //   //   icon: const Icon(Icons.calendar_month),
-            //   //   onPressed: () async {
-            //   //     final DateTime? picked = await showDatePicker(
-            //   //       context: context,
-            //   //       initialDate: provider.attendanceSelectedDate,
-            //   //       firstDate: DateTime(2020),
-            //   //       lastDate: DateTime.now().add(const Duration(days: 365)),
-            //   //       builder: (context, child) {
-            //   //         return Theme(
-            //   //           data: Theme.of(context).copyWith(
-            //   //             colorScheme: ColorScheme.light(
-            //   //               primary: ColorClass.brandDarkGreen,
-            //   //               onPrimary: Colors.white,
-            //   //               surface: Colors.white,
-            //   //               onSurface: Colors.black,
-            //   //             ),
-            //   //           ),
-            //   //           child: child!,
-            //   //         );
-            //   //       },
-            //   //     );
-            //   //     if (picked != null && picked != provider.attendanceSelectedDate) {
-            //   //       provider.setAttendanceSelectedDate(picked, context);
-            //   //     }
-            //   //   },
-            // ],
+            actions: [
+              // Refresh button
+              IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () => provider.fetchAttendanceByDate(context),
+                tooltip: 'Refresh data',
+              ),
+            ],
           ),
           backgroundColor: ColorClass.white,
           body: Column(
@@ -450,7 +514,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
               // Date display section
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: ColorClass.brandLightGreen.withOpacity(0.1),
                   border: Border(
@@ -475,7 +540,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          DateFormat('EEEE, MMMM dd, yyyy').format(provider.attendanceSelectedDate),
+                          DateFormat('EEEE, MMMM dd, yyyy')
+                              .format(provider.attendanceSelectedDate),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -490,7 +556,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                           context: context,
                           initialDate: provider.attendanceSelectedDate,
                           firstDate: DateTime(2020),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
                           builder: (context, child) {
                             return Theme(
                               data: Theme.of(context).copyWith(
@@ -505,12 +572,14 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                             );
                           },
                         );
-                        if (picked != null && picked != provider.attendanceSelectedDate) {
+                        if (picked != null &&
+                            picked != provider.attendanceSelectedDate) {
                           provider.setAttendanceSelectedDate(picked, context);
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: ColorClass.brandDarkGreen,
                           borderRadius: BorderRadius.circular(6),
@@ -540,7 +609,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
               ),
               // Header
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: ColorClass.neutral100,
                   border: Border(
@@ -619,7 +689,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
-                          onPressed: () => provider.fetchAttendanceByDate(context),
+                          onPressed: () =>
+                              provider.fetchAttendanceByDate(context),
                           icon: const Icon(Icons.refresh),
                           label: const Text('Retry'),
                           style: ElevatedButton.styleFrom(
@@ -652,7 +723,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                       itemBuilder: (context, index) {
                         final record = provider.attendanceByDate[index];
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
                           child: Row(
                             children: [
                               // User info
@@ -686,7 +758,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                 width: 80,
                                 child: Center(
                                   child: Text(
-                                    DateFormat('hh:mm a').format(record.checkedInTime.toLocal()),
+                                    DateFormat('hh:mm a')
+                                        .format(record.checkedInTime.toLocal()),
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: Colors.green.shade700,
@@ -702,7 +775,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                 child: Center(
                                   child: record.checkoutTime != null
                                       ? Text(
-                                          DateFormat('hh:mm a').format(record.checkoutTime!.toLocal()),
+                                          DateFormat('hh:mm a').format(
+                                              record.checkoutTime!.toLocal()),
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: Colors.red.shade700,
@@ -712,7 +786,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                       : Text(
                                           'Not checked out',
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 13,
                                             color: Colors.orange,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -752,12 +826,12 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                   children: [
                     const SizedBox(height: 24),
                     ProfileCard(
-                      userName: profileProvider.userName.isNotEmpty 
-                          ? profileProvider.userName 
+                      userName: profileProvider.userName.isNotEmpty
+                          ? profileProvider.userName
                           : 'Reception Staff',
                       phone: profileProvider.phone,
-                      department: profileProvider.department.isNotEmpty 
-                          ? profileProvider.department 
+                      department: profileProvider.department.isNotEmpty
+                          ? profileProvider.department
                           : 'Reception',
                       designation: 'Reception Staff',
                     ),
@@ -779,7 +853,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                       onTap: () async {
                         final Uri url = Uri.parse(
                             'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
-                        await launchUrl(url, mode: LaunchMode.externalApplication);
+                        await launchUrl(url,
+                            mode: LaunchMode.externalApplication);
                       },
                     ),
                     CustomDrawerItem(
@@ -800,7 +875,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: const Text('About Us'),
-                            content: const Text('This is dummy content for About Us.'),
+                            content: const Text(
+                                'This is dummy content for About Us.'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),
@@ -839,8 +915,9 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                   type: ToastificationType.success,
                                   autoCloseDuration: const Duration(seconds: 2),
                                 );
-                                
-                                Future.delayed(const Duration(milliseconds: 500), () {
+
+                                Future.delayed(
+                                    const Duration(milliseconds: 500), () {
                                   navigatePRToGlobal(route: Routes.login);
                                 });
                               }
@@ -870,7 +947,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
       _buildCheckInOutTab(),
       _buildProfileTab(),
     ];
-    
+
     // WillPopScope to handle back button
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -890,18 +967,36 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
           },
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: Icon(Icons.how_to_reg,size: 22,),
-              activeIcon: Icon(Icons.how_to_reg,size: 28,),
+              icon: Icon(
+                Icons.how_to_reg,
+                size: 22,
+              ),
+              activeIcon: Icon(
+                Icons.how_to_reg,
+                size: 28,
+              ),
               label: 'Attendance',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.assessment,size: 22,),
-              activeIcon: Icon(Icons.assessment,size: 28,),
+              icon: Icon(
+                Icons.assessment,
+                size: 22,
+              ),
+              activeIcon: Icon(
+                Icons.assessment,
+                size: 28,
+              ),
               label: 'Reports',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.person,size: 22,),
-              activeIcon: Icon(Icons.person,size: 28,),
+              icon: Icon(
+                Icons.person,
+                size: 22,
+              ),
+              activeIcon: Icon(
+                Icons.person,
+                size: 28,
+              ),
               label: 'Profile',
             ),
           ],

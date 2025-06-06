@@ -67,11 +67,53 @@ class ReceptionAttendance {
       date: DateTime.parse(json['date']),
       user: ReceptionUser.fromJson(json['user'] ?? {}),
       checkedInTime: DateTime.parse(json['checkedInTime']),
-      checkoutTime: json['checkoutTime'] != null ? DateTime.parse(json['checkoutTime']) : null,
+      checkoutTime: json['checkoutTime'] != null
+          ? DateTime.parse(json['checkoutTime'])
+          : null,
       status: json['status'] ?? '',
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       v: json['__v'] ?? 0,
+    );
+  }
+}
+
+class AttendanceSummary {
+  final int todayCheckIns;
+  final int previousDaysStillCheckedIn;
+
+  AttendanceSummary({
+    required this.todayCheckIns,
+    required this.previousDaysStillCheckedIn,
+  });
+
+  factory AttendanceSummary.fromJson(Map<String, dynamic> json) {
+    return AttendanceSummary(
+      todayCheckIns: json['todayCheckIns'] ?? 0,
+      previousDaysStillCheckedIn: json['previousDaysStillCheckedIn'] ?? 0,
+    );
+  }
+}
+
+class CheckInsResponse {
+  final int total;
+  final List<ReceptionAttendance> checkIns;
+  final AttendanceSummary summary;
+
+  CheckInsResponse({
+    required this.total,
+    required this.checkIns,
+    required this.summary,
+  });
+
+  factory CheckInsResponse.fromJson(Map<String, dynamic> json) {
+    final List<dynamic> checkInsJson = json['checkIns'] ?? [];
+    return CheckInsResponse(
+      total: json['total'] ?? 0,
+      checkIns: checkInsJson
+          .map((item) => ReceptionAttendance.fromJson(item))
+          .toList(),
+      summary: AttendanceSummary.fromJson(json['summary'] ?? {}),
     );
   }
 }
