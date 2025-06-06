@@ -623,6 +623,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                 child: Row(
                   children: [
                     Expanded(
+                      flex: 2,
                       child: Text(
                         'User',
                         style: TextStyle(
@@ -645,7 +646,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     SizedBox(
                       width: 80,
                       child: Center(
@@ -655,6 +656,20 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: Colors.red.shade700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    SizedBox(
+                      width: 40,
+                      child: Center(
+                        child: Text(
+                          'Edit',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: ColorClass.brandDarkGreen,
                           ),
                         ),
                       ),
@@ -729,6 +744,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                             children: [
                               // User info
                               Expanded(
+                                flex: 2,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -768,7 +784,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 8),
                               // Check Out time
                               SizedBox(
                                 width: 80,
@@ -793,6 +809,25 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                                         ),
                                 ),
                               ),
+                              const SizedBox(width: 4),
+                              // Edit button
+                              SizedBox(
+                                width: 40,
+                                child: Center(
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      size: 20,
+                                    ),
+                                    color: ColorClass.brandDarkGreen,
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    onPressed: () => _showEditTimeDialog(
+                                        context, provider, record),
+                                    tooltip: 'Edit times',
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -802,6 +837,189 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                 ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  // Show dialog to edit check-in and checkout times
+  void _showEditTimeDialog(BuildContext context, ReceptionProvider provider,
+      ReceptionAttendance record) {
+    // We can safely use non-nullable TimeOfDay for check-in since it's always available
+    TimeOfDay initialCheckInTime =
+        TimeOfDay.fromDateTime(record.checkedInTime.toLocal());
+
+    // For checkout, we need to handle nullable values
+    TimeOfDay? initialCheckOutTime;
+    if (record.checkoutTime != null) {
+      initialCheckOutTime =
+          TimeOfDay.fromDateTime(record.checkoutTime!.toLocal());
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Edit Times for ${record.user.name}'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Check-in time picker
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Check-in Time'),
+                    subtitle: Text(
+                      initialCheckInTime.format(context),
+                      style: TextStyle(
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: ElevatedButton(
+                      onPressed: () async {
+                        final TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: initialCheckInTime,
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: ColorClass.brandDarkGreen,
+                                  onPrimary: Colors.white,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+
+                        if (pickedTime != null) {
+                          setState(() {
+                            initialCheckInTime = pickedTime;
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ColorClass.brandDarkGreen,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Change'),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Check-out time picker
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Check-out Time'),
+                    subtitle: Text(
+                      initialCheckOutTime != null
+                          ? initialCheckOutTime!.format(context)
+                          : 'Not set',
+                      style: TextStyle(
+                        color: initialCheckOutTime != null
+                            ? Colors.red.shade700
+                            : Colors.orange,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    trailing: ElevatedButton(
+                      onPressed: () async {
+                        final TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: initialCheckOutTime ?? TimeOfDay.now(),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: ColorClass.brandDarkGreen,
+                                  onPrimary: Colors.white,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+
+                        if (pickedTime != null) {
+                          setState(() {
+                            initialCheckOutTime = pickedTime;
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ColorClass.brandDarkGreen,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Change'),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Convert TimeOfDay to DateTime with the same date
+                    final DateTime baseDate = provider.attendanceSelectedDate;
+
+                    // Create DateTime for check-in (always available)
+                    final DateTime checkInDateTime = DateTime(
+                      baseDate.year,
+                      baseDate.month,
+                      baseDate.day,
+                      initialCheckInTime.hour,
+                      initialCheckInTime.minute,
+                    );
+
+                    // Create DateTime for check-out (might be null)
+                    DateTime? checkOutDateTime;
+                    if (initialCheckOutTime != null) {
+                      checkOutDateTime = DateTime(
+                        baseDate.year,
+                        baseDate.month,
+                        baseDate.day,
+                        initialCheckOutTime!.hour,
+                        initialCheckOutTime!.minute,
+                      );
+                    }
+
+                    // Close the dialog
+                    Navigator.of(context).pop();
+
+                    // Save the changes
+                    final success = await provider.editCheckInOutTimes(
+                      context,
+                      record.user.id,
+                      checkInTime: checkInDateTime,
+                      checkOutTime: checkOutDateTime,
+                    );
+
+                    if (success && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content:
+                              Text('Updated times for ${record.user.name}'),
+                          backgroundColor: ColorClass.brandDarkGreen,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ColorClass.brandDarkGreen,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -851,8 +1069,8 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                       title: 'Privacy Policy',
                       icon: LucideIcons.shieldCheck,
                       onTap: () async {
-                        final Uri url = Uri.parse(
-                            'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                        final Uri url =
+                            Uri.parse('https://d4dx.co/privacy-policy/');
                         await launchUrl(url,
                             mode: LaunchMode.externalApplication);
                       },

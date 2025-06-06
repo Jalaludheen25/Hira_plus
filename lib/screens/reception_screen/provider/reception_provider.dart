@@ -261,6 +261,82 @@ class ReceptionProvider extends ChangeNotifier {
     }
   }
 
+  // Edit check-in and checkout times for a user
+  Future<bool> editCheckInOutTimes(
+    BuildContext context,
+    String userId, {
+    DateTime? checkInTime,
+    DateTime? checkOutTime,
+    bool showToast = true,
+  }) async {
+    try {
+      log('🔄 Editing check-in/checkout times for user: $userId');
+
+      // Call the service method to edit times
+      final success = await _receptionService.editCheckInOutTimes(
+        context,
+        userId,
+        checkInTime: checkInTime,
+        checkOutTime: checkOutTime,
+      );
+
+      if (success) {
+        // Refresh data after successful update
+        await fetchTodayCheckIns(context);
+
+        final now = DateTime.now();
+        final isToday = _attendanceSelectedDate.year == now.year &&
+            _attendanceSelectedDate.month == now.month &&
+            _attendanceSelectedDate.day == now.day;
+
+        if (isToday) {
+          await fetchAttendanceByDate(context);
+        }
+
+        // Show success message if requested
+        if (showToast && context.mounted) {
+          final user = _users.firstWhere((u) => u.id == userId,
+              orElse: () => ReceptionUser(
+                  id: '', name: 'User', department: '', designation: ''));
+
+          toastification.show(
+            context: context,
+            title: Text('Updated times for ${user.name}'),
+            type: ToastificationType.success,
+            autoCloseDuration: Duration(seconds: 2),
+          );
+        }
+
+        return true;
+      } else {
+        if (showToast && context.mounted) {
+          toastification.show(
+            context: context,
+            title: Text('Failed to update times'),
+            description: Text('Please try again'),
+            type: ToastificationType.error,
+            autoCloseDuration: Duration(seconds: 3),
+          );
+        }
+        return false;
+      }
+    } catch (e) {
+      log('❌ Error editing check-in/checkout times: $e');
+
+      if (showToast && context.mounted) {
+        toastification.show(
+          context: context,
+          title: Text('Failed to update times'),
+          description: Text('Please try again'),
+          type: ToastificationType.error,
+          autoCloseDuration: Duration(seconds: 3),
+        );
+      }
+
+      return false;
+    }
+  }
+
   // Set selected date for attendance
   void setAttendanceSelectedDate(DateTime date, BuildContext context) {
     if (_attendanceSelectedDate != date) {

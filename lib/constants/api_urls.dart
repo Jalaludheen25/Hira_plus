@@ -176,7 +176,9 @@ class ApiUrls {
     return '$baseUrl/reception/attendance/by-date?date=$date';
   }
 
-  
+  static String editChecks(String userId) {
+    return '$baseUrl/reception/edit-check-in/$userId';
+  }
 
   static String getUserMeetings() {
     return '$baseUrl/auth/meetings'; // GET - show meetings
@@ -185,16 +187,17 @@ class ApiUrls {
   static String createUserMeeting() {
     return '$baseUrl/auth/dept-meetings'; // POST - create meeting (deptHead only)
   }
-   static String editMeeting(String meetingId) {
+
+  static String editMeeting(String meetingId) {
     return '$baseUrl/auth/dept-meetings/$meetingId'; // PUT - edit meeting
   }
 
-  // Delete meeting endpoint  
+  // Delete meeting endpoint
   static String deleteMeeting(String meetingId) {
     return '$baseUrl/auth/dept-meetings/$meetingId'; // DELETE - delete meeting
   }
 
-    // ################## MEETING FOOD REQUIREMENTS ##################
+  // ################## MEETING FOOD REQUIREMENTS ##################
 
   static String getMeetingFoodRequirements({
     required String startDate,

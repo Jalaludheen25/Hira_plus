@@ -82,6 +82,48 @@ class ReceptionService {
     }
   }
 
+  /// Edit check-in and checkout times for a user
+  Future<bool> editCheckInOutTimes(
+    BuildContext context,
+    String userId, {
+    DateTime? checkInTime,
+    DateTime? checkOutTime,
+  }) async {
+    try {
+      log('🔄 Editing check-in/checkout for user: $userId');
+      final url = ApiUrls.editChecks(userId);
+
+      // Prepare the request payload
+      final Map<String, dynamic> payload = {};
+
+      if (checkInTime != null) {
+        payload['checkedInTime'] = checkInTime.toIso8601String();
+      }
+
+      if (checkOutTime != null) {
+        payload['checkoutTime'] = checkOutTime.toIso8601String();
+      }
+
+      if (payload.isEmpty) {
+        log('⚠️ No times provided for edit, skipping API call');
+        return false;
+      }
+
+      log('📦 Edit payload: $payload');
+      final response = await HttpServiceUtils.putData(url, payload, context);
+
+      if (response != null) {
+        log('✅ Check-in/checkout times updated successfully');
+        return true;
+      }
+
+      return false;
+    } catch (e) {
+      log('❌ Error editing check-in/checkout times: $e');
+      return false;
+    }
+  }
+
   /// Fetch attendance by date
   Future<List<ReceptionAttendance>> getAttendanceByDate(
       BuildContext context, String date) async {
