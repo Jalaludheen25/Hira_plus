@@ -4,6 +4,7 @@ import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
 import 'package:hira_plus/screens/manager_screen/provider/users_by_meals_provider.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
+import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
 import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
@@ -506,7 +507,15 @@ class ManagerScreen extends StatelessWidget {
                                 padding:
                                     const EdgeInsets.fromLTRB(20, 12, 20, 0),
                                 child: GestureDetector(
-                                  onTap: () async {},
+                                  onTap: () async {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            BannerDialog(),
+                                      ),
+                                    );
+                                  },
                                   child: Container(
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
