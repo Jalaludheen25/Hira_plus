@@ -508,12 +508,9 @@ class ManagerScreen extends StatelessWidget {
                                     const EdgeInsets.fromLTRB(20, 12, 20, 0),
                                 child: GestureDetector(
                                   onTap: () async {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            BannerDialog(),
-                                      ),
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => BannerDialog(),
                                     );
                                   },
                                   child: Container(
