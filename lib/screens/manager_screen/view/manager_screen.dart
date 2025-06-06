@@ -105,7 +105,7 @@ class ManagerScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -126,7 +126,7 @@ class ManagerScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Count
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -143,9 +143,9 @@ class ManagerScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // List content
             Expanded(
               child: details.isEmpty
@@ -189,7 +189,8 @@ class ManagerScreen extends StatelessWidget {
                             children: [
                               Text(
                                 item['name'] ?? '',
-                                style: TextStyleClass.poppinsMedium(fontSize: 16),
+                                style:
+                                    TextStyleClass.poppinsMedium(fontSize: 16),
                               ),
                               if (item['type']?.isNotEmpty == true) ...[
                                 const SizedBox(height: 2),
@@ -241,9 +242,8 @@ class ManagerScreen extends StatelessWidget {
           color: isSelected ? ColorClass.brandLightGreen : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected
-                ? ColorClass.brandLightGreen
-                : ColorClass.neutral200,
+            color:
+                isSelected ? ColorClass.brandLightGreen : ColorClass.neutral200,
             width: 1.5,
           ),
           boxShadow: [
@@ -262,9 +262,8 @@ class ManagerScreen extends StatelessWidget {
             Icon(
               icon,
               size: 28,
-              color: hasCount
-                  ? ColorClass.brandDarkGreen
-                  : ColorClass.neutral300,
+              color:
+                  hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral300,
             ),
             const SizedBox(height: 6),
             Text(
@@ -334,16 +333,18 @@ class ManagerScreen extends StatelessWidget {
                             children: [
                               // Date selection row
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 16, 20, 0),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text('Meal Summary',
                                         style: TextStyleClass.poppinsSemiBold(
                                             fontSize: 18)),
                                     GestureDetector(
-                                      onTap: () =>
-                                          selectDate(context, dateSelectNotifier),
+                                      onTap: () => selectDate(
+                                          context, dateSelectNotifier),
                                       child: Row(
                                         children: [
                                           Text(
@@ -354,7 +355,8 @@ class ManagerScreen extends StatelessWidget {
                                                 fontSize: 14),
                                           ),
                                           const SizedBox(width: 4),
-                                          const Icon(Icons.calendar_today, size: 16),
+                                          const Icon(Icons.calendar_today,
+                                              size: 16),
                                         ],
                                       ),
                                     ),
@@ -362,29 +364,37 @@ class ManagerScreen extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              
+
                               // Meal Cards Row - Fixed layout like mess staff
                               SizedBox(
                                 height: 110,
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12.0),
                                   child: ValueListenableBuilder<int?>(
                                     valueListenable: selectedMealNotifier,
                                     builder: (context, selectedMeal, _) => Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
                                       children: List.generate(
                                         mealSummary.length,
                                         (index) => _buildMealCard(
-                                          icon: mealSummary[index]['icon'] as IconData,
-                                          label: mealSummary[index]['label'] as String,
-                                          count: mealSummary[index]['count'] as int,
+                                          icon: mealSummary[index]['icon']
+                                              as IconData,
+                                          label: mealSummary[index]['label']
+                                              as String,
+                                          count: mealSummary[index]['count']
+                                              as int,
                                           isSelected: selectedMeal == index,
                                           onTap: () {
                                             // Update selection state and show bottom sheet
                                             selectedMealNotifier.value = index;
-                                            final details = getDetailedList(index, mealProvider);
-                                            final mealLabel = mealSummary[index]['label'] as String;
-                                            _showDetailedListBottomSheet(context, mealLabel, details);
+                                            final details = getDetailedList(
+                                                index, mealProvider);
+                                            final mealLabel = mealSummary[index]
+                                                ['label'] as String;
+                                            _showDetailedListBottomSheet(
+                                                context, mealLabel, details);
                                           },
                                         ),
                                       ),
@@ -395,22 +405,26 @@ class ManagerScreen extends StatelessWidget {
 
                               // Quick Actions Section
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 32, 20, 0),
                                 child: Text(
                                   'Quick Actions',
-                                  style: TextStyleClass.poppinsSemiBold(fontSize: 18),
+                                  style: TextStyleClass.poppinsSemiBold(
+                                      fontSize: 18),
                                 ),
                               ),
-                              
+
                               // Bulk Food Booking Card
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 12, 20, 0),
                                 child: GestureDetector(
                                   onTap: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => ManagerBulkFoodListScreen(),
+                                        builder: (context) =>
+                                            ManagerBulkFoodListScreen(),
                                       ),
                                     );
                                   },
@@ -425,7 +439,8 @@ class ManagerScreen extends StatelessWidget {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                          color: ColorClass.brandLightGreen
+                                              .withOpacity(0.1),
                                           spreadRadius: 2,
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
@@ -437,8 +452,10 @@ class ManagerScreen extends StatelessWidget {
                                         Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: ColorClass.brandLightGreen.withOpacity(0.2),
-                                            borderRadius: BorderRadius.circular(12),
+                                            color: ColorClass.brandLightGreen
+                                                .withOpacity(0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Icon(
                                             LucideIcons.utensils,
@@ -449,19 +466,23 @@ class ManagerScreen extends StatelessWidget {
                                         const SizedBox(width: 16),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Bulk Food Booking',
-                                                style: TextStyleClass.poppinsSemiBold(
+                                                style: TextStyleClass
+                                                    .poppinsSemiBold(
                                                   fontSize: 18,
-                                                  color: ColorClass.brandDarkGreen,
+                                                  color:
+                                                      ColorClass.brandDarkGreen,
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
                                                 'Book meals for guests in bulk',
-                                                style: TextStyleClass.poppinsRegular(
+                                                style: TextStyleClass
+                                                    .poppinsRegular(
                                                   fontSize: 14,
                                                   color: ColorClass.neutral500,
                                                 ),
@@ -479,13 +500,13 @@ class ManagerScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              
+
                               // Banner Creation Card
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 12, 20, 0),
                                 child: GestureDetector(
-                                  onTap: () async {
-                                  },
+                                  onTap: () async {},
                                   child: Container(
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
@@ -497,7 +518,8 @@ class ManagerScreen extends StatelessWidget {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                          color: ColorClass.brandLightGreen
+                                              .withOpacity(0.1),
                                           spreadRadius: 2,
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
@@ -509,8 +531,10 @@ class ManagerScreen extends StatelessWidget {
                                         Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: ColorClass.brandLightGreen.withOpacity(0.2),
-                                            borderRadius: BorderRadius.circular(12),
+                                            color: ColorClass.brandLightGreen
+                                                .withOpacity(0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Icon(
                                             LucideIcons.image,
@@ -521,19 +545,23 @@ class ManagerScreen extends StatelessWidget {
                                         const SizedBox(width: 16),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Create Banner',
-                                                style: TextStyleClass.poppinsSemiBold(
+                                                style: TextStyleClass
+                                                    .poppinsSemiBold(
                                                   fontSize: 18,
-                                                  color: ColorClass.brandDarkGreen,
+                                                  color:
+                                                      ColorClass.brandDarkGreen,
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
                                                 'Create promotional banners',
-                                                style: TextStyleClass.poppinsRegular(
+                                                style: TextStyleClass
+                                                    .poppinsRegular(
                                                   fontSize: 14,
                                                   color: ColorClass.neutral500,
                                                 ),
@@ -554,13 +582,15 @@ class ManagerScreen extends StatelessWidget {
 
                               // NEW: Meeting Management Card
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 12, 20, 0),
                                 child: GestureDetector(
                                   onTap: () {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const MeetingManagementScreen(),
+                                        builder: (context) =>
+                                            const MeetingManagementScreen(),
                                       ),
                                     );
                                   },
@@ -575,7 +605,8 @@ class ManagerScreen extends StatelessWidget {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: ColorClass.brandLightGreen.withOpacity(0.1),
+                                          color: ColorClass.brandLightGreen
+                                              .withOpacity(0.1),
                                           spreadRadius: 2,
                                           blurRadius: 8,
                                           offset: const Offset(0, 2),
@@ -587,8 +618,10 @@ class ManagerScreen extends StatelessWidget {
                                         Container(
                                           padding: const EdgeInsets.all(12),
                                           decoration: BoxDecoration(
-                                            color: ColorClass.brandLightGreen.withOpacity(0.2),
-                                            borderRadius: BorderRadius.circular(12),
+                                            color: ColorClass.brandLightGreen
+                                                .withOpacity(0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
                                           ),
                                           child: Icon(
                                             LucideIcons.calendar,
@@ -599,19 +632,23 @@ class ManagerScreen extends StatelessWidget {
                                         const SizedBox(width: 16),
                                         Expanded(
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Text(
                                                 'Meeting Management',
-                                                style: TextStyleClass.poppinsSemiBold(
+                                                style: TextStyleClass
+                                                    .poppinsSemiBold(
                                                   fontSize: 18,
-                                                  color: ColorClass.brandDarkGreen,
+                                                  color:
+                                                      ColorClass.brandDarkGreen,
                                                 ),
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
                                                 'Schedule & manage meetings',
-                                                style: TextStyleClass.poppinsRegular(
+                                                style: TextStyleClass
+                                                    .poppinsRegular(
                                                   fontSize: 14,
                                                   color: ColorClass.neutral500,
                                                 ),
@@ -629,7 +666,7 @@ class ManagerScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              
+
                               // Add bottom padding for better spacing
                               const SizedBox(height: 30),
                             ],
@@ -827,8 +864,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Privacy Policy',
                 icon: LucideIcons.shieldCheck,
                 onTap: () async {
-                  final Uri url = Uri.parse(
-                      'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                  final Uri url = Uri.parse('https://d4dx.co/privacy-policy/');
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
@@ -881,8 +917,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       return LogoutConfirmationBottomSheet(
                         onLogout: () async {
                           final logger = Logger();
-                          logger.i('🔄 [LOGOUT] Manager initiated logout process');
-                          developer.log('🔄 Manager initiated logout process', 
+                          logger.i(
+                              '🔄 [LOGOUT] Manager initiated logout process');
+                          developer.log('🔄 Manager initiated logout process',
                               name: 'ManagerScreen');
 
                           // Reset bottom nav to initial index
@@ -897,8 +934,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   listen: false)
                               .logout();
 
-                          logger.i('🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
-                          developer.log('🟢 Successfully cleared auth token and preferences', 
+                          logger.i(
+                              '🟢 [LOGOUT] Successfully cleared preferences and updated auth state');
+                          developer.log(
+                              '🟢 Successfully cleared auth token and preferences',
                               name: 'ManagerScreen');
 
                           toastification.show(
@@ -909,8 +948,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           );
 
                           Future.delayed(const Duration(milliseconds: 500), () {
-                            logger.i('🧭 [NAVIGATION] Redirecting to login screen');
-                            developer.log('🚀 Redirecting to login screen', 
+                            logger.i(
+                                '🧭 [NAVIGATION] Redirecting to login screen');
+                            developer.log('🚀 Redirecting to login screen',
                                 name: 'ManagerScreen');
                             navigatePRToGlobal(
                               route: Routes.login,

@@ -87,8 +87,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               title: 'Privacy Policy',
               icon: LucideIcons.shieldCheck,
               onTap: () async {
-                final Uri url = Uri.parse(
-                    'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                final Uri url = Uri.parse('https://d4dx.co/privacy-policy/');
                 await launchUrl(url, mode: LaunchMode.externalApplication);
               },
             ),

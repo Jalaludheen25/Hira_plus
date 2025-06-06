@@ -41,8 +41,10 @@ class MessStaffScreen extends StatefulWidget {
 class _MessStaffScreenState extends State<MessStaffScreen> {
   final Logger _logger = Logger();
   final ValueNotifier<int?> _selectedMealNotifier = ValueNotifier<int?>(null);
-  final ValueNotifier<DateTime> _bulkMealDateNotifier = ValueNotifier<DateTime>(DateTime.now());
-  final ValueNotifier<DateTime> _meetingFoodDateNotifier = ValueNotifier<DateTime>(DateTime.now());
+  final ValueNotifier<DateTime> _bulkMealDateNotifier =
+      ValueNotifier<DateTime>(DateTime.now());
+  final ValueNotifier<DateTime> _meetingFoodDateNotifier =
+      ValueNotifier<DateTime>(DateTime.now());
   bool _showPrintShareBar = false;
 
   @override
@@ -50,42 +52,50 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _logger.i('🏗️ [INIT] Initializing Mess Staff screen');
-      developer.log('🏗️ Initializing Mess Staff screen and profile data', name: 'MessStaffScreen');
-      
-      final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+      developer.log('🏗️ Initializing Mess Staff screen and profile data',
+          name: 'MessStaffScreen');
+
+      final profileProvider =
+          Provider.of<ProfileScreenProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       // Get auth token
       final token = await authProvider.getAuthToken();
       final userType = await authProvider.getUserType() ?? 'Mess Staff';
-      
+
       if (token != null && token.isNotEmpty) {
         profileProvider.setUserInfo(userType: userType);
-        
+
         try {
-          await profileProvider.fetchAndSetProfile(token: token, userType: userType);
+          await profileProvider.fetchAndSetProfile(
+              token: token, userType: userType);
           _logger.i('✅ [PROFILE] Profile data fetched successfully');
-          developer.log('✅ Profile data fetched for Mess Staff', name: 'MessStaffScreen');
+          developer.log('✅ Profile data fetched for Mess Staff',
+              name: 'MessStaffScreen');
         } catch (e) {
           _logger.e('❌ [PROFILE] Failed to fetch profile: $e');
-          developer.log('❌ Failed to fetch profile: $e', name: 'MessStaffScreen');
+          developer.log('❌ Failed to fetch profile: $e',
+              name: 'MessStaffScreen');
         }
       } else {
         profileProvider.setUserInfo(userType: userType);
         _logger.w('⚠️ [PROFILE] No token available, using default profile');
       }
-      
+
       // Fetch meal data
-      final mealProvider = Provider.of<MessStaffMealProvider>(context, listen: false);
+      final mealProvider =
+          Provider.of<MessStaffMealProvider>(context, listen: false);
       mealProvider.reset();
       mealProvider.fetchMessStaffMeals(context);
 
       // Fetch guest meal data
-      final guestMealProvider = Provider.of<MessBulkMealProvider>(context, listen: false);
+      final guestMealProvider =
+          Provider.of<MessBulkMealProvider>(context, listen: false);
       guestMealProvider.fetchGuestMeals(context);
 
       // Fetch meeting food requirements
-      final meetingFoodProvider = Provider.of<MeetingFoodProvider>(context, listen: false);
+      final meetingFoodProvider =
+          Provider.of<MeetingFoodProvider>(context, listen: false);
       meetingFoodProvider.fetchMeetingFoodRequirements(context);
     });
   }
@@ -99,7 +109,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   // Show detailed list bottom sheet for regular meals
-  void  _showDetailedListBottomSheet(
+  void _showDetailedListBottomSheet(
     BuildContext context,
     String mealLabel,
     List<Map<String, String>> details,
@@ -126,7 +136,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             // Header
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -147,7 +157,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 ],
               ),
             ),
-            
+
             // Count
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -164,9 +174,9 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             // List content
             Expanded(
               child: details.isEmpty
@@ -210,7 +220,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                             children: [
                               Text(
                                 item['name'] ?? '',
-                                style: TextStyleClass.poppinsMedium(fontSize: 16),
+                                style:
+                                    TextStyleClass.poppinsMedium(fontSize: 16),
                               ),
                               if (item['type']?.isNotEmpty == true) ...[
                                 const SizedBox(height: 2),
@@ -245,26 +256,29 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   // Method to generate PDF for meeting food requirements
-  Future<void> _generateMeetingFoodPdf(BuildContext context, {bool shareInsteadOfOpen = false}) async {
+  Future<void> _generateMeetingFoodPdf(BuildContext context,
+      {bool shareInsteadOfOpen = false}) async {
     final meetingFoodProvider = context.read<MeetingFoodProvider>();
     final selectedDate = _meetingFoodDateNotifier.value;
-    final todayMeetingTotals = meetingFoodProvider.getTotalCountsForDate(selectedDate);
+    final todayMeetingTotals =
+        meetingFoodProvider.getTotalCountsForDate(selectedDate);
     // Filter meetings to only those with food requirements
     final List<Meeting> meetings = meetingFoodProvider
         .getMeetingsForDate(selectedDate)
         .where((meeting) => meeting.foodCounts.activeFoodItems.isNotEmpty)
         .toList();
-    
+
     if (todayMeetingTotals == null || meetings.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No meeting food data available to export')),
+        const SnackBar(
+            content: Text('No meeting food data available to export')),
       );
       return;
     }
 
     try {
       final pdf = pw.Document();
-      
+
       pdf.addPage(
         pw.Page(
           build: (pw.Context context) => pw.Column(
@@ -273,7 +287,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               // Header
               pw.Text(
                 'Meeting Food Requirements',
-                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
+                style:
+                    pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
               ),
               pw.SizedBox(height: 8),
               pw.Text(
@@ -284,17 +299,21 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               // Food items summary
               pw.Text(
                 'Food Requirements:',
-                style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
               ),
               pw.SizedBox(height: 8),
-              ...todayMeetingTotals.activeFoodItems.map((item) => 
-                pw.Padding(
+              ...todayMeetingTotals.activeFoodItems.map(
+                (item) => pw.Padding(
                   padding: const pw.EdgeInsets.only(bottom: 4),
                   child: pw.Row(
                     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
-                      pw.Text('${item.name}:', style: pw.TextStyle(fontSize: 14)),
-                      pw.Text('${item.count}', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                      pw.Text('${item.name}:',
+                          style: pw.TextStyle(fontSize: 14)),
+                      pw.Text('${item.count}',
+                          style: pw.TextStyle(
+                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
                     ],
                   ),
                 ),
@@ -303,20 +322,26 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               // Meetings details
               pw.Text(
                 'Meeting Details (${meetings.length} meetings):',
-                style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+                style:
+                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
               ),
               pw.SizedBox(height: 12),
-              ...meetings.map((meeting) => 
-                pw.Column(
+              ...meetings.map(
+                (meeting) => pw.Column(
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
-                    pw.Text('Department: ${meeting.department}', style: pw.TextStyle(fontSize: 12)),
-                    pw.Text('Created by: ${meeting.createdBy}', style: pw.TextStyle(fontSize: 12)),
+                    pw.Text('Department: ${meeting.department}',
+                        style: pw.TextStyle(fontSize: 12)),
+                    pw.Text('Created by: ${meeting.createdBy}',
+                        style: pw.TextStyle(fontSize: 12)),
                     if (meeting.foodCounts.activeFoodItems.isNotEmpty) ...[
                       pw.SizedBox(height: 4),
-                      pw.Text('Food Requirements:', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                      ...meeting.foodCounts.activeFoodItems.map((food) => 
-                        pw.Text('  • ${food.name}: ${food.count}', style: pw.TextStyle(fontSize: 11)),
+                      pw.Text('Food Requirements:',
+                          style: pw.TextStyle(
+                              fontSize: 12, fontWeight: pw.FontWeight.bold)),
+                      ...meeting.foodCounts.activeFoodItems.map(
+                        (food) => pw.Text('  • ${food.name}: ${food.count}',
+                            style: pw.TextStyle(fontSize: 11)),
                       ),
                     ],
                     pw.SizedBox(height: 12),
@@ -331,20 +356,22 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       );
 
       final output = await getTemporaryDirectory();
-      final file = File('${output.path}/meeting-food-requirements-${DateFormat('yyyy-MM-dd').format(selectedDate)}.pdf');
+      final file = File(
+          '${output.path}/meeting-food-requirements-${DateFormat('yyyy-MM-dd').format(selectedDate)}.pdf');
       await file.writeAsBytes(await pdf.save());
 
       if (shareInsteadOfOpen) {
         await Share.shareXFiles([XFile(file.path)],
-            text: 'Meeting Food Requirements - ${DateFormat('dd MMM yyyy').format(selectedDate)}');
+            text:
+                'Meeting Food Requirements - ${DateFormat('dd MMM yyyy').format(selectedDate)}');
       } else {
         await OpenFile.open(file.path);
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(shareInsteadOfOpen 
-              ? 'PDF shared successfully' 
+          content: Text(shareInsteadOfOpen
+              ? 'PDF shared successfully'
               : 'PDF generated and opened'),
           backgroundColor: Colors.green,
         ),
@@ -367,7 +394,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         _buildSettingsTab(context),
       ];
 
-  Widget _buildMealSummaryCard(BuildContext context, List<Map<String, dynamic>> mealSummary, int? selectedMeal) {
+  Widget _buildMealSummaryCard(BuildContext context,
+      List<Map<String, dynamic>> mealSummary, int? selectedMeal) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       padding: const EdgeInsets.all(0),
@@ -384,22 +412,31 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               onTap: mealSummary[index]['count'] > 0
                   ? () {
                       _selectedMealNotifier.value = index;
-                      final detailedLists = Provider.of<MessStaffMealProvider>(context, listen: false).getMealDetailsList(index);
+                      final detailedLists = Provider.of<MessStaffMealProvider>(
+                              context,
+                              listen: false)
+                          .getMealDetailsList(index);
                       final mealLabel = mealSummary[index]['label'] as String;
-                      Provider.of<MessStaffMealProvider>(context, listen: false).selectMeal(index);
-                      _showDetailedListBottomSheet(context, mealLabel, detailedLists);
+                      Provider.of<MessStaffMealProvider>(context, listen: false)
+                          .selectMeal(index);
+                      _showDetailedListBottomSheet(
+                          context, mealLabel, detailedLists);
                     }
                   : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 decoration: BoxDecoration(
-                  color: isSelected ? ColorClass.brandDarkGreen : ColorClass.brandLightGreen.withOpacity(0.4),
+                  color: isSelected
+                      ? ColorClass.brandDarkGreen
+                      : ColorClass.brandLightGreen.withOpacity(0.4),
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(index == 0 ? 16 : 0),
                     bottomLeft: Radius.circular(index == 0 ? 16 : 0),
-                    topRight: Radius.circular(index == mealSummary.length - 1 ? 16 : 0),
-                    bottomRight: Radius.circular(index == mealSummary.length - 1 ? 16 : 0),
+                    topRight: Radius.circular(
+                        index == mealSummary.length - 1 ? 16 : 0),
+                    bottomRight: Radius.circular(
+                        index == mealSummary.length - 1 ? 16 : 0),
                   ),
                 ),
                 child: Column(
@@ -408,14 +445,17 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                     Icon(
                       mealSummary[index]['icon'],
                       size: 28,
-                      color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+                      color:
+                          isSelected ? Colors.white : ColorClass.brandDarkGreen,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       mealSummary[index]['label'],
                       style: TextStyleClass.poppinsRegular(
                         fontSize: 13,
-                        color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+                        color: isSelected
+                            ? Colors.white
+                            : ColorClass.brandDarkGreen,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -423,7 +463,9 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                       mealSummary[index]['count'].toString(),
                       style: TextStyleClass.poppinsBold(
                         fontSize: 18,
-                        color: isSelected ? Colors.white : ColorClass.brandDarkGreen,
+                        color: isSelected
+                            ? Colors.white
+                            : ColorClass.brandDarkGreen,
                       ),
                     ),
                   ],
@@ -477,17 +519,25 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   tooltip: 'Share',
                   onPressed: () {
                     _togglePrintShareBar();
-                    final mealProvider = Provider.of<MessStaffMealProvider>(context, listen: false);
-                    final messBulkMealProvider = Provider.of<MessBulkMealProvider>(context, listen: false);
-                    final meetingFoodProvider = Provider.of<MeetingFoodProvider>(context, listen: false);
+                    final mealProvider = Provider.of<MessStaffMealProvider>(
+                        context,
+                        listen: false);
+                    final messBulkMealProvider =
+                        Provider.of<MessBulkMealProvider>(context,
+                            listen: false);
+                    final meetingFoodProvider =
+                        Provider.of<MeetingFoodProvider>(context,
+                            listen: false);
                     final selectedIndex = mealProvider.selectedMeal;
                     final mealSummary = [
                       {'label': 'Breakfast'},
                       {'label': 'Lunch'},
                       {'label': 'Dinner'},
                     ];
-                    final mealLabel = mealSummary[selectedIndex]['label'] as String;
-                    final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
+                    final mealLabel =
+                        mealSummary[selectedIndex]['label'] as String;
+                    final detailedLists =
+                        mealProvider.getMealDetailsList(selectedIndex);
                     generateAndShareAllPdf(
                       context,
                       mealLabel,
@@ -499,24 +549,34 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   },
                 ),
                 const SizedBox(width: 8),
-                Text('Share', style: TextStyleClass.poppinsMedium(fontSize: 15, color: ColorClass.brandDarkGreen)),
+                Text('Share',
+                    style: TextStyleClass.poppinsMedium(
+                        fontSize: 15, color: ColorClass.brandDarkGreen)),
                 const SizedBox(width: 24),
                 IconButton(
                   icon: Icon(Icons.print, color: ColorClass.brandDarkGreen),
                   tooltip: 'Print',
                   onPressed: () {
                     _togglePrintShareBar();
-                    final mealProvider = Provider.of<MessStaffMealProvider>(context, listen: false);
-                    final messBulkMealProvider = Provider.of<MessBulkMealProvider>(context, listen: false);
-                    final meetingFoodProvider = Provider.of<MeetingFoodProvider>(context, listen: false);
+                    final mealProvider = Provider.of<MessStaffMealProvider>(
+                        context,
+                        listen: false);
+                    final messBulkMealProvider =
+                        Provider.of<MessBulkMealProvider>(context,
+                            listen: false);
+                    final meetingFoodProvider =
+                        Provider.of<MeetingFoodProvider>(context,
+                            listen: false);
                     final selectedIndex = mealProvider.selectedMeal;
                     final mealSummary = [
                       {'label': 'Breakfast'},
                       {'label': 'Lunch'},
                       {'label': 'Dinner'},
                     ];
-                    final mealLabel = mealSummary[selectedIndex]['label'] as String;
-                    final detailedLists = mealProvider.getMealDetailsList(selectedIndex);
+                    final mealLabel =
+                        mealSummary[selectedIndex]['label'] as String;
+                    final detailedLists =
+                        mealProvider.getMealDetailsList(selectedIndex);
                     generateAndShareAllPdf(
                       context,
                       mealLabel,
@@ -528,7 +588,9 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   },
                 ),
                 const SizedBox(width: 8),
-                Text('Print', style: TextStyleClass.poppinsMedium(fontSize: 15, color: ColorClass.brandDarkGreen)),
+                Text('Print',
+                    style: TextStyleClass.poppinsMedium(
+                        fontSize: 15, color: ColorClass.brandDarkGreen)),
               ],
             ),
           ),
@@ -538,8 +600,10 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   Widget _buildHomeTab(BuildContext context) {
-    return Consumer3<MessStaffMealProvider, MessBulkMealProvider, MeetingFoodProvider>(
-      builder: (context, mealProvider, messBulkMealProvider, meetingFoodProvider, _) {
+    return Consumer3<MessStaffMealProvider, MessBulkMealProvider,
+        MeetingFoodProvider>(
+      builder: (context, mealProvider, messBulkMealProvider,
+          meetingFoodProvider, _) {
         final mealCounts = mealProvider.getTodayMealCounts();
         final List<Map<String, dynamic>> mealSummary = [
           {
@@ -583,17 +647,24 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Meal Summary', style: TextStyleClass.poppinsSemiBold(fontSize: 18)),
+                              Text('Meal Summary',
+                                  style: TextStyleClass.poppinsSemiBold(
+                                      fontSize: 18)),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
                                     DateFormat('EEEE').format(DateTime.now()),
-                                    style: TextStyleClass.poppinsRegular(fontSize: 13, color: ColorClass.neutral400),
+                                    style: TextStyleClass.poppinsRegular(
+                                        fontSize: 13,
+                                        color: ColorClass.neutral400),
                                   ),
                                   Text(
-                                    DateFormat('dd MMMM yyyy').format(DateTime.now()),
-                                    style: TextStyleClass.poppinsMedium(fontSize: 12, color: ColorClass.neutral400),
+                                    DateFormat('dd MMMM yyyy')
+                                        .format(DateTime.now()),
+                                    style: TextStyleClass.poppinsMedium(
+                                        fontSize: 12,
+                                        color: ColorClass.neutral400),
                                   ),
                                 ],
                               ),
@@ -603,10 +674,14 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                         const SizedBox(height: 12),
                         ValueListenableBuilder<int?>(
                           valueListenable: _selectedMealNotifier,
-                          builder: (context, selectedMeal, _) => _buildMealSummaryCard(context, mealSummary, selectedMeal),
+                          builder: (context, selectedMeal, _) =>
+                              _buildMealSummaryCard(
+                                  context, mealSummary, selectedMeal),
                         ),
-                        _buildGuestFoodBookingSection(context, messBulkMealProvider),
-                        _buildFoodForMeetingSection(context, meetingFoodProvider),
+                        _buildGuestFoodBookingSection(
+                            context, messBulkMealProvider),
+                        _buildFoodForMeetingSection(
+                            context, meetingFoodProvider),
                         const SizedBox(height: 20),
                       ],
                     ),
@@ -621,7 +696,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   // --- Refactored Guest Food Booking Section ---
-  Widget  _buildGuestFoodBookingSection(BuildContext context, MessBulkMealProvider messBulkMealProvider) {
+  Widget _buildGuestFoodBookingSection(
+      BuildContext context, MessBulkMealProvider messBulkMealProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
@@ -629,9 +705,11 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.users, size: 20, color: ColorClass.brandDarkGreen),
+              Icon(LucideIcons.users,
+                  size: 20, color: ColorClass.brandDarkGreen),
               const SizedBox(width: 8),
-              Text('Guest Food Booking', style: TextStyleClass.poppinsSemiBold(fontSize: 17)),
+              Text('Guest Food Booking',
+                  style: TextStyleClass.poppinsSemiBold(fontSize: 17)),
               const Spacer(),
               ValueListenableBuilder<DateTime>(
                 valueListenable: _bulkMealDateNotifier,
@@ -639,14 +717,18 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: ColorClass.neutral200),
                     backgroundColor: ColorClass.brandWhite,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                   ),
                   onPressed: () => _selectBulkMealDate(context),
-                  icon: Icon(LucideIcons.calendar, size: 16, color: ColorClass.brandDarkGreen),
+                  icon: Icon(LucideIcons.calendar,
+                      size: 16, color: ColorClass.brandDarkGreen),
                   label: Text(
                     DateFormat('dd MMM yyyy').format(selectedDate),
-                    style: TextStyleClass.poppinsMedium(fontSize: 13, color: ColorClass.brandDarkGreen),
+                    style: TextStyleClass.poppinsMedium(
+                        fontSize: 13, color: ColorClass.brandDarkGreen),
                   ),
                 ),
               ),
@@ -656,7 +738,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
           ValueListenableBuilder<DateTime>(
             valueListenable: _bulkMealDateNotifier,
             builder: (context, selectedDate, _) {
-              final filteredGuestMeals = messBulkMealProvider.getGuestMealsForDate(selectedDate);
+              final filteredGuestMeals =
+                  messBulkMealProvider.getGuestMealsForDate(selectedDate);
               if (filteredGuestMeals.isEmpty) {
                 return Container(
                   margin: const EdgeInsets.only(top: 12),
@@ -668,58 +751,78 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(LucideIcons.calendarOff, size: 48, color: ColorClass.neutral300),
+                        Icon(LucideIcons.calendarOff,
+                            size: 48, color: ColorClass.neutral300),
                         const SizedBox(height: 8),
-                        Text('No guest bookings for this date', style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.neutral400)),
+                        Text('No guest bookings for this date',
+                            style: TextStyleClass.poppinsRegular(
+                                fontSize: 14, color: ColorClass.neutral400)),
                       ],
                     ),
                   ),
                 );
               }
               return Column(
-                children: filteredGuestMeals.map((guestMeal) => Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  padding: const EdgeInsets.all(0),
-                  decoration: BoxDecoration(
-                    color: ColorClass.brandWhite,
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: ColorClass.neutral200, width: 1.2),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: ColorClass.brandWhite,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(14),
-                            topRight: Radius.circular(14),
+                children: filteredGuestMeals
+                    .map((guestMeal) => Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(0),
+                          decoration: BoxDecoration(
+                            color: ColorClass.brandWhite,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                                color: ColorClass.neutral200, width: 1.2),
                           ),
-                        ),
-                        child: Text(guestMeal.departmentNames, style: TextStyleClass.poppinsSemiBold(fontSize: 15, color: ColorClass.brandDarkGreen)),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: ColorClass.brandLightGreen.withOpacity(0.13),
-                          borderRadius: const BorderRadius.only(
-                            bottomLeft: Radius.circular(14),
-                            bottomRight: Radius.circular(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: ColorClass.brandWhite,
+                                  borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(14),
+                                    topRight: Radius.circular(14),
+                                  ),
+                                ),
+                                child: Text(guestMeal.departmentNames,
+                                    style: TextStyleClass.poppinsSemiBold(
+                                        fontSize: 15,
+                                        color: ColorClass.brandDarkGreen)),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: ColorClass.brandLightGreen
+                                      .withOpacity(0.13),
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(14),
+                                    bottomRight: Radius.circular(14),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildGuestMealCountCard(
+                                        'BREAKFAST',
+                                        LucideIcons.sunMedium,
+                                        guestMeal.breakfastCount),
+                                    _buildGuestMealCountCard('LUNCH',
+                                        LucideIcons.sun, guestMeal.lunchCount),
+                                    _buildGuestMealCountCard(
+                                        'DINNER',
+                                        LucideIcons.moon,
+                                        guestMeal.dinnerCount),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _buildGuestMealCountCard('BREAKFAST', LucideIcons.sunMedium, guestMeal.breakfastCount),
-                            _buildGuestMealCountCard('LUNCH', LucideIcons.sun, guestMeal.lunchCount),
-                            _buildGuestMealCountCard('DINNER', LucideIcons.moon, guestMeal.dinnerCount),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                )).toList(),
+                        ))
+                    .toList(),
               );
             },
           ),
@@ -732,18 +835,33 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 22, color: count > 0 ? ColorClass.brandDarkGreen : ColorClass.neutral300),
+          Icon(icon,
+              size: 22,
+              color: count > 0
+                  ? ColorClass.brandDarkGreen
+                  : ColorClass.neutral300),
           const SizedBox(height: 4),
-          Text(label, style: TextStyleClass.poppinsRegular(fontSize: 11, color: count > 0 ? ColorClass.brandDarkGreen : ColorClass.neutral400)),
+          Text(label,
+              style: TextStyleClass.poppinsRegular(
+                  fontSize: 11,
+                  color: count > 0
+                      ? ColorClass.brandDarkGreen
+                      : ColorClass.neutral400)),
           const SizedBox(height: 2),
-          Text(count.toString(), style: TextStyleClass.poppinsBold(fontSize: 15, color: count > 0 ? ColorClass.brandDarkGreen : ColorClass.neutral400)),
+          Text(count.toString(),
+              style: TextStyleClass.poppinsBold(
+                  fontSize: 15,
+                  color: count > 0
+                      ? ColorClass.brandDarkGreen
+                      : ColorClass.neutral400)),
         ],
       ),
     );
   }
 
   // --- Refactored Food For Meeting Section ---
-  Widget _buildFoodForMeetingSection(BuildContext context, MeetingFoodProvider meetingFoodProvider) {
+  Widget _buildFoodForMeetingSection(
+      BuildContext context, MeetingFoodProvider meetingFoodProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
@@ -751,9 +869,11 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.calendar, size: 20, color: ColorClass.brandDarkGreen),
+              Icon(LucideIcons.calendar,
+                  size: 20, color: ColorClass.brandDarkGreen),
               const SizedBox(width: 8),
-              Text('Food For Meeting', style: TextStyleClass.poppinsSemiBold(fontSize: 17)),
+              Text('Food For Meeting',
+                  style: TextStyleClass.poppinsSemiBold(fontSize: 17)),
               const Spacer(),
               ValueListenableBuilder<DateTime>(
                 valueListenable: _meetingFoodDateNotifier,
@@ -761,14 +881,19 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: ColorClass.neutral200),
                     backgroundColor: ColorClass.brandWhite,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                   ),
-                  onPressed: () => _selectMeetingFoodDate(context, meetingFoodProvider),
-                  icon: Icon(LucideIcons.calendar, size: 16, color: ColorClass.brandDarkGreen),
+                  onPressed: () =>
+                      _selectMeetingFoodDate(context, meetingFoodProvider),
+                  icon: Icon(LucideIcons.calendar,
+                      size: 16, color: ColorClass.brandDarkGreen),
                   label: Text(
                     DateFormat('dd MMM yyyy').format(selectedDate),
-                    style: TextStyleClass.poppinsMedium(fontSize: 13, color: ColorClass.brandDarkGreen),
+                    style: TextStyleClass.poppinsMedium(
+                        fontSize: 13, color: ColorClass.brandDarkGreen),
                   ),
                 ),
               ),
@@ -778,7 +903,10 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
           ValueListenableBuilder<DateTime>(
             valueListenable: _meetingFoodDateNotifier,
             builder: (context, selectedDate, _) {
-              final meetings = meetingFoodProvider.getMeetingsForDate(selectedDate).where((m) => m.foodCounts.activeFoodItems.isNotEmpty).toList();
+              final meetings = meetingFoodProvider
+                  .getMeetingsForDate(selectedDate)
+                  .where((m) => m.foodCounts.activeFoodItems.isNotEmpty)
+                  .toList();
               if (meetings.isEmpty) {
                 return Container(
                   margin: const EdgeInsets.only(top: 12),
@@ -790,9 +918,12 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                   child: Center(
                     child: Column(
                       children: [
-                        Icon(LucideIcons.calendarOff, size: 48, color: ColorClass.neutral300),
+                        Icon(LucideIcons.calendarOff,
+                            size: 48, color: ColorClass.neutral300),
                         const SizedBox(height: 8),
-                        Text('No meetings for this date', style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.neutral400)),
+                        Text('No meetings for this date',
+                            style: TextStyleClass.poppinsRegular(
+                                fontSize: 14, color: ColorClass.neutral400)),
                       ],
                     ),
                   ),
@@ -802,20 +933,23 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 children: meetings.map((meeting) {
                   final foodItems = meeting.foodCounts.activeFoodItems;
                   final firstRow = foodItems.take(3).toList();
-                  final secondRow = foodItems.length > 3 ? foodItems.skip(3).toList() : [];
+                  final secondRow =
+                      foodItems.length > 3 ? foodItems.skip(3).toList() : [];
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(0),
                     decoration: BoxDecoration(
                       color: ColorClass.brandWhite,
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: ColorClass.neutral200, width: 1.2),
+                      border:
+                          Border.all(color: ColorClass.neutral200, width: 1.2),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
                           decoration: BoxDecoration(
                             color: ColorClass.brandWhite,
                             borderRadius: const BorderRadius.only(
@@ -823,10 +957,14 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                               topRight: Radius.circular(14),
                             ),
                           ),
-                          child: Text(meeting.title, style: TextStyleClass.poppinsSemiBold(fontSize: 15, color: ColorClass.brandDarkGreen)),
+                          child: Text(meeting.title,
+                              style: TextStyleClass.poppinsSemiBold(
+                                  fontSize: 15,
+                                  color: ColorClass.brandDarkGreen)),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 14),
                           decoration: BoxDecoration(
                             color: ColorClass.brandLightGreen.withOpacity(0.13),
                             borderRadius: const BorderRadius.only(
@@ -837,32 +975,64 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                           child: Column(
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                children: firstRow.map((food) => Expanded(
-                                  child: Column(
-                                    children: [
-                                      Icon(_getFoodIcon(food.name), size: 20, color: ColorClass.brandDarkGreen),
-                                      const SizedBox(height: 2),
-                                      Text(food.name.toUpperCase(), style: TextStyleClass.poppinsRegular(fontSize: 10, color: ColorClass.brandDarkGreen)),
-                                      Text(food.count.toString(), style: TextStyleClass.poppinsBold(fontSize: 13, color: ColorClass.brandDarkGreen)),
-                                    ],
-                                  ),
-                                )).toList(),
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: firstRow
+                                    .map((food) => Expanded(
+                                          child: Column(
+                                            children: [
+                                              Icon(_getFoodIcon(food.name),
+                                                  size: 20,
+                                                  color: ColorClass
+                                                      .brandDarkGreen),
+                                              const SizedBox(height: 2),
+                                              Text(food.name.toUpperCase(),
+                                                  style: TextStyleClass
+                                                      .poppinsRegular(
+                                                          fontSize: 10,
+                                                          color: ColorClass
+                                                              .brandDarkGreen)),
+                                              Text(food.count.toString(),
+                                                  style: TextStyleClass
+                                                      .poppinsBold(
+                                                          fontSize: 13,
+                                                          color: ColorClass
+                                                              .brandDarkGreen)),
+                                            ],
+                                          ),
+                                        ))
+                                    .toList(),
                               ),
                               if (secondRow.isNotEmpty) ...[
                                 const SizedBox(height: 8),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: secondRow.map((food) => Expanded(
-                                    child: Column(
-                                      children: [
-                                        Icon(_getFoodIcon(food.name), size: 20, color: ColorClass.brandDarkGreen),
-                                        const SizedBox(height: 2),
-                                        Text(food.name.toUpperCase(), style: TextStyleClass.poppinsRegular(fontSize: 10, color: ColorClass.brandDarkGreen)),
-                                        Text(food.count.toString(), style: TextStyleClass.poppinsBold(fontSize: 13, color: ColorClass.brandDarkGreen)),
-                                      ],
-                                    ),
-                                  )).toList(),
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: secondRow
+                                      .map((food) => Expanded(
+                                            child: Column(
+                                              children: [
+                                                Icon(_getFoodIcon(food.name),
+                                                    size: 20,
+                                                    color: ColorClass
+                                                        .brandDarkGreen),
+                                                const SizedBox(height: 2),
+                                                Text(food.name.toUpperCase(),
+                                                    style: TextStyleClass
+                                                        .poppinsRegular(
+                                                            fontSize: 10,
+                                                            color: ColorClass
+                                                                .brandDarkGreen)),
+                                                Text(food.count.toString(),
+                                                    style: TextStyleClass
+                                                        .poppinsBold(
+                                                            fontSize: 13,
+                                                            color: ColorClass
+                                                                .brandDarkGreen)),
+                                              ],
+                                            ),
+                                          ))
+                                      .toList(),
                                 ),
                               ],
                             ],
@@ -900,7 +1070,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
 
   Widget _buildSettingsTab(BuildContext context) {
     final profileProvider = Provider.of<ProfileScreenProvider>(context);
-    
+
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
@@ -931,8 +1101,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 title: 'Privacy Policy',
                 icon: LucideIcons.shieldCheck,
                 onTap: () async {
-                  final Uri url = Uri.parse(
-                      'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
+                  final Uri url = Uri.parse('https://d4dx.co/privacy-policy/');
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
@@ -985,13 +1154,11 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     builder: (BuildContext context) {
-                      return LogoutConfirmationBottomSheet(
-                          onLogout: () async {
+                      return LogoutConfirmationBottomSheet(onLogout: () async {
                         final logger = Logger();
                         logger.i(
                             '🔄 [LOGOUT] Mess Staff initiated logout process');
-                        developer.log(
-                            '🔄 Mess Staff initiated logout process',
+                        developer.log('🔄 Mess Staff initiated logout process',
                             name: 'MessStaffScreen');
 
                         // First clear all provider data
@@ -1038,16 +1205,15 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                         );
 
                         Future.delayed(const Duration(milliseconds: 500), () {
-                          logger.i(
-                              '🧭 [NAVIGATION] Redirecting to login screen');
+                          logger
+                              .i('🧭 [NAVIGATION] Redirecting to login screen');
                           developer.log('🚀 Redirecting to login screen',
                               name: 'MessStaffScreen');
                           navigatePRToGlobal(
                             route: Routes.login,
                           );
                         });
-                      }
-                      );
+                      });
                     },
                   );
                 },
@@ -1073,465 +1239,500 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   // Combined PDF generation for all three sections
-Future<void> generateAndShareAllPdf(
-  BuildContext context,
-  String mealLabel,
-  List<Map<String, String>> details,
-  MessBulkMealProvider bulkMealProvider,
-  MeetingFoodProvider meetingFoodProvider, {
-  bool shareInsteadOfOpen = false,
-}) async {
-  final progress = ValueNotifier<double>(0.0);
-  showProgressDialog(context, progress);
-  File? file;
-  
-  try {
-    final pdf = pw.Document();
-    final todayBulkMeals = bulkMealProvider.getTodayGuestMeals();
-    
-    // Calculate bulk meal count for the specific meal type
-    int bulkMealCount = 0;
-    String mealType = mealLabel.toLowerCase();
-    for (final bulkMeal in todayBulkMeals) {
-      switch (mealType) {
-        case 'breakfast':
-          bulkMealCount += bulkMeal.breakfastCount;
-          break;
-        case 'lunch':
-          bulkMealCount += bulkMeal.lunchCount;
-          break;
-        case 'dinner':
-          bulkMealCount += bulkMeal.dinnerCount;
-          break;
+  Future<void> generateAndShareAllPdf(
+    BuildContext context,
+    String mealLabel,
+    List<Map<String, String>> details,
+    MessBulkMealProvider bulkMealProvider,
+    MeetingFoodProvider meetingFoodProvider, {
+    bool shareInsteadOfOpen = false,
+  }) async {
+    final progress = ValueNotifier<double>(0.0);
+    showProgressDialog(context, progress);
+    File? file;
+
+    try {
+      final pdf = pw.Document();
+      final todayBulkMeals = bulkMealProvider.getTodayGuestMeals();
+
+      // Calculate bulk meal count for the specific meal type
+      int bulkMealCount = 0;
+      String mealType = mealLabel.toLowerCase();
+      for (final bulkMeal in todayBulkMeals) {
+        switch (mealType) {
+          case 'breakfast':
+            bulkMealCount += bulkMeal.breakfastCount;
+            break;
+          case 'lunch':
+            bulkMealCount += bulkMeal.lunchCount;
+            break;
+          case 'dinner':
+            bulkMealCount += bulkMeal.dinnerCount;
+            break;
+        }
       }
-    }
-    
-    // Get meeting food data
-    final selectedDate = _meetingFoodDateNotifier.value;
-    final todayMeetingTotals = meetingFoodProvider.getTotalCountsForDate(selectedDate);
-    final List<Meeting> meetings = meetingFoodProvider
-        .getMeetingsForDate(selectedDate)
-        .where((meeting) => meeting.foodCounts.activeFoodItems.isNotEmpty)
-        .toList();
-    
-    // Calculate total meeting food count
-    int meetingFoodCount = todayMeetingTotals?.totalCount ?? 0;
-    
-    // Calculate grand total
-    int regularMealCount = details.length;
-    int grandTotal = regularMealCount + bulkMealCount + meetingFoodCount;
-    
-    // Helper function to create header
-    pw.Widget _buildHeader() {
-      return pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          // Header with title and total count on the right
-          pw.Row(
-            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-            children: [
-              pw.Text(
-                '$mealLabel - Detailed List',
-                style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.Container(
-                padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(color: PdfColors.grey600),
-                  borderRadius: pw.BorderRadius.circular(6),
+
+      // Get meeting food data
+      final selectedDate = _meetingFoodDateNotifier.value;
+      final todayMeetingTotals =
+          meetingFoodProvider.getTotalCountsForDate(selectedDate);
+      final List<Meeting> meetings = meetingFoodProvider
+          .getMeetingsForDate(selectedDate)
+          .where((meeting) => meeting.foodCounts.activeFoodItems.isNotEmpty)
+          .toList();
+
+      // Calculate total meeting food count
+      int meetingFoodCount = todayMeetingTotals?.totalCount ?? 0;
+
+      // Calculate grand total
+      int regularMealCount = details.length;
+      int grandTotal = regularMealCount + bulkMealCount + meetingFoodCount;
+
+      // Helper function to create header
+      pw.Widget _buildHeader() {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            // Header with title and total count on the right
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+              children: [
+                pw.Text(
+                  '$mealLabel - Detailed List',
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold),
                 ),
+                pw.Container(
+                  padding: const pw.EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.grey600),
+                    borderRadius: pw.BorderRadius.circular(6),
+                  ),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        'Total Count',
+                        style: pw.TextStyle(
+                            fontSize: 12, fontWeight: pw.FontWeight.bold),
+                      ),
+                      pw.Text(
+                        grandTotal.toString(),
+                        style: pw.TextStyle(
+                            fontSize: 20, fontWeight: pw.FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            pw.SizedBox(height: 8),
+            pw.Text(
+              'Date: ${DateTime.now().toString().substring(0, 10)}',
+              style: pw.TextStyle(fontSize: 14),
+            ),
+            pw.SizedBox(height: 16),
+
+            // Count breakdown
+            pw.Container(
+              padding: const pw.EdgeInsets.all(12),
+              decoration: pw.BoxDecoration(
+                color: PdfColors.grey100,
+                borderRadius: pw.BorderRadius.circular(6),
+              ),
+              child: pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+                children: [
+                  pw.Column(
+                    children: [
+                      pw.Text('Regular Meals',
+                          style: pw.TextStyle(fontSize: 12)),
+                      pw.Text(regularMealCount.toString(),
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                  pw.Column(
+                    children: [
+                      pw.Text('Bulk Meals', style: pw.TextStyle(fontSize: 12)),
+                      pw.Text(bulkMealCount.toString(),
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                  pw.Column(
+                    children: [
+                      pw.Text('Meeting Food',
+                          style: pw.TextStyle(fontSize: 12)),
+                      pw.Text(meetingFoodCount.toString(),
+                          style: pw.TextStyle(
+                              fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            pw.SizedBox(height: 20),
+          ],
+        );
+      }
+
+      // Helper function to create page footer
+      pw.Widget _buildPageFooter(int pageNumber) {
+        return pw.Container(
+          alignment: pw.Alignment.center,
+          margin: const pw.EdgeInsets.only(top: 20),
+          child: pw.Text(
+            'Page $pageNumber',
+            style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+          ),
+        );
+      }
+
+      // Create content widgets list
+      List<pw.Widget> contentWidgets = [];
+
+      // --- Regular Meal Section ---
+      if (details.isNotEmpty) {
+        contentWidgets.add(
+          pw.Text(
+            'Regular Meals (${details.length})',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+        );
+        contentWidgets.add(pw.SizedBox(height: 8));
+
+        // Add regular meal items in batches to prevent overflow
+        const int itemsPerBatch = 15; // Adjust based on your needs
+        for (int i = 0; i < details.length; i += itemsPerBatch) {
+          final batch = details.skip(i).take(itemsPerBatch).toList();
+          contentWidgets.add(
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: batch
+                  .map((item) => pw.Container(
+                        padding: const pw.EdgeInsets.only(bottom: 8),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            pw.Text(
+                              item['name'] ?? '',
+                              style: pw.TextStyle(
+                                  fontSize: 14, fontWeight: pw.FontWeight.bold),
+                            ),
+                            if ((item['type'] ?? '').isNotEmpty)
+                              pw.Text(item['type']!,
+                                  style: pw.TextStyle(fontSize: 12)),
+                            if ((item['room'] ?? '').isNotEmpty)
+                              pw.Text(item['room']!,
+                                  style: pw.TextStyle(fontSize: 12)),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+          );
+
+          // Add page break if not the last batch
+          if (i + itemsPerBatch < details.length) {
+            contentWidgets.add(pw.NewPage());
+          }
+        }
+        contentWidgets.add(pw.SizedBox(height: 20));
+      }
+
+      // --- Bulk Meal Section ---
+      if (bulkMealCount > 0) {
+        contentWidgets.add(
+          pw.Text(
+            'Bulk Food Meals (${bulkMealCount})',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+        );
+        contentWidgets.add(pw.SizedBox(height: 8));
+
+        final bulkMealWidgets = <pw.Widget>[];
+        for (final bulkMeal in todayBulkMeals) {
+          int mealCount = 0;
+          switch (mealType) {
+            case 'breakfast':
+              mealCount = bulkMeal.breakfastCount;
+              break;
+            case 'lunch':
+              mealCount = bulkMeal.lunchCount;
+              break;
+            case 'dinner':
+              mealCount = bulkMeal.dinnerCount;
+              break;
+          }
+          if (mealCount > 0) {
+            bulkMealWidgets.add(
+              pw.Container(
+                padding: const pw.EdgeInsets.only(bottom: 8),
                 child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Text(
-                      'Total Count',
-                      style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
+                      'Department: ${bulkMeal.departmentNames}',
+                      style: pw.TextStyle(
+                          fontSize: 14, fontWeight: pw.FontWeight.bold),
                     ),
+                    pw.Text('Count: $mealCount',
+                        style: pw.TextStyle(fontSize: 12)),
                     pw.Text(
-                      grandTotal.toString(),
-                      style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold),
+                      'Date: ${DateFormat('dd MMM yyyy').format(bulkMeal.date)}',
+                      style: pw.TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
-          pw.SizedBox(height: 8),
+            );
+          }
+        }
+
+        contentWidgets.addAll(bulkMealWidgets);
+        contentWidgets.add(pw.SizedBox(height: 20));
+      }
+
+      // --- Meeting Food Section ---
+      if (todayMeetingTotals != null && todayMeetingTotals.totalCount > 0) {
+        contentWidgets.add(
           pw.Text(
-            'Date: ${DateTime.now().toString().substring(0, 10)}',
+            'Meeting Food Requirements (${meetingFoodCount})',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+          ),
+        );
+        contentWidgets.add(pw.SizedBox(height: 8));
+        contentWidgets.add(
+          pw.Text(
+            'Date: ${DateFormat('dd MMM yyyy').format(selectedDate)}',
             style: pw.TextStyle(fontSize: 14),
           ),
-          pw.SizedBox(height: 16),
-          
-          // Count breakdown
+        );
+        contentWidgets.add(pw.SizedBox(height: 12));
+
+        // Food requirements table
+        contentWidgets.add(
           pw.Container(
             padding: const pw.EdgeInsets.all(12),
             decoration: pw.BoxDecoration(
-              color: PdfColors.grey100,
+              border: pw.Border.all(color: PdfColors.grey400),
               borderRadius: pw.BorderRadius.circular(6),
             ),
-            child: pw.Row(
-              mainAxisAlignment: pw.MainAxisAlignment.spaceAround,
+            child: pw.Column(
               children: [
-                pw.Column(
+                // Table header
+                pw.Row(
                   children: [
-                    pw.Text('Regular Meals', style: pw.TextStyle(fontSize: 12)),
-                    pw.Text(regularMealCount.toString(), style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    pw.Expanded(
+                      flex: 3,
+                      child: pw.Text(
+                        'Food Item',
+                        style: pw.TextStyle(
+                            fontSize: 14, fontWeight: pw.FontWeight.bold),
+                      ),
+                    ),
+                    pw.Expanded(
+                      flex: 1,
+                      child: pw.Text(
+                        'Count',
+                        style: pw.TextStyle(
+                            fontSize: 14, fontWeight: pw.FontWeight.bold),
+                        textAlign: pw.TextAlign.center,
+                      ),
+                    ),
                   ],
                 ),
-                pw.Column(
-                  children: [
-                    pw.Text('Bulk Meals', style: pw.TextStyle(fontSize: 12)),
-                    pw.Text(bulkMealCount.toString(), style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
-                  ],
+                pw.SizedBox(height: 8),
+                pw.Divider(),
+                pw.SizedBox(height: 8),
+
+                // Food items
+                ...todayMeetingTotals.activeFoodItems.map(
+                  (item) => pw.Padding(
+                    padding: const pw.EdgeInsets.only(bottom: 6),
+                    child: pw.Row(
+                      children: [
+                        pw.Expanded(
+                          flex: 3,
+                          child: pw.Text(
+                            item.name,
+                            style: pw.TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        pw.Expanded(
+                          flex: 1,
+                          child: pw.Text(
+                            item.count.toString(),
+                            style: pw.TextStyle(
+                                fontSize: 12, fontWeight: pw.FontWeight.bold),
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                pw.Column(
+
+                // Total row
+                pw.Divider(),
+                pw.SizedBox(height: 6),
+                pw.Row(
                   children: [
-                    pw.Text('Meeting Food', style: pw.TextStyle(fontSize: 12)),
-                    pw.Text(meetingFoodCount.toString(), style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+                    pw.Expanded(
+                      flex: 3,
+                      child: pw.Text(
+                        'Total Meeting Food',
+                        style: pw.TextStyle(
+                            fontSize: 14, fontWeight: pw.FontWeight.bold),
+                      ),
+                    ),
+                    pw.Expanded(
+                      flex: 1,
+                      child: pw.Text(
+                        todayMeetingTotals.totalCount.toString(),
+                        style: pw.TextStyle(
+                            fontSize: 14, fontWeight: pw.FontWeight.bold),
+                        textAlign: pw.TextAlign.center,
+                      ),
+                    ),
                   ],
                 ),
               ],
             ),
           ),
-          pw.SizedBox(height: 20),
-        ],
-      );
-    }
+        );
+        contentWidgets.add(pw.SizedBox(height: 12));
 
-    // Helper function to create page footer
-    pw.Widget _buildPageFooter(int pageNumber) {
-      return pw.Container(
-        alignment: pw.Alignment.center,
-        margin: const pw.EdgeInsets.only(top: 20),
-        child: pw.Text(
-          'Page $pageNumber',
-          style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
-        ),
-      );
-    }
-
-    // Create content widgets list
-    List<pw.Widget> contentWidgets = [];
-
-    // --- Regular Meal Section ---
-    if (details.isNotEmpty) {
-      contentWidgets.add(
-        pw.Text(
-          'Regular Meals (${details.length})',
-          style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-        ),
-      );
-      contentWidgets.add(pw.SizedBox(height: 8));
-      
-      // Add regular meal items in batches to prevent overflow
-      const int itemsPerBatch = 15; // Adjust based on your needs
-      for (int i = 0; i < details.length; i += itemsPerBatch) {
-        final batch = details.skip(i).take(itemsPerBatch).toList();
+        // Meeting count summary
         contentWidgets.add(
-          pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: batch.map((item) => pw.Container(
-              padding: const pw.EdgeInsets.only(bottom: 8),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    item['name'] ?? '',
-                    style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                  ),
-                  if ((item['type'] ?? '').isNotEmpty)
-                    pw.Text(item['type']!, style: pw.TextStyle(fontSize: 12)),
-                  if ((item['room'] ?? '').isNotEmpty)
-                    pw.Text(item['room']!, style: pw.TextStyle(fontSize: 12)),
-                ],
-              ),
-            )).toList(),
+          pw.Text(
+            'From ${meetings.length} meeting(s) on ${DateFormat('dd MMM yyyy').format(selectedDate)}',
+            style: pw.TextStyle(fontSize: 12, color: PdfColors.grey600),
           ),
         );
-        
-        // Add page break if not the last batch
-        if (i + itemsPerBatch < details.length) {
-          contentWidgets.add(pw.NewPage());
-        }
       }
-      contentWidgets.add(pw.SizedBox(height: 20));
-    }
 
-    // --- Bulk Meal Section ---
-    if (bulkMealCount > 0) {
-      contentWidgets.add(
-        pw.Text(
-          'Bulk Food Meals (${bulkMealCount})',
-          style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
+      // Build pages with automatic page breaks
+      int pageNumber = 1;
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(20),
+          header: (pw.Context context) {
+            return context.pageNumber == 1
+                ? _buildHeader()
+                : pw.Container(
+                    margin: const pw.EdgeInsets.only(bottom: 20),
+                    child: pw.Text(
+                      '$mealLabel - Detailed List (Continued)',
+                      style: pw.TextStyle(
+                          fontSize: 18, fontWeight: pw.FontWeight.bold),
+                    ),
+                  );
+          },
+          footer: (pw.Context context) {
+            final currentPage = context.pageNumber;
+            final totalPages = context.pagesCount;
+            return pw.Container(
+              alignment: pw.Alignment.center,
+              margin: const pw.EdgeInsets.only(top: 20),
+              child: pw.Text(
+                'Page $currentPage of $totalPages',
+                style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
+              ),
+            );
+          },
+          build: (pw.Context context) {
+            return contentWidgets;
+          },
         ),
       );
-      contentWidgets.add(pw.SizedBox(height: 8));
-      
-      final bulkMealWidgets = <pw.Widget>[];
-      for (final bulkMeal in todayBulkMeals) {
-        int mealCount = 0;
-        switch (mealType) {
-          case 'breakfast':
-            mealCount = bulkMeal.breakfastCount;
-            break;
-          case 'lunch':
-            mealCount = bulkMeal.lunchCount;
-            break;
-          case 'dinner':
-            mealCount = bulkMeal.dinnerCount;
-            break;
-        }
-        if (mealCount > 0) {
-          bulkMealWidgets.add(
-            pw.Container(
-              padding: const pw.EdgeInsets.only(bottom: 8),
-              child: pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(
-                    'Department: ${bulkMeal.departmentNames}',
-                    style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                  ),
-                  pw.Text('Count: $mealCount', style: pw.TextStyle(fontSize: 12)),
-                  pw.Text(
-                    'Date: ${DateFormat('dd MMM yyyy').format(bulkMeal.date)}',
-                    style: pw.TextStyle(fontSize: 12),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-      }
-      
-      contentWidgets.addAll(bulkMealWidgets);
-      contentWidgets.add(pw.SizedBox(height: 20));
-    }
 
-    // --- Meeting Food Section ---
-    if (todayMeetingTotals != null && todayMeetingTotals.totalCount > 0) {
-      contentWidgets.add(
-        pw.Text(
-          'Meeting Food Requirements (${meetingFoodCount})',
-          style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-        ),
-      );
-      contentWidgets.add(pw.SizedBox(height: 8));
-      contentWidgets.add(
-        pw.Text(
-          'Date: ${DateFormat('dd MMM yyyy').format(selectedDate)}',
-          style: pw.TextStyle(fontSize: 14),
-        ),
-      );
-      contentWidgets.add(pw.SizedBox(height: 12));
-      
-      // Food requirements table
-      contentWidgets.add(
-        pw.Container(
-          padding: const pw.EdgeInsets.all(12),
-          decoration: pw.BoxDecoration(
-            border: pw.Border.all(color: PdfColors.grey400),
-            borderRadius: pw.BorderRadius.circular(6),
-          ),
-          child: pw.Column(
-            children: [
-              // Table header
-              pw.Row(
+      progress.value = 1.0;
+      final output = await getTemporaryDirectory();
+      file = File(
+          '${output.path}/$mealLabel-complete-summary-${DateTime.now().toString().substring(0, 10)}.pdf');
+      await file.writeAsBytes(await pdf.save());
+      Navigator.of(context, rootNavigator: true).pop();
+
+      if (shareInsteadOfOpen) {
+        await Share.shareXFiles([XFile(file.path)],
+            text: '$mealLabel Complete Summary');
+      } else {
+        await OpenFile.open(file.path);
+        showDialog(
+          context: context,
+          builder: (ctx) => Dialog(
+            backgroundColor: Colors.white,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            elevation: 8,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  pw.Expanded(
-                    flex: 3,
-                    child: pw.Text(
-                      'Food Item',
-                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                    ),
+                  Text(
+                    'PDF Generated',
+                    style: TextStyleClass.poppinsBold(
+                        fontSize: 20, color: ColorClass.brandDarkGreen),
                   ),
-                  pw.Expanded(
-                    flex: 1,
-                    child: pw.Text(
-                      'Count',
-                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                      textAlign: pw.TextAlign.center,
-                    ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Would you like to share this PDF?',
+                    style: TextStyleClass.poppinsMedium(
+                        fontSize: 16, color: ColorClass.neutral400),
                   ),
-                ],
-              ),
-              pw.SizedBox(height: 8),
-              pw.Divider(),
-              pw.SizedBox(height: 8),
-              
-              // Food items
-              ...todayMeetingTotals.activeFoodItems.map((item) => 
-                pw.Padding(
-                  padding: const pw.EdgeInsets.only(bottom: 6),
-                  child: pw.Row(
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      pw.Expanded(
-                        flex: 3,
-                        child: pw.Text(
-                          item.name,
-                          style: pw.TextStyle(fontSize: 12),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: ColorClass.brandDarkGreen,
+                          textStyle:
+                              TextStyleClass.poppinsSemiBold(fontSize: 16),
                         ),
+                        onPressed: () async {
+                          navigateBack(ctx);
+                          if (file != null) {
+                            await Share.shareXFiles([XFile(file.path)],
+                                text: '$mealLabel Complete Summary');
+                          }
+                        },
+                        child: const Text('Share'),
                       ),
-                      pw.Expanded(
-                        flex: 1,
-                        child: pw.Text(
-                          item.count.toString(),
-                          style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold),
-                          textAlign: pw.TextAlign.center,
+                      const SizedBox(width: 8),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          foregroundColor: ColorClass.neutral400,
+                          textStyle: TextStyleClass.poppinsMedium(fontSize: 16),
                         ),
+                        onPressed: () => navigateBack(ctx),
+                        child: const Text('Close'),
                       ),
                     ],
                   ),
-                ),
-              ),
-              
-              // Total row
-              pw.Divider(),
-              pw.SizedBox(height: 6),
-              pw.Row(
-                children: [
-                  pw.Expanded(
-                    flex: 3,
-                    child: pw.Text(
-                      'Total Meeting Food',
-                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                    ),
-                  ),
-                  pw.Expanded(
-                    flex: 1,
-                    child: pw.Text(
-                      todayMeetingTotals.totalCount.toString(),
-                      style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
-                      textAlign: pw.TextAlign.center,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
-      contentWidgets.add(pw.SizedBox(height: 12));
-      
-      // Meeting count summary
-      contentWidgets.add(
-        pw.Text(
-          'From ${meetings.length} meeting(s) on ${DateFormat('dd MMM yyyy').format(selectedDate)}',
-          style: pw.TextStyle(fontSize: 12, color: PdfColors.grey600),
-        ),
-      );
-    }
-
-    // Build pages with automatic page breaks
-    int pageNumber = 1;
-    pdf.addPage(
-      pw.MultiPage(
-        pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(20),
-        header: (pw.Context context) {
-          return context.pageNumber == 1 ? _buildHeader() : pw.Container(
-            margin: const pw.EdgeInsets.only(bottom: 20),
-            child: pw.Text(
-              '$mealLabel - Detailed List (Continued)',
-              style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-            ),
-          );
-        },
-        footer: (pw.Context context) {
-          final currentPage = context.pageNumber;
-          final totalPages = context.pagesCount;
-          return pw.Container(
-            alignment: pw.Alignment.center,
-            margin: const pw.EdgeInsets.only(top: 20),
-            child: pw.Text(
-              'Page $currentPage of $totalPages',
-              style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
-            ),
-          );
-        },
-        build: (pw.Context context) {
-          return contentWidgets;
-        },
-      ),
-    );
-    
-    progress.value = 1.0;
-    final output = await getTemporaryDirectory();
-    file = File('${output.path}/$mealLabel-complete-summary-${DateTime.now().toString().substring(0, 10)}.pdf');
-    await file.writeAsBytes(await pdf.save());
-    Navigator.of(context, rootNavigator: true).pop();
-    
-    if (shareInsteadOfOpen) {
-      await Share.shareXFiles([XFile(file.path)], text: '$mealLabel Complete Summary');
-    } else {
-      await OpenFile.open(file.path);
-      showDialog(
-        context: context,
-        builder: (ctx) => Dialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          elevation: 8,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'PDF Generated',
-                  style: TextStyleClass.poppinsBold(fontSize: 20, color: ColorClass.brandDarkGreen),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Would you like to share this PDF?',
-                  style: TextStyleClass.poppinsMedium(fontSize: 16, color: ColorClass.neutral400),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: ColorClass.brandDarkGreen,
-                        textStyle: TextStyleClass.poppinsSemiBold(fontSize: 16),
-                      ),
-                      onPressed: () async {
-                        navigateBack(ctx);
-                        if (file != null) {
-                          await Share.shareXFiles([XFile(file.path)], text: '$mealLabel Complete Summary');
-                        }
-                      },
-                      child: const Text('Share'),
-                    ),
-                    const SizedBox(width: 8),
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: ColorClass.neutral400,
-                        textStyle: TextStyleClass.poppinsMedium(fontSize: 16),
-                      ),
-                      onPressed: () => navigateBack(ctx),
-                      child: const Text('Close'),
-                    ),
-                  ],
-                ),
                 ],
               ),
             ),
           ),
         );
-      
+      }
+    } catch (e) {
+      Navigator.of(context, rootNavigator: true).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate PDF: $e')),
+      );
     }
-  } catch (e) {
-    Navigator.of(context, rootNavigator: true).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to generate PDF: $e')),
-    );
   }
-}
 
   // Date picker for meeting food requirements
-  void _selectMeetingFoodDate(BuildContext context, MeetingFoodProvider provider) async {
+  void _selectMeetingFoodDate(
+      BuildContext context, MeetingFoodProvider provider) async {
     final availableDates = provider.availableDates;
     if (availableDates.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1607,11 +1808,9 @@ Future<void> generateAndShareAllPdf(
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-        
           backgroundColor: ColorClass.brandDarkGreen,
           iconTheme: const IconThemeData(color: Colors.white),
           title: Text(
-            
             tabTitles[navProvider.selectedIndex],
             style: TextStyleClass.poppinsSemiBold(
               fontSize: 20,
@@ -1650,7 +1849,6 @@ Future<void> generateAndShareAllPdf(
               ),
               label: 'Home',
             ),
-            
             BottomNavigationBarItem(
               icon: Icon(LucideIcons.settings,
                   size: 22, color: ColorClass.neutral400),

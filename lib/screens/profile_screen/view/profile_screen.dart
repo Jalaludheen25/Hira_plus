@@ -31,11 +31,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final profileProvider = Provider.of<ProfileScreenProvider>(context, listen: false);
+      final profileProvider =
+          Provider.of<ProfileScreenProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final token = await authProvider.getAuthToken();
       if (token != null && token.isNotEmpty) {
-        await profileProvider.fetchAndSetProfile(token: token, userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'));
+        await profileProvider.fetchAndSetProfile(
+            token: token,
+            userType: authProvider.userType.toLowerCase().replaceAll(' ', '_'));
       }
     });
   }
@@ -82,9 +85,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Privacy Policy',
                     icon: LucideIcons.shieldCheck,
                     onTap: () async {
-                      final Uri url = Uri.parse(
-                          'https://www.termsfeed.com/live/4e2e2e2e-privacy-policy');
-                      await launchUrl(url, mode: LaunchMode.externalApplication);
+                      final Uri url =
+                          Uri.parse('https://d4dx.co/privacy-policy/');
+                      await launchUrl(url,
+                          mode: LaunchMode.externalApplication);
                     },
                   ),
                   CustomDrawerItem(
@@ -135,8 +139,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         builder: (BuildContext context) {
                           return LogoutConfirmationBottomSheet(
                             onLogout: () async {
-                              widget._logger
-                                  .i('🔄 [LOGOUT] User initiated logout process');
+                              widget._logger.i(
+                                  '🔄 [LOGOUT] User initiated logout process');
 
                               // Reset bottom nav to initial index
                               Provider.of<BottomNavProvider>(
