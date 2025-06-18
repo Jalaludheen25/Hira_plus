@@ -19,17 +19,17 @@ class MessagesProvider extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-    debugPrint('[MessagesProvider] Fetching messages from: \\${ApiUrls.getMessages()}');
+    debugPrint('[MessagesProvider] Fetching messages from: ${ApiUrls.getMessages()}');
     try {
       final response = await HttpServiceUtils.fetchData(ApiUrls.getMessages(), true);
-      debugPrint('[MessagesProvider] Fetched messages response: \\${response.toString()}');
+      debugPrint('[MessagesProvider] Fetched messages response: ${response.toString()}');
       if (response is List) {
         _messages = response.map((e) => MessageModel.fromJson(e)).toList();
       } else {
         _messages = [];
       }
     } catch (e) {
-      debugPrint('[MessagesProvider] Error fetching messages: \\${e.toString()}');
+      debugPrint('[MessagesProvider] Error fetching messages: ${e.toString()}');
       _error = e.toString();
     }
     _isLoading = false;
@@ -46,22 +46,27 @@ class MessagesProvider extends ChangeNotifier {
       level: 800,
     );
     developer.log('Title: $title, Description: $description', name: 'MessagesProvider.createMessage');
-    debugPrint('[MessagesProvider] Creating message at: \\${ApiUrls.createMessage()}');
+    debugPrint('[MessagesProvider] Creating message at: ${ApiUrls.createMessage()}');
     try {
       final data = {'title': title, 'description': description};
       developer.log('POST data: $data', name: 'MessagesProvider.createMessage');
       final response = await HttpServiceUtils.postData(ApiUrls.createMessage(), data);
       developer.log('POST response: $response', name: 'MessagesProvider.createMessage');
-      debugPrint('[MessagesProvider] Created message response: \\${response.toString()}');
-      final decoded = jsonDecode(response);
-      final message = MessageModel.fromJson(decoded['data']);
-      developer.log('Parsed MessageModel: \\${message.toString()}', name: 'MessagesProvider.createMessage');
-      _isLoading = false;
-      notifyListeners();
-      return message;
+      debugPrint('[MessagesProvider] Created message response: ${response.toString()}');
+      
+      // The response is already a Map, no need to decode it again
+      if (response is Map<String, dynamic> && response.containsKey('data')) {
+        final message = MessageModel.fromJson(response['data']);
+        developer.log('Parsed MessageModel: ${message.toString()}', name: 'MessagesProvider.createMessage');
+        _isLoading = false;
+        notifyListeners();
+        return message;
+      } else {
+        throw Exception('Invalid response format');
+      }
     } catch (e, stack) {
       developer.log('Error creating message', name: 'MessagesProvider.createMessage', error: e, stackTrace: stack, level: 1000);
-      debugPrint('[MessagesProvider] Error creating message: \\${e.toString()}');
+      debugPrint('[MessagesProvider] Error creating message: ${e.toString()}');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -79,9 +84,9 @@ class MessagesProvider extends ChangeNotifier {
       level: 800,
     );
     developer.log('Message ID: $id', name: 'MessagesProvider.sendMessage');
-    debugPrint('[MessagesProvider] Sending message at: \\${ApiUrls.sendMessage(id)}');
+    debugPrint('[MessagesProvider] Sending message at: ${ApiUrls.sendMessage(id)}');
     try {
-      developer.log('POST to: \\${ApiUrls.sendMessage(id)}', name: 'MessagesProvider.sendMessage');
+      developer.log('POST to: ${ApiUrls.sendMessage(id)}', name: 'MessagesProvider.sendMessage');
       final response = await HttpServiceUtils.postData(ApiUrls.sendMessage(id), {});
       final decoded = jsonDecode(response);
       developer.log('Send message response: $decoded', name: 'MessagesProvider.sendMessage');
@@ -108,7 +113,7 @@ class MessagesProvider extends ChangeNotifier {
       return true;
     } catch (e, stack) {
       developer.log('Error sending message', name: 'MessagesProvider.sendMessage', error: e, stackTrace: stack, level: 1000);
-      debugPrint('[MessagesProvider] Error sending message: \\${e.toString()}');
+      debugPrint('[MessagesProvider] Error sending message: ${e.toString()}');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
