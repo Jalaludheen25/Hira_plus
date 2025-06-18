@@ -169,6 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         return Scaffold(
           body: Container(
+            height: MediaQuery.of(context).size.height,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
@@ -187,10 +188,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 FocusScope.of(context).unfocus();
               },
               child: SafeArea(
+                bottom: false,
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+                    padding: EdgeInsets.fromLTRB(
+                        24, 40, 24, MediaQuery.of(context).padding.bottom + 40),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -203,17 +205,19 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // Clear OTP and password fields when going back
                                 authProvider.setOtp('');
                                 authProvider.setPassword('');
-                                
+
                                 // Go back to the first screen
                                 authProvider.setShowOTPField(false);
-                                
-                                developer.log('⬅️ Navigating back to input screen', 
+
+                                developer.log(
+                                    '⬅️ Navigating back to input screen',
                                     name: 'LoginScreen');
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(8),
                                 decoration: BoxDecoration(
-                                  color: ColorClass.brandLightGreen.withOpacity(0.15),
+                                  color: ColorClass.brandLightGreen
+                                      .withOpacity(0.15),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
@@ -250,7 +254,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
-                                    height: 1.2, // Proper line height to prevent clipping
+                                    height:
+                                        1.2, // Proper line height to prevent clipping
                                   ),
                                 ),
                               ),
@@ -259,7 +264,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 'Your Digital Mess Companion',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: ColorClass.brandLightGreen.withOpacity(0.8),
+                                  color: ColorClass.brandLightGreen
+                                      .withOpacity(0.8),
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -271,7 +277,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (!authProvider.showOTPField)
                           GestureDetector(
                             onTap: () async {
-                              final selected = await showModalBottomSheet<String>(
+                              final selected =
+                                  await showModalBottomSheet<String>(
                                 context: context,
                                 shape: const RoundedRectangleBorder(
                                   borderRadius: BorderRadius.vertical(
@@ -307,15 +314,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 20),
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               height: 56,
                               decoration: BoxDecoration(
                                 color: ColorClass.brandWhite,
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color:
-                                        ColorClass.brandLightGreen.withOpacity(0.1),
+                                    color: ColorClass.brandLightGreen
+                                        .withOpacity(0.1),
                                     spreadRadius: 2,
                                     blurRadius: 15,
                                     offset: const Offset(0, 4),
@@ -323,7 +331,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ],
                               ),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
@@ -338,7 +347,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ],
                                   ),
                                   const Icon(Icons.keyboard_arrow_down_rounded,
-                                      color: ColorClass.brandDarkGreen, size: 28),
+                                      color: ColorClass.brandDarkGreen,
+                                      size: 28),
                                 ],
                               ),
                             ),
@@ -352,8 +362,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color:
-                                      ColorClass.brandLightGreen.withOpacity(0.1),
+                                  color: ColorClass.brandLightGreen
+                                      .withOpacity(0.1),
                                   spreadRadius: 2,
                                   blurRadius: 15,
                                   offset: const Offset(0, 4),
@@ -384,7 +394,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                               ),
                               onPressed: () async {
                                 if (useOtpAuth) {
@@ -397,20 +408,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                       title: const Text(
                                           'Please enter a valid 10-digit phone number'),
                                       type: ToastificationType.error,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                     return;
                                   }
                                   authProvider
                                       .setPhone(_phoneController.text.trim());
                                   try {
-                                    await authProvider
-                                        .requestOtp(_phoneController.text.trim());
+                                    await authProvider.requestOtp(
+                                        _phoneController.text.trim());
                                     toastification.show(
                                       context: context,
-                                      title: const Text('OTP sent successfully'),
+                                      title:
+                                          const Text('OTP sent successfully'),
                                       type: ToastificationType.success,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                   } catch (e) {
                                     toastification.show(
@@ -418,7 +432,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       title: Text(
                                           'Failed to send OTP: ${e.toString()}'),
                                       type: ToastificationType.error,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                     return;
                                   }
@@ -432,12 +447,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                       title: const Text(
                                           'Please enter a valid username (at least 3 characters)'),
                                       type: ToastificationType.error,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                     return;
                                   }
-                                  authProvider
-                                      .setUsername(_usernameController.text.trim());
+                                  authProvider.setUsername(
+                                      _usernameController.text.trim());
                                 }
 
                                 // Log the transition
@@ -449,7 +465,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               child: const Text('Continue',
                                   style: TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.bold)),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ),
 
@@ -464,7 +481,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
                               ),
                               onPressed: () async {
                                 // Validate based on authentication type
@@ -495,13 +513,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                       title: const Text(
                                           'Please enter a valid 6-digit OTP'),
                                       type: ToastificationType.error,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                     return;
                                   }
 
                                   try {
-                                    await authProvider.fetchVerifyOtpToken(context);
+                                    await authProvider
+                                        .fetchVerifyOtpToken(context);
                                     developer.log(
                                         '✅ User authentication successful',
                                         name: 'LoginScreen');
@@ -522,26 +542,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                       authProvider.setShowOTPField(false);
                                     }
 
-                                    _logger.i('🔄 [STATE] Login flow completed');
+                                    _logger
+                                        .i('🔄 [STATE] Login flow completed');
                                     developer.log(
                                         '✅ Login flow completed successfully',
                                         name: 'LoginScreen');
                                   } catch (e) {
-                                    developer.log('❌ User authentication error: $e',
-                                        name: 'LoginScreen', error: e);
+                                    developer.log(
+                                        '❌ User authentication error: $e',
+                                        name: 'LoginScreen',
+                                        error: e);
 
                                     toastification.show(
                                       context: context,
                                       title: Text(
                                           'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
                                       type: ToastificationType.error,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                     return;
                                   }
                                 } else {
                                   // Handle password validation
-                                  if (!isValidPassword(_passwordController.text)) {
+                                  if (!isValidPassword(
+                                      _passwordController.text)) {
                                     developer.log('❌ Invalid password format',
                                         name: 'LoginScreen');
 
@@ -550,14 +575,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                       title: const Text(
                                           'Password must be at least 4 characters'),
                                       type: ToastificationType.error,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                     return;
                                   }
 
                                   try {
-                                    if (authProvider.selectedRole == 'Mess Staff') {
-                                      await authProvider.authenticateMessStaff();
+                                    if (authProvider.selectedRole ==
+                                        'Mess Staff') {
+                                      await authProvider
+                                          .authenticateMessStaff();
                                       if (!mounted) return;
                                       developer.log(
                                           '✅ Mess Staff authentication successful',
@@ -569,14 +597,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                       developer.log(
                                           '✅ Manager authentication successful',
                                           name: 'LoginScreen');
-                                    } else if (authProvider.selectedRole == 'Reception') {
-                                      await authProvider.authenticateReception();
+                                    } else if (authProvider.selectedRole ==
+                                        'Reception') {
+                                      await authProvider
+                                          .authenticateReception();
                                       if (!mounted) return;
                                       developer.log(
                                           '✅ Reception authentication successful',
                                           name: 'LoginScreen');
                                     } else {
-                                      await authProvider.simulateSuccessfulAuth();
+                                      await authProvider
+                                          .simulateSuccessfulAuth();
                                       if (!mounted) return;
                                       developer.log(
                                           '✅ Authentication successful for ${authProvider.selectedRole}',
@@ -597,21 +628,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                     if (!mounted) return;
 
                                     // Navigate to appropriate screen based on role
-                                    if (authProvider.selectedRole == 'Mess Staff') {
-                                      navigatePRToGlobal(route: Routes.messStaff);
+                                    if (authProvider.selectedRole ==
+                                        'Mess Staff') {
+                                      navigatePRToGlobal(
+                                          route: Routes.messStaff);
                                     } else if (authProvider.selectedRole ==
                                         'Manager') {
                                       navigatePRToGlobal(route: Routes.manager);
-                                    } else if (authProvider.selectedRole == 'Reception') {
-                                      navigatePRToGlobal(route: Routes.reception);
+                                    } else if (authProvider.selectedRole ==
+                                        'Reception') {
+                                      navigatePRToGlobal(
+                                          route: Routes.reception);
                                     } else {
-                                      navigatePRToGlobal(route: Routes.bottomNav);
+                                      navigatePRToGlobal(
+                                          route: Routes.bottomNav);
                                     }
 
                                     if (mounted) {
                                       authProvider.setShowOTPField(false);
                                     }
-                                    _logger.i('🔄 [STATE] Login flow completed');
+                                    _logger
+                                        .i('🔄 [STATE] Login flow completed');
                                     developer.log(
                                         '✅ Login flow completed successfully',
                                         name: 'LoginScreen');
@@ -626,7 +663,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       title: Text(
                                           'Authentication failed: ${e.toString().contains('Exception:') ? e.toString().split('Exception:')[1].trim() : 'Please try again'}'),
                                       type: ToastificationType.error,
-                                      autoCloseDuration: const Duration(seconds: 2),
+                                      autoCloseDuration:
+                                          const Duration(seconds: 2),
                                     );
                                     return;
                                   }
@@ -634,7 +672,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               child: Text(useOtpAuth ? 'Validate' : 'Login',
                                   style: const TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.bold)),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold)),
                             ),
                           ),
 
@@ -647,7 +686,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               vertical: 12,
                             ),
                             decoration: BoxDecoration(
-                              color: ColorClass.brandLightGreen.withOpacity(0.1),
+                              color:
+                                  ColorClass.brandLightGreen.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Row(
@@ -656,15 +696,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Icon(
                                   Icons.info_outline,
                                   size: 16,
-                                  color:
-                                      ColorClass.brandLightGreen.withOpacity(0.8),
+                                  color: ColorClass.brandLightGreen
+                                      .withOpacity(0.8),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   'Need help? Contact Hira Manager',
                                   style: TextStyle(
-                                    color:
-                                        ColorClass.brandLightGreen.withOpacity(0.8),
+                                    color: ColorClass.brandLightGreen
+                                        .withOpacity(0.8),
                                     fontSize: 12,
                                   ),
                                 ),
