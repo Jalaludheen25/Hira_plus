@@ -15,7 +15,7 @@ class MeetingFoodModel {
 
   factory MeetingFoodModel.fromJson(Map<String, dynamic> json) {
     Map<String, DailyRequirement> dailyReqs = {};
-    
+
     if (json['dailyRequirements'] != null) {
       (json['dailyRequirements'] as Map<String, dynamic>).forEach((key, value) {
         dailyReqs[key] = DailyRequirement.fromJson(value);
@@ -105,19 +105,21 @@ class OverallTotals {
   }
 
   // Get total count of all meals
-  int get totalCount => breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
+  int get totalCount =>
+      breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
 
   // Get list of food items with their counts
   List<FoodItem> get foodItems => [
-    FoodItem(name: 'Breakfast', count: breakfast),
-    FoodItem(name: 'Mid Morning Snacks', count: midmorningSnacks),
-    FoodItem(name: 'Lunch', count: lunch),
-    FoodItem(name: 'Evening Snacks', count: eveningsnacks),
-    FoodItem(name: 'Dinner', count: dinner),
-  ];
+        FoodItem(name: 'Breakfast', count: breakfast),
+        FoodItem(name: 'Mid Morning Snacks', count: midmorningSnacks),
+        FoodItem(name: 'Lunch', count: lunch),
+        FoodItem(name: 'Evening Snacks', count: eveningsnacks),
+        FoodItem(name: 'Dinner', count: dinner),
+      ];
 
   // Get only food items that have count > 0
-  List<FoodItem> get activeFoodItems => foodItems.where((item) => item.count > 0).toList();
+  List<FoodItem> get activeFoodItems =>
+      foodItems.where((item) => item.count > 0).toList();
 }
 
 class DailyRequirement {
@@ -182,9 +184,13 @@ class Meeting {
     return Meeting(
       id: json['id'] ?? '',
       title: json['title'] ?? '',
-      department: json['department'] ?? '',
-      startTime: DateTime.parse(json['startTime'] ?? DateTime.now().toIso8601String()),
-      endTime: DateTime.parse(json['endTime'] ?? DateTime.now().toIso8601String()),
+      department: (json['department'] is Map)
+          ? (json['department']['title'] ?? '')
+          : json['department'] ?? '',
+      startTime:
+          DateTime.parse(json['startTime'] ?? DateTime.now().toIso8601String()),
+      endTime:
+          DateTime.parse(json['endTime'] ?? DateTime.now().toIso8601String()),
       hall: json['hall'] ?? '',
       noOfPersons: json['noOfPersons'] ?? 0,
       foodCounts: OverallTotals.fromJson(json['foodCounts'] ?? {}),
@@ -208,16 +214,28 @@ class Meeting {
 
   // Get formatted time range
   String get timeRange {
-    final startTimeFormatted = "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}";
-    final endTimeFormatted = "${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}";
+    final startTimeFormatted =
+        "${startTime.hour.toString().padLeft(2, '0')}:${startTime.minute.toString().padLeft(2, '0')}";
+    final endTimeFormatted =
+        "${endTime.hour.toString().padLeft(2, '0')}:${endTime.minute.toString().padLeft(2, '0')}";
     return "$startTimeFormatted - $endTimeFormatted";
   }
 
   // Get formatted date
   String get dateFormatted {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return "${startTime.day} ${months[startTime.month - 1]} ${startTime.year}";
   }

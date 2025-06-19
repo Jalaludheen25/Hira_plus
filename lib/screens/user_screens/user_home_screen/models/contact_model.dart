@@ -15,7 +15,9 @@ class ContactModel {
     return ContactModel(
       name: json['name'] ?? '',
       phoneNumber: json['phoneNumber'] ?? '',
-      department: json['department'] ?? '',
+      department: (json['department'] is Map)
+          ? (json['department']['title'] ?? '')
+          : json['department'] ?? '',
       designation: json['designation'] ?? '',
     );
   }
@@ -43,8 +45,9 @@ class ContactsResponse {
     return ContactsResponse(
       success: json['success'] ?? false,
       users: (json['users'] as List<dynamic>?)
-          ?.map((userJson) => ContactModel.fromJson(userJson))
-          .toList() ?? [],
+              ?.map((userJson) => ContactModel.fromJson(userJson))
+              .toList() ??
+          [],
     );
   }
 

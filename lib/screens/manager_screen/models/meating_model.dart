@@ -44,8 +44,10 @@ class MeetingModel {
       id: json['_id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      startDatetime: DateTime.tryParse(json['startDatetime'] ?? '') ?? DateTime.now(),
-      endDatetime: DateTime.tryParse(json['endDatetime'] ?? '') ?? DateTime.now(),
+      startDatetime:
+          DateTime.tryParse(json['startDatetime'] ?? '') ?? DateTime.now(),
+      endDatetime:
+          DateTime.tryParse(json['endDatetime'] ?? '') ?? DateTime.now(),
       hall: json['hall'] ?? '',
       noOfPersons: json['noOfPersons'] ?? 0,
       foodRequired: json['foodRequired'] ?? false,
@@ -54,7 +56,9 @@ class MeetingModel {
       lunch: json['lunch'] ?? 0,
       eveningsnacks: json['eveningsnacks'] ?? 0,
       dinner: json['dinner'] ?? 0,
-      department: json['department'] ?? '',
+      department: (json['department'] is Map)
+          ? (json['department']['title'] ?? '')
+          : json['department'] ?? '',
       status: json['status'] ?? 'pending',
       createdBy: json['createdBy'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
@@ -98,5 +102,6 @@ class MeetingModel {
     }
   }
 
-  int get totalFoodCount => breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
+  int get totalFoodCount =>
+      breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
 }

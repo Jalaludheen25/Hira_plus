@@ -3,16 +3,55 @@ import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/screens/manager_screen/models/users_list_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 
-
 class UsersProvider extends ChangeNotifier {
   List<UsersListModel> _users = [];
   bool _isLoading = false;
   String? _error;
   bool tempIsVerified = false;
+  String? _selectedDepartment;
 
   List<UsersListModel> get users => List.unmodifiable(_users);
   bool get isLoading => _isLoading;
   String? get error => _error;
+  String? get selectedDepartment => _selectedDepartment;
+
+  // Get total count of users
+  int get totalUsersCount => _users.length;
+
+  // Get unique departments from users
+  List<String> get availableDepartments {
+    final departments = _users
+        .where((user) => user.department != null && user.department!.isNotEmpty)
+        .map((user) => user.department!)
+        .toSet()
+        .toList();
+    departments.sort(); // Sort departments alphabetically
+    return departments;
+  }
+
+  // Get filtered and sorted users
+  List<UsersListModel> get filteredUsers {
+    var filtered = _selectedDepartment == null || _selectedDepartment == 'All'
+        ? _users
+        : _users
+            .where((user) => user.department == _selectedDepartment)
+            .toList();
+
+    // Sort alphabetically by name
+    filtered.sort((a, b) {
+      final nameA = a.name ?? '';
+      final nameB = b.name ?? '';
+      return nameA.toLowerCase().compareTo(nameB.toLowerCase());
+    });
+
+    return filtered;
+  }
+
+  // Set selected department filter
+  void setSelectedDepartment(String? department) {
+    _selectedDepartment = department;
+    notifyListeners();
+  }
 
   Future<void> fetchUsers() async {
     debugPrint('[UsersProvider] fetchUsers called');
@@ -21,13 +60,16 @@ class UsersProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await HttpServiceUtils.fetchData(ApiUrls.getUsers(), true);
+      final response =
+          await HttpServiceUtils.fetchData(ApiUrls.getUsers(), true);
       debugPrint('[UsersProvider] fetchUsers response: $response');
-      _users = (response as List).map((e) => UsersListModel.fromJson(e)).toList();
+      _users =
+          (response as List).map((e) => UsersListModel.fromJson(e)).toList();
       _error = null;
       _isLoading = false;
       notifyListeners();
-      debugPrint('[UsersProvider] fetchUsers success, users count: ${_users.length}');
+      debugPrint(
+          '[UsersProvider] fetchUsers success, users count: ${_users.length}');
     } catch (e) {
       debugPrint('[UsersProvider] fetchUsers error: $e');
       // Do not set error, just keep loading
@@ -38,15 +80,32 @@ class UsersProvider extends ChangeNotifier {
   List<UsersListModel> searchUsers(String query) {
     debugPrint('[UsersProvider] searchUsers called with query: $query');
     final search = query.toLowerCase();
-    return _users.where((user) =>
-      (user.name?.toLowerCase().contains(search) ?? false) ||
-      (user.phoneNumber?.toLowerCase().contains(search) ?? false) ||
-      (user.department?.toLowerCase().contains(search) ?? false) ||
-      (user.designation?.toLowerCase().contains(search) ?? false)
-    ).toList();
+    var searchResults = filteredUsers
+        .where((user) =>
+            (user.name?.toLowerCase().contains(search) ?? false) ||
+            (user.phoneNumber?.toLowerCase().contains(search) ?? false) ||
+            (user.department?.toLowerCase().contains(search) ?? false) ||
+            (user.designation?.toLowerCase().contains(search) ?? false))
+        .toList();
+
+    // Keep alphabetical sorting for search results
+    searchResults.sort((a, b) {
+      final nameA = a.name ?? '';
+      final nameB = b.name ?? '';
+      return nameA.toLowerCase().compareTo(nameB.toLowerCase());
+    });
+
+    return searchResults;
   }
 
-  Future<void> updateUser(String id, String name, String phoneNumber, String department, String designation, bool isVerified, bool isDeptHead) async {
+  Future<void> updateUser(
+      String id,
+      String name,
+      String phoneNumber,
+      String department,
+      String designation,
+      bool isVerified,
+      bool isDeptHead) async {
     debugPrint('[UsersProvider] updateUser called for id: $id');
     try {
       final data = {
@@ -58,7 +117,8 @@ class UsersProvider extends ChangeNotifier {
         "isDeptHead": isDeptHead
       };
       debugPrint('[UsersProvider] updateUser data: $data');
-      debugPrint('Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
+      debugPrint(
+          'Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
       await HttpServiceUtils.putData('${ApiUrls.getUsers()}/$id', data, null);
       await fetchUsers(); // Refresh the list
       debugPrint('[UsersProvider] updateUser success');
@@ -84,7 +144,8 @@ class UsersProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addUser(String name, String phoneNumber, String department, String designation, bool isVerified, bool isDeptHead) async {
+  Future<void> addUser(String name, String phoneNumber, String department,
+      String designation, bool isVerified, bool isDeptHead) async {
     debugPrint('[UsersProvider] addUser called');
     try {
       final data = {
@@ -96,7 +157,8 @@ class UsersProvider extends ChangeNotifier {
         "isDeptHead": isDeptHead
       };
       debugPrint('[UsersProvider] addUser data: $data');
-      debugPrint('Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
+      debugPrint(
+          'Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
       await HttpServiceUtils.postData(ApiUrls.getUsers(), data, null);
       await fetchUsers(); // Refresh the list
       debugPrint('[UsersProvider] addUser success');
@@ -112,4 +174,4 @@ class UsersProvider extends ChangeNotifier {
     tempIsVerified = value;
     notifyListeners();
   }
-} 
+}

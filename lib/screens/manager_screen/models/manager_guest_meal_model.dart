@@ -10,7 +10,7 @@ class ManagerGuestMealModel {
   final int dinnerCount;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final int version; 
+  final int version;
 
   ManagerGuestMealModel({
     required this.id,
@@ -62,7 +62,9 @@ class ManagerGuestMealModel {
       // Handle both _id (MongoDB) and id formats
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
       date: parseDate(json['date']),
-      department: json['department']?.toString() ?? '',
+      department: (json['department'] is Map)
+          ? (json['department']['title'] ?? '').toString()
+          : json['department']?.toString() ?? '',
       addedBy: parseAddedBy(json['addedBy']),
       breakfastCount: parseInt(json['breakfastCount']),
       lunchCount: parseInt(json['lunchCount']),
@@ -93,7 +95,9 @@ class ManagerGuestMealModel {
     return {
       'date': DateFormat('yyyy-MM-dd').format(date),
       'department': department,
-      'addedBy': (addedBy is Map && addedBy['name'] != null) ? addedBy['name'] : addedBy,
+      'addedBy': (addedBy is Map && addedBy['name'] != null)
+          ? addedBy['name']
+          : addedBy,
       'breakfastCount': breakfastCount,
       'lunchCount': lunchCount,
       'dinnerCount': dinnerCount,

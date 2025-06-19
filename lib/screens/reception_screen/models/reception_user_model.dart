@@ -19,7 +19,9 @@ class ReceptionUser {
     return ReceptionUser(
       id: json['_id'] ?? json['id'] ?? '',
       name: json['name'] ?? '',
-      department: json['department'] ?? '',
+      department: (json['department'] is Map)
+          ? (json['department']['title'] ?? '')
+          : json['department'] ?? '',
       designation: json['designation'] ?? '',
       phoneNumber: json['phoneNumber'],
       isVerified: json['isVerified'],

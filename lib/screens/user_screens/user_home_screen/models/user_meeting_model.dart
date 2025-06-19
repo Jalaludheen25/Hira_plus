@@ -46,8 +46,10 @@ class MeetingModel {
       id: json['_id'] ?? json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      startDatetime: DateTime.tryParse(json['startDatetime'] ?? '') ?? DateTime.now(),
-      endDatetime: DateTime.tryParse(json['endDatetime'] ?? '') ?? DateTime.now(),
+      startDatetime:
+          DateTime.tryParse(json['startDatetime'] ?? '') ?? DateTime.now(),
+      endDatetime:
+          DateTime.tryParse(json['endDatetime'] ?? '') ?? DateTime.now(),
       hall: json['hall'] ?? '',
       noOfPersons: json['noOfPersons'] ?? 0,
       foodRequired: json['foodRequired'] ?? false,
@@ -56,7 +58,9 @@ class MeetingModel {
       lunch: json['lunch'] ?? 0,
       eveningsnacks: json['eveningsnacks'] ?? 0,
       dinner: json['dinner'] ?? 0,
-      department: json['department']?.toString() ?? '',
+      department: (json['department'] is Map)
+          ? (json['department']['title'] ?? '').toString()
+          : json['department']?.toString() ?? '',
       status: json['status'] ?? '',
       createdBy: json['createdBy']?.toString() ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
@@ -95,7 +99,8 @@ class MeetingModel {
   bool get isRejected => status.toLowerCase() == 'rejected';
 
   // Helper getter for total food count
-  int get totalFoodCount => breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
+  int get totalFoodCount =>
+      breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
 
   // Helper method to get food breakdown as a string
   String get foodBreakdown {

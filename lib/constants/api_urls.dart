@@ -1,11 +1,14 @@
 class ApiUrls {
+  // Base URLs for the application
   static const String baseUrl = "https://hiraplusapi.dharmadhara.com/api";
   static const String directUsUrl = "https://directus.d4dx.co";
 
+  // ################## FORCE UPDATE API ##################
   static String getForceUpdate() {
     return '$directUsUrl/items/hira_plus_force_update';
   }
 
+  // ################## ADMIN USER MANAGEMENT APIs ##################
   static String getUsers() {
     return '$baseUrl/admin/users';
   }
@@ -22,6 +25,7 @@ class ApiUrls {
     return '$baseUrl/admin/meals/$mealType?date=$date';
   }
 
+  // ################## AUTHENTICATION APIs ##################
   static String getVerifyOtp() {
     return '$baseUrl/auth/verify-otp';
   }
@@ -79,10 +83,12 @@ class ApiUrls {
     return '$baseUrl/admin/messages/$id/send';
   }
 
+  // ################## USER PROFILE ##################
   static String getProfileMe() {
     return '$baseUrl/auth/me';
   }
 
+  // ################## BANNER MANAGEMENT ##################
   static String getBanner() {
     return '$baseUrl/banner';
   }
@@ -116,6 +122,7 @@ class ApiUrls {
   static String adminEditGuestMeals(String id) {
     return '$baseUrl/admin/guest-meals/$id';
   }
+
   // ################## MEETINGS API ##################
 
   /// Get all meetings
@@ -180,6 +187,7 @@ class ApiUrls {
     return '$baseUrl/reception/edit-check-in/$userId';
   }
 
+  // ################## USER MEETINGS ##################
   static String getUserMeetings() {
     return '$baseUrl/auth/meetings'; // GET - show meetings
   }
@@ -205,4 +213,10 @@ class ApiUrls {
   }) {
     return '$baseUrl/mess-staff/meeting-food-requirements?startDate=$startDate&endDate=$endDate';
   }
+
+  // ################## DEPARTMENTS ##################
+  static String departmentsApi() {
+    return '$baseUrl/admin/departments';
+  }
+
 }

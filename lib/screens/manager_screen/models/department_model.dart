@@ -12,8 +12,12 @@ class DepartmentModel {
   factory DepartmentModel.fromJson(Map<String, dynamic> json) {
     return DepartmentModel(
       success: json['success'] ?? false,
-      departments: (json['departments'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      departments: (json['departments'] as List<dynamic>?)
+              ?.map((e) =>
+                  e is Map ? (e['title'] ?? '').toString() : e.toString())
+              .toList() ??
+          [],
       total: json['total'] ?? 0,
     );
   }
-} 
+}

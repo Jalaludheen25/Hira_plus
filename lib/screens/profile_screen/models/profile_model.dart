@@ -26,7 +26,9 @@ class ProfileModel {
       id: json['id'] ?? json['_id'] ?? '',
       name: json['name'] ?? '',
       phoneNumber: json['phoneNumber'] ?? '',
-      department: json['department'] ?? '',
+      department: (json['department'] is Map)
+          ? (json['department']['title'] ?? '')
+          : json['department'] ?? '',
       designation: json['designation'] ?? '',
       isVerified: json['isVerified'] ?? false,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
