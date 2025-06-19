@@ -17,7 +17,8 @@ class MeetingManagementScreen extends StatefulWidget {
   const MeetingManagementScreen({Key? key}) : super(key: key);
 
   @override
-  State<MeetingManagementScreen> createState() => _MeetingManagementScreenState();
+  State<MeetingManagementScreen> createState() =>
+      _MeetingManagementScreenState();
 }
 
 class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
@@ -28,12 +29,14 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
   void initState() {
     super.initState();
     _logger.i('🏗️ [INIT] Initializing Meeting Management Screen');
-    developer.log('🏗️ Initializing Meeting Management Screen', name: 'MeetingManagementScreen');
-    
+    developer.log('🏗️ Initializing Meeting Management Screen',
+        name: 'MeetingManagementScreen');
+
     _provider = MeetingProvider();
     Future.microtask(() {
       _logger.i('🔄 [DATA] Fetching meetings data');
-      developer.log('🔄 Fetching meetings data', name: 'MeetingManagementScreen');
+      developer.log('🔄 Fetching meetings data',
+          name: 'MeetingManagementScreen');
       _provider.fetchMeetings(context);
     });
   }
@@ -41,15 +44,17 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
   @override
   void dispose() {
     _logger.i('🧹 [DISPOSE] Disposing Meeting Management Screen');
-    developer.log('🧹 Disposing Meeting Management Screen', name: 'MeetingManagementScreen');
+    developer.log('🧹 Disposing Meeting Management Screen',
+        name: 'MeetingManagementScreen');
     _provider.dispose();
     super.dispose();
   }
 
   void _navigateToCreateScreen() {
     _logger.i('🧭 [NAVIGATION] Navigating to create meeting screen');
-    developer.log('🧭 Navigating to create meeting screen', name: 'MeetingManagementScreen');
-    
+    developer.log('🧭 Navigating to create meeting screen',
+        name: 'MeetingManagementScreen');
+
     navigateToWidget(
       context: context,
       route: ChangeNotifierProvider.value(
@@ -62,7 +67,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
   // Helper method to build detailed food text
   String _buildFoodDetailsText(MeetingModel meeting) {
     List<String> foodItems = [];
-    
+
     if (meeting.breakfast > 0) {
       foodItems.add('Breakfast (${meeting.breakfast})');
     }
@@ -78,11 +83,11 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
     if (meeting.dinner > 0) {
       foodItems.add('Dinner (${meeting.dinner})');
     }
-    
+
     if (foodItems.isEmpty) {
       return 'Food Required (No items specified)';
     }
-    
+
     return 'Food: ${foodItems.join(', ')}';
   }
 
@@ -108,8 +113,10 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
-                  _logger.i('🔙 [NAVIGATION] Navigating back from meeting management');
-                  developer.log('🔙 Navigating back from meeting management', name: 'MeetingManagementScreen');
+                  _logger.i(
+                      '🔙 [NAVIGATION] Navigating back from meeting management');
+                  developer.log('🔙 Navigating back from meeting management',
+                      name: 'MeetingManagementScreen');
                   navigateBack(context);
                 },
               ),
@@ -131,7 +138,8 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
   Widget _buildBody(MeetingProvider provider) {
     if (provider.isLoading) {
       _logger.d('🔄 [UI] Showing loading state');
-      developer.log('🔄 Showing loading state', name: 'MeetingManagementScreen');
+      developer.log('🔄 Showing loading state',
+          name: 'MeetingManagementScreen');
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -143,10 +151,11 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
         ),
       );
     }
-    
+
     if (provider.errorMessage.isNotEmpty) {
       _logger.e('❌ [ERROR] Error state: ${provider.errorMessage}');
-      developer.log('❌ Error state: ${provider.errorMessage}', name: 'MeetingManagementScreen');
+      developer.log('❌ Error state: ${provider.errorMessage}',
+          name: 'MeetingManagementScreen');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +181,8 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
             ElevatedButton.icon(
               onPressed: () {
                 _logger.i('🔄 [ACTION] Retry button pressed');
-                developer.log('🔄 Retry button pressed', name: 'MeetingManagementScreen');
+                developer.log('🔄 Retry button pressed',
+                    name: 'MeetingManagementScreen');
                 provider.fetchMeetings(context);
               },
               icon: const Icon(LucideIcons.refreshCw),
@@ -186,7 +196,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
         ),
       );
     }
-    
+
     if (provider.meetings.isEmpty) {
       _logger.d('📭 [UI] Showing empty state');
       developer.log('📭 Showing empty state', name: 'MeetingManagementScreen');
@@ -220,14 +230,18 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
         ),
       );
     }
-    
-    _logger.d('📋 [UI] Showing meetings list with ${provider.meetings.length} items');
-    developer.log('📋 Showing meetings list with ${provider.meetings.length} items', name: 'MeetingManagementScreen');
-    
+
+    _logger.d(
+        '📋 [UI] Showing meetings list with ${provider.meetings.length} items');
+    developer.log(
+        '📋 Showing meetings list with ${provider.meetings.length} items',
+        name: 'MeetingManagementScreen');
+
     return RefreshIndicator(
       onRefresh: () {
         _logger.i('🔄 [ACTION] Pull to refresh triggered');
-        developer.log('🔄 Pull to refresh triggered', name: 'MeetingManagementScreen');
+        developer.log('🔄 Pull to refresh triggered',
+            name: 'MeetingManagementScreen');
         return provider.fetchMeetings(context);
       },
       child: ListView.separated(
@@ -243,25 +257,27 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
   }
 
   Widget _buildMeetingCard(MeetingModel meeting, MeetingProvider provider) {
-    final formattedStartDate = DateFormat('EEEE, MMMM d, yyyy').format(meeting.startDatetime);
-    final formattedStartTime = DateFormat('h:mm a').format(meeting.startDatetime);
+    final formattedStartDate =
+        DateFormat('EEEE, MMMM d, yyyy').format(meeting.startDatetime);
+    final formattedStartTime =
+        DateFormat('h:mm a').format(meeting.startDatetime);
     final formattedEndTime = DateFormat('h:mm a').format(meeting.endDatetime);
     final isPending = meeting.isPending;
     final isApproved = meeting.isApproved;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: ColorClass.brandWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isPending 
+          color: isPending
               ? ColorClass.orangeLight.withOpacity(0.5)
               : ColorClass.brandLightGreen.withOpacity(0.3),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: isPending 
+            color: isPending
                 ? ColorClass.orangeLight.withOpacity(0.1)
                 : ColorClass.brandLightGreen.withOpacity(0.1),
             spreadRadius: 1,
@@ -302,9 +318,10 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isPending 
+                    color: isPending
                         ? ColorClass.orangeLighter
                         : ColorClass.brandLightGreen.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -313,32 +330,37 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                     isPending ? 'Pending Approval' : 'Approved',
                     style: TextStyleClass.poppinsSemiBold(
                       fontSize: 12,
-                      color: isPending ? ColorClass.orangeDark : ColorClass.brandDarkGreen,
+                      color: isPending
+                          ? ColorClass.orangeDark
+                          : ColorClass.brandDarkGreen,
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Meeting Details
             _buildDetailRow(LucideIcons.calendar, formattedStartDate),
             const SizedBox(height: 6),
-            _buildDetailRow(LucideIcons.clock, '$formattedStartTime - $formattedEndTime'),
+            _buildDetailRow(
+                LucideIcons.clock, '$formattedStartTime - $formattedEndTime'),
             const SizedBox(height: 6),
             _buildDetailRow(LucideIcons.mapPin, meeting.hall),
             const SizedBox(height: 6),
-            _buildDetailRow(LucideIcons.users, '${meeting.noOfPersons} attendees'),
+            _buildDetailRow(
+                LucideIcons.users, '${meeting.noOfPersons} attendees'),
             const SizedBox(height: 6),
             _buildDetailRow(LucideIcons.building, meeting.department),
-            
+
             if (meeting.foodRequired) ...[
               const SizedBox(height: 6),
-              _buildDetailRow(LucideIcons.utensils, _buildFoodDetailsText(meeting)),
+              _buildDetailRow(
+                  LucideIcons.utensils, _buildFoodDetailsText(meeting)),
             ],
-            
+
             const SizedBox(height: 16),
-            
+
             // Action Buttons based on status
             if (isPending) ...[
               SizedBox(
@@ -415,7 +437,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                 ],
               ),
             ],
-            
+
             const SizedBox(height: 12),
             Text(
               'Created: ${DateFormat('MMM d, h:mm a').format(meeting.createdAt)}',
@@ -454,8 +476,9 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
 
   void _approveMeeting(MeetingModel meeting, MeetingProvider provider) async {
     _logger.i('✅ [ACTION] Approving meeting: ${meeting.id}');
-    developer.log('✅ Approving meeting: ${meeting.id}', name: 'MeetingManagementScreen');
-    
+    developer.log('✅ Approving meeting: ${meeting.id}',
+        name: 'MeetingManagementScreen');
+
     // Show loading indicator
     showDialog(
       context: context,
@@ -464,14 +487,15 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
         child: CircularProgressIndicator(),
       ),
     );
-    
-    final success = await provider.updateMeetingStatus(context, meeting.id, 'approved');
-    
+
+    final success =
+        await provider.updateMeetingStatus(context, meeting.id, 'approved');
+
     // Hide loading indicator
     if (mounted) {
       Navigator.of(context).pop();
     }
-    
+
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -479,7 +503,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
           backgroundColor: ColorClass.greenBase,
         ),
       );
-      
+
       // Force refresh the meetings list
       await provider.fetchMeetings(context);
     } else if (mounted) {
@@ -494,8 +518,9 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
 
   void _showDeleteDialog(MeetingModel meeting, MeetingProvider provider) {
     _logger.i('🗑️ [ACTION] Delete dialog shown for meeting: ${meeting.id}');
-    developer.log('🗑️ Delete dialog shown for meeting: ${meeting.id}', name: 'MeetingManagementScreen');
-    
+    developer.log('🗑️ Delete dialog shown for meeting: ${meeting.id}',
+        name: 'MeetingManagementScreen');
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -518,7 +543,8 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
             TextButton(
               onPressed: () {
                 _logger.d('❌ [ACTION] Delete cancelled');
-                developer.log('❌ Delete cancelled', name: 'MeetingManagementScreen');
+                developer.log('❌ Delete cancelled',
+                    name: 'MeetingManagementScreen');
                 Navigator.of(dialogContext).pop();
               },
               child: Text(
@@ -533,17 +559,22 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
 
-                _logger.i('🗑️ [API] Attempting to delete meeting with id: [4m${meeting.id}[24m');
-                developer.log('🗑️ Attempting to delete meeting with id: ${meeting.id}', name: 'MeetingManagementScreen');
+                _logger.i(
+                    '🗑️ [API] Attempting to delete meeting with id: [4m${meeting.id}[24m');
+                developer.log(
+                    '🗑️ Attempting to delete meeting with id: ${meeting.id}',
+                    name: 'MeetingManagementScreen');
 
                 // Show loading indicator
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (context) => const Center(child: CircularProgressIndicator()),
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
 
-                final success = await provider.deleteMeeting(context, meeting.id);
+                final success =
+                    await provider.deleteMeeting(context, meeting.id);
 
                 // Hide loading indicator
                 if (mounted) {
@@ -553,14 +584,16 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                 if (success && mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Meeting "${meeting.title}" deleted successfully'),
+                      content: Text(
+                          'Meeting "${meeting.title}" deleted successfully'),
                       backgroundColor: ColorClass.greenBase,
                     ),
                   );
                 } else if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Failed to delete meeting "${meeting.title}"'),
+                      content:
+                          Text('Failed to delete meeting "${meeting.title}"'),
                       backgroundColor: ColorClass.redBase,
                     ),
                   );
@@ -582,8 +615,9 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
 
   void _editMeeting(MeetingModel meeting) {
     _logger.i('✏️ [NAVIGATION] Navigating to edit meeting: ${meeting.id}');
-    developer.log('✏️ Navigating to edit meeting: ${meeting.id}', name: 'MeetingManagementScreen');
-    
+    developer.log('✏️ Navigating to edit meeting: ${meeting.id}',
+        name: 'MeetingManagementScreen');
+
     navigateToWidget(
       context: context,
       route: ChangeNotifierProvider.value(
@@ -598,7 +632,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
 
 class CreateMeetingScreen extends StatefulWidget {
   final MeetingModel? editingMeeting;
-  
+
   const CreateMeetingScreen({
     Key? key,
     this.editingMeeting,
@@ -613,7 +647,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _noOfPersonsController = TextEditingController();
-  
+
   // Food controllers
   final _breakfastController = TextEditingController(text: '0');
   final _midmorningSnacksController = TextEditingController(text: '0');
@@ -624,19 +658,19 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   DateTime _startDatetime = DateTime.now().add(const Duration(hours: 1));
   DateTime _endDatetime = DateTime.now().add(const Duration(hours: 3));
   bool _foodRequired = false;
-  
+
   // Dropdown selections
   String? _selectedDepartment;
   String? _selectedHall;
-  
+
   // Department data from API
   List<String> _departments = [];
   bool _departmentsLoading = true;
-  
+
   // Predefined halls - match backend enum
   final List<String> _halls = [
     'Auditorium',
-    'Conference Hall', 
+    'Conference Hall',
     'Meeting Space',
   ];
 
@@ -644,7 +678,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   void initState() {
     super.initState();
     _fetchDepartments();
-    
+
     // If editing, populate form with existing data
     if (widget.editingMeeting != null) {
       _populateFormForEditing();
@@ -661,7 +695,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     _selectedHall = meeting.hall;
     _selectedDepartment = meeting.department;
     _foodRequired = meeting.foodRequired;
-    
+
     if (_foodRequired) {
       _breakfastController.text = meeting.breakfast.toString();
       _midmorningSnacksController.text = meeting.midmorningSnacks.toString();
@@ -669,60 +703,94 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
       _eveningsnacksController.text = meeting.eveningsnacks.toString();
       _dinnerController.text = meeting.dinner.toString();
     }
+
+    // Ensure the hall from the meeting exists in the halls list to avoid dropdown assertion errors
+    if (meeting.hall.isNotEmpty && !_halls.contains(meeting.hall)) {
+      _halls.add(meeting.hall);
+    }
   }
 
   /// Fetch departments from API
   Future<void> _fetchDepartments() async {
     try {
-      developer.log('🏢 Fetching departments from API', name: 'CreateMeetingScreen');
+      developer.log('🏢 Fetching departments from API',
+          name: 'CreateMeetingScreen');
       final url = '${ApiUrls.baseUrl}/admin/departments';
-      
+
       final response = await HttpServiceUtils.fetchData(url, true);
-      
+
       if (response != null) {
         List<String> departmentsList = [];
-        
+
         // Handle different response formats
         if (response is Map<String, dynamic>) {
           if (response.containsKey('departments')) {
             final departments = response['departments'];
             if (departments is List) {
-              departmentsList = departments.map((dept) => dept.toString()).toList();
+              departmentsList = departments.map((dept) {
+                if (dept is Map && dept.containsKey('title')) {
+                  return dept['title'].toString();
+                }
+                return dept.toString();
+              }).toList();
             }
-          } else if (response.containsKey('success') && response['success'] == true) {
+          } else if (response.containsKey('success') &&
+              response['success'] == true) {
             // Handle success response format
-            final departments = response['data'] ?? response['departments'] ?? [];
+            final departments =
+                response['data'] ?? response['departments'] ?? [];
             if (departments is List) {
-              departmentsList = departments.map((dept) => dept.toString()).toList();
+              departmentsList = departments.map((dept) {
+                if (dept is Map && dept.containsKey('title')) {
+                  return dept['title'].toString();
+                }
+                return dept.toString();
+              }).toList();
             }
           }
         } else if (response is List) {
           // Direct list response
-          departmentsList = response.map((dept) => dept.toString()).toList();
+          departmentsList = response.map((dept) {
+            if (dept is Map && dept.containsKey('title')) {
+              return dept['title'].toString();
+            }
+            return dept.toString();
+          }).toList();
         }
-        
+
         if (mounted) {
           setState(() {
-            _departments = departmentsList.isNotEmpty 
-                ? departmentsList 
+            _departments = departmentsList.isNotEmpty
+                ? (departmentsList.toSet().toList()..sort())
                 : ['IT', 'HR', 'Finance', 'Operations', 'Other']; // Fallback
             _departmentsLoading = false;
+
+            // Ensure selected department is valid
+            if (_selectedDepartment == null && _departments.isNotEmpty) {
+              _selectedDepartment = _departments.first;
+            } else if (_selectedDepartment != null &&
+                !_departments.contains(_selectedDepartment)) {
+              _selectedDepartment = _departments.first;
+            }
           });
         }
-        
-        developer.log('✅ Departments loaded: ${_departments.length} departments: $_departments', name: 'CreateMeetingScreen');
+
+        developer.log(
+            '✅ Departments loaded: ${_departments.length} departments: $_departments',
+            name: 'CreateMeetingScreen');
       } else {
         throw Exception('Empty response from server');
       }
     } catch (e) {
-      developer.log('❌ Error fetching departments: $e', name: 'CreateMeetingScreen');
+      developer.log('❌ Error fetching departments: $e',
+          name: 'CreateMeetingScreen');
       if (mounted) {
         setState(() {
           _departmentsLoading = false;
           // Fallback to default departments
           _departments = ['IT', 'HR', 'Finance', 'Operations', 'Other'];
         });
-        
+
         // Show error message to user
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -750,7 +818,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.editingMeeting != null;
-    
+
     return Scaffold(
       backgroundColor: ColorClass.brandWhite,
       appBar: AppBar(
@@ -953,10 +1021,12 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                         ),
                       ),
                       child: provider.isLoading
-                          ? const CupertinoActivityIndicator(color: Colors.white)
+                          ? const CupertinoActivityIndicator(
+                              color: Colors.white)
                           : Text(
                               isEditing ? 'Update Meeting' : 'Create Meeting',
-                              style: TextStyleClass.poppinsSemiBold(fontSize: 16),
+                              style:
+                                  TextStyleClass.poppinsSemiBold(fontSize: 16),
                             ),
                     );
                   },
@@ -1009,7 +1079,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     required VoidCallback onTap,
   }) {
     final formatter = DateFormat('MMM dd, yyyy\nhh:mm a');
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1056,7 +1126,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
           value: _selectedHall,
           decoration: InputDecoration(
             labelText: 'Select Hall/Venue',
-            prefixIcon: Icon(LucideIcons.mapPin, color: ColorClass.brandDarkGreen),
+            prefixIcon:
+                Icon(LucideIcons.mapPin, color: ColorClass.brandDarkGreen),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: ColorClass.neutral300),
@@ -1067,7 +1138,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: ColorClass.brandDarkGreen, width: 2),
+              borderSide:
+                  BorderSide(color: ColorClass.brandDarkGreen, width: 2),
             ),
             filled: true,
             fillColor: ColorClass.neutral100,
@@ -1131,7 +1203,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                 value: _selectedDepartment,
                 decoration: InputDecoration(
                   labelText: 'Select Department',
-                  prefixIcon: Icon(LucideIcons.building, color: ColorClass.brandDarkGreen),
+                  prefixIcon: Icon(LucideIcons.building,
+                      color: ColorClass.brandDarkGreen),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: ColorClass.neutral300),
@@ -1142,7 +1215,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: ColorClass.brandDarkGreen, width: 2),
+                    borderSide:
+                        BorderSide(color: ColorClass.brandDarkGreen, width: 2),
                   ),
                   filled: true,
                   fillColor: ColorClass.neutral100,
@@ -1199,20 +1273,20 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
   Future<void> _selectDateTime(bool isStartTime) async {
     final currentDateTime = isStartTime ? _startDatetime : _endDatetime;
-    
+
     final date = await showDatePicker(
       context: context,
       initialDate: currentDateTime,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    
+
     if (date != null && mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(currentDateTime),
       );
-      
+
       if (time != null && mounted) {
         final newDateTime = DateTime(
           date.year,
@@ -1221,7 +1295,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
           time.hour,
           time.minute,
         );
-        
+
         if (mounted) {
           if (isStartTime) {
             _startDatetime = newDateTime;
@@ -1296,7 +1370,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     if (meeting != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Meeting "${meeting.title}" ${isEditing ? 'updated' : 'created'} successfully'),
+          content: Text(
+              'Meeting "${meeting.title}" ${isEditing ? 'updated' : 'created'} successfully'),
           backgroundColor: ColorClass.greenBase,
         ),
       );

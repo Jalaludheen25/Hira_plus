@@ -13,7 +13,8 @@ import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meet
 class UserMeetingScreen extends StatefulWidget {
   final MeetingModel? meeting;
   final bool isEdit;
-  const UserMeetingScreen({Key? key, this.meeting, this.isEdit = false}) : super(key: key);
+  const UserMeetingScreen({Key? key, this.meeting, this.isEdit = false})
+      : super(key: key);
 
   @override
   State<UserMeetingScreen> createState() => _UserMeetingScreenState();
@@ -25,7 +26,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
   final _descriptionController = TextEditingController();
   final _noOfPersonsController = TextEditingController();
   final Logger _logger = Logger();
-  
+
   // Food controllers
   final _breakfastController = TextEditingController(text: '0');
   final _midmorningSnacksController = TextEditingController(text: '0');
@@ -36,14 +37,14 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
   DateTime _startDatetime = DateTime.now().add(const Duration(hours: 1));
   DateTime _endDatetime = DateTime.now().add(const Duration(hours: 3));
   bool _foodRequired = false;
-  
+
   // Dropdown selections
   String? _selectedHall;
-  
+
   // Predefined halls - match backend enum
   final List<String> _halls = [
     'Auditorium',
-    'Conference Hall', 
+    'Conference Hall',
     'Meeting Space',
   ];
 
@@ -51,7 +52,8 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
   void initState() {
     super.initState();
     _logger.i('🏗️ [INIT] Initializing Create User Meeting Screen');
-    developer.log('🏗️ Initializing Create User Meeting Screen', name: 'CreateUserMeetingScreen');
+    developer.log('🏗️ Initializing Create User Meeting Screen',
+        name: 'CreateUserMeetingScreen');
     if (widget.isEdit && widget.meeting != null) {
       final m = widget.meeting!;
       _titleController.text = m.title;
@@ -72,7 +74,8 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
   @override
   void dispose() {
     _logger.i('🧹 [DISPOSE] Disposing Create User Meeting Screen');
-    developer.log('🧹 Disposing Create User Meeting Screen', name: 'CreateUserMeetingScreen');
+    developer.log('🧹 Disposing Create User Meeting Screen',
+        name: 'CreateUserMeetingScreen');
     _titleController.dispose();
     _descriptionController.dispose();
     _noOfPersonsController.dispose();
@@ -105,7 +108,8 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
               _logger.i('🔙 [NAVIGATION] Navigating back from create meeting');
-              developer.log('🔙 Navigating back from create meeting', name: 'CreateUserMeetingScreen');
+              developer.log('🔙 Navigating back from create meeting',
+                  name: 'CreateUserMeetingScreen');
               Navigator.pop(context);
             },
           ),
@@ -290,10 +294,14 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
                           ),
                         ),
                         child: provider.isLoading
-                            ? const CupertinoActivityIndicator(color: Colors.white)
+                            ? const CupertinoActivityIndicator(
+                                color: Colors.white)
                             : Text(
-                                widget.isEdit ? 'Update Meeting' : 'Create Meeting',
-                                style: TextStyleClass.poppinsSemiBold(fontSize: 16),
+                                widget.isEdit
+                                    ? 'Update Meeting'
+                                    : 'Create Meeting',
+                                style: TextStyleClass.poppinsSemiBold(
+                                    fontSize: 16),
                               ),
                       );
                     },
@@ -347,7 +355,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     required VoidCallback onTap,
   }) {
     final formatter = DateFormat('MMM dd, yyyy\nhh:mm a');
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -394,7 +402,8 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
           value: _selectedHall,
           decoration: InputDecoration(
             labelText: 'Select Hall/Venue',
-            prefixIcon: Icon(LucideIcons.mapPin, color: ColorClass.brandDarkGreen),
+            prefixIcon:
+                Icon(LucideIcons.mapPin, color: ColorClass.brandDarkGreen),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: ColorClass.neutral300),
@@ -405,7 +414,8 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: ColorClass.brandDarkGreen, width: 2),
+              borderSide:
+                  BorderSide(color: ColorClass.brandDarkGreen, width: 2),
             ),
             filled: true,
             fillColor: ColorClass.neutral100,
@@ -462,20 +472,20 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
 
   Future<void> _selectDateTime(bool isStartTime) async {
     final currentDateTime = isStartTime ? _startDatetime : _endDatetime;
-    
+
     final date = await showDatePicker(
       context: context,
       initialDate: currentDateTime,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
-    
+
     if (date != null && mounted) {
       final time = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(currentDateTime),
       );
-      
+
       if (time != null && mounted) {
         final newDateTime = DateTime(
           date.year,
@@ -484,7 +494,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
           time.hour,
           time.minute,
         );
-        
+
         if (mounted) {
           if (isStartTime) {
             _startDatetime = newDateTime;
@@ -544,7 +554,8 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
       if (updatedMeeting != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Meeting "${updatedMeeting.title}" updated successfully'),
+            content:
+                Text('Meeting "${updatedMeeting.title}" updated successfully'),
             backgroundColor: ColorClass.greenBase,
           ),
         );
