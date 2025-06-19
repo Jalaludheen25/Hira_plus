@@ -172,7 +172,7 @@ class AuthProvider extends ChangeNotifier {
         case 'Mess Staff':
           specificToken = await SharedUtils.getString('staff_token');
           break;
-        case 'Reception':  // ADDED: Reception token check
+        case 'Reception': // ADDED: Reception token check
           specificToken = await SharedUtils.getString('reception_token');
           break;
         case 'User':
@@ -182,7 +182,8 @@ class AuthProvider extends ChangeNotifier {
       }
 
       // Use specific token if available, otherwise fall back to general token
-      final effectiveToken = specificToken?.isNotEmpty == true ? specificToken : token;
+      final effectiveToken =
+          specificToken?.isNotEmpty == true ? specificToken : token;
 
       _isLoggedIn = effectiveToken?.isNotEmpty == true;
       _userType = userType;
@@ -202,7 +203,8 @@ class AuthProvider extends ChangeNotifier {
       if (_userType == 'Reception' && _isLoggedIn) {
         developer.log('🔵 Validating Reception token...', name: 'AuthProvider');
         // Optional: Add token validation logic here if needed
-        developer.log('✅ Reception login status validated', name: 'AuthProvider');
+        developer.log('✅ Reception login status validated',
+            name: 'AuthProvider');
       }
 
       notifyListeners();
@@ -233,7 +235,7 @@ class AuthProvider extends ChangeNotifier {
         case 'Mess Staff':
           await SharedUtils.setString('staff_token', '');
           break;
-        case 'Reception':  // ADDED: Reception token expiration handling
+        case 'Reception': // ADDED: Reception token expiration handling
           await SharedUtils.setString('reception_token', '');
           break;
         case 'User':
@@ -551,7 +553,7 @@ class AuthProvider extends ChangeNotifier {
           await SharedUtils.setString('staff_token', '');
           developer.log('🧹 Cleared staff_token', name: 'AuthProvider');
           break;
-        case 'Reception':  // ADDED: Reception token cleanup
+        case 'Reception': // ADDED: Reception token cleanup
           await SharedUtils.setString('reception_token', '');
           developer.log('🧹 Cleared reception_token', name: 'AuthProvider');
           break;
@@ -577,7 +579,8 @@ class AuthProvider extends ChangeNotifier {
       reset();
 
       _logger.i('🟢 [AUTH] Logout successful - all tokens and data cleared');
-      developer.log('🟢 Logout successful - all tokens and data cleared', name: 'AuthProvider');
+      developer.log('🟢 Logout successful - all tokens and data cleared',
+          name: 'AuthProvider');
 
       notifyListeners();
     } catch (e) {
@@ -593,10 +596,6 @@ class AuthProvider extends ChangeNotifier {
       developer.log('🔵 [AUTH] Authenticating Mess Staff...',
           name: 'AuthProvider');
       _logger.i('🔵 [API] Initiating Mess Staff authentication...');
-
-      if (_username != "mess" || _password != "mess123") {
-        throw Exception('Invalid username or password');
-      }
 
       final url = ApiUrls.getMessStaffLogin();
 
@@ -756,7 +755,8 @@ class AuthProvider extends ChangeNotifier {
   // ADDED: Method for authenticating reception
   Future<void> authenticateReception() async {
     try {
-      developer.log('🔵 [AUTH] Authenticating Reception...', name: 'AuthProvider');
+      developer.log('🔵 [AUTH] Authenticating Reception...',
+          name: 'AuthProvider');
       _logger.i('🔵 [API] Initiating Reception authentication...');
 
       // Check if the username and password match the required values
@@ -772,8 +772,10 @@ class AuthProvider extends ChangeNotifier {
         'password': _password,
       };
 
-      developer.log('📡 Making Reception auth request to: $url', name: 'AuthProvider');
-      developer.log('📦 Request payload: ${jsonEncode(requestBody)}', name: 'AuthProvider');
+      developer.log('📡 Making Reception auth request to: $url',
+          name: 'AuthProvider');
+      developer.log('📦 Request payload: ${jsonEncode(requestBody)}',
+          name: 'AuthProvider');
 
       final response = await http.post(
         Uri.parse(url),
@@ -781,15 +783,18 @@ class AuthProvider extends ChangeNotifier {
         body: jsonEncode(requestBody),
       );
 
-      developer.log('📥 Response status: ${response.statusCode}', name: 'AuthProvider');
-      developer.log('📥 Raw response body: ${response.body}', name: 'AuthProvider');
+      developer.log('📥 Response status: ${response.statusCode}',
+          name: 'AuthProvider');
+      developer.log('📥 Raw response body: ${response.body}',
+          name: 'AuthProvider');
       _logger.d('🔹 [API] Response status: ${response.statusCode}');
       _logger.d('🔹 [API] Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         _logger.i('🟢 [API] Reception authentication successful!');
-        developer.log('🟢 Reception authentication successful!', name: 'AuthProvider');
+        developer.log('🟢 Reception authentication successful!',
+            name: 'AuthProvider');
         developer.log('🔑 Full response data: $data', name: 'AuthProvider');
 
         // Extract token with robust handling
@@ -815,32 +820,42 @@ class AuthProvider extends ChangeNotifier {
           throw Exception('Invalid token received from server');
         }
 
-        developer.log('🔑 Reception token received: $token', name: 'AuthProvider');
+        developer.log('🔑 Reception token received: $token',
+            name: 'AuthProvider');
         _logger.i('🔑 [AUTH] Reception token received: $token');
 
         // Store token with specific reception token key for persistence
         await SharedUtils.setString('reception_token', token);
-        await SharedUtils.setString('auth_token', token); // Also store as general auth_token
-        
+        await SharedUtils.setString(
+            'auth_token', token); // Also store as general auth_token
+
         // Verify token was stored successfully
         final storedToken = await SharedUtils.getString('auth_token');
-        final storedReceptionToken = await SharedUtils.getString('reception_token');
-        developer.log('✅ Verification - Stored auth_token: $storedToken', name: 'AuthProvider');
-        developer.log('✅ Verification - Stored reception_token: $storedReceptionToken', name: 'AuthProvider');
+        final storedReceptionToken =
+            await SharedUtils.getString('reception_token');
+        developer.log('✅ Verification - Stored auth_token: $storedToken',
+            name: 'AuthProvider');
+        developer.log(
+            '✅ Verification - Stored reception_token: $storedReceptionToken',
+            name: 'AuthProvider');
 
         await SharedUtils.setString('user_type', _selectedRole);
         _isLoggedIn = true;
         _userType = _selectedRole;
 
-        developer.log('📦 Reception token stored in SharedPreferences', name: 'AuthProvider');
-        developer.log('🔐 Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType', 
+        developer.log('📦 Reception token stored in SharedPreferences',
+            name: 'AuthProvider');
+        developer.log(
+            '🔐 Updated login status - isLoggedIn: $_isLoggedIn, userType: $_userType',
             name: 'AuthProvider');
 
         notifyListeners();
         return;
       } else {
-        _logger.e('🔴 [API] Reception authentication failed! Status: ${response.statusCode}');
-        developer.log('🔴 Reception authentication failed! Status: ${response.statusCode}', 
+        _logger.e(
+            '🔴 [API] Reception authentication failed! Status: ${response.statusCode}');
+        developer.log(
+            '🔴 Reception authentication failed! Status: ${response.statusCode}',
             name: 'AuthProvider');
 
         // Try to parse error message from response
@@ -858,13 +873,16 @@ class AuthProvider extends ChangeNotifier {
       }
     } on http.ClientException catch (e) {
       _logger.e('🔴 [NETWORK] Connection error: $e');
-      developer.log('🔴 Network connection error: $e', name: 'AuthProvider', error: e);
-      
-      throw Exception('Network connection failed. Please check your internet connection.');
+      developer.log('🔴 Network connection error: $e',
+          name: 'AuthProvider', error: e);
+
+      throw Exception(
+          'Network connection failed. Please check your internet connection.');
     } catch (e) {
       _logger.e('🔴 [ERROR] Reception authentication failed!');
       _logger.e('🔹 Error: $e');
-      developer.log('🔴 Reception authentication failed: $e', name: 'AuthProvider', error: e);
+      developer.log('🔴 Reception authentication failed: $e',
+          name: 'AuthProvider', error: e);
 
       // Rethrow with a more user-friendly message if it's not already an Exception
       if (e is! Exception) {
