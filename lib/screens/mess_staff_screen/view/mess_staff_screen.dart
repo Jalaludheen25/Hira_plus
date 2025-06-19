@@ -223,16 +223,16 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                 style:
                                     TextStyleClass.poppinsMedium(fontSize: 16),
                               ),
-                              if (item['type']?.isNotEmpty == true) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  item['type']!,
-                                  style: TextStyleClass.poppinsRegular(
-                                    fontSize: 13,
-                                    color: ColorClass.neutral400,
-                                  ),
-                                ),
-                              ],
+                              // if (item['type']?.isNotEmpty == true) ...[
+                              //   const SizedBox(height: 2),
+                              //   Text(
+                              //     item['type']!,
+                              //     style: TextStyleClass.poppinsRegular(
+                              //       fontSize: 13,
+                              //       color: ColorClass.neutral400,
+                              //     ),
+                              //   ),
+                              // ],
                               if (item['room']?.isNotEmpty == true) ...[
                                 const SizedBox(height: 1),
                                 Text(
