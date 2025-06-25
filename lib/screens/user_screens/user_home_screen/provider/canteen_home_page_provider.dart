@@ -40,6 +40,7 @@ class CanteenHomeProvider extends ChangeNotifier {
   List<ContactModel> _contacts = [];
   bool _isLoadingContacts = false;
   String _contactsError = '';
+  String _searchQuery = '';
 
   // Getters
   // View mode getters
@@ -61,6 +62,19 @@ class CanteenHomeProvider extends ChangeNotifier {
   List<ContactModel> get contacts => _contacts;
   bool get isLoadingContacts => _isLoadingContacts;
   String get contactsError => _contactsError;
+  String get searchQuery => _searchQuery;
+
+  // Computed filtered contacts based on search query
+  List<ContactModel> get filteredContacts {
+    if (_searchQuery.isEmpty) return _contacts;
+    final lowerQuery = _searchQuery.toLowerCase();
+    return _contacts.where((contact) {
+      return contact.name.toLowerCase().contains(lowerQuery) ||
+             contact.phoneNumber.toLowerCase().contains(lowerQuery) ||
+             contact.department.toLowerCase().contains(lowerQuery) ||
+             contact.designation.toLowerCase().contains(lowerQuery);
+    }).toList();
+  }
 
   // Constructor
   CanteenHomeProvider(BuildContext context) {
@@ -409,13 +423,18 @@ class CanteenHomeProvider extends ChangeNotifier {
     }
   }
 
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
   /// Search contacts by name, department, or designation
   List<ContactModel> searchContacts(String query) {
     if (query.isEmpty) return _contacts;
-    
     final lowerQuery = query.toLowerCase();
     return _contacts.where((contact) {
       return contact.name.toLowerCase().contains(lowerQuery) ||
+             contact.phoneNumber.toLowerCase().contains(lowerQuery) ||
              contact.department.toLowerCase().contains(lowerQuery) ||
              contact.designation.toLowerCase().contains(lowerQuery);
     }).toList();
@@ -431,6 +450,7 @@ class CanteenHomeProvider extends ChangeNotifier {
     _contacts = [];
     _isLoadingContacts = false;
     _contactsError = '';
+    _searchQuery = '';
     _updateAllDays(null);
     notifyListeners();
   }

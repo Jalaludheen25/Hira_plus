@@ -28,10 +28,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   final ScrollController _scrollController = ScrollController();
   CanteenHomeProvider? _viewModeProvider;
   VoidCallback? _viewModeListener;
+  // Persistent controller for search bar in All Users bottom sheet
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      final provider = Provider.of<CanteenHomeProvider>(context, listen: false);
+      if (provider.searchQuery != _searchController.text) {
+        provider.setSearchQuery(_searchController.text);
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final canteenProvider =
           Provider.of<CanteenHomeProvider>(context, listen: false);
@@ -68,6 +76,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   void dispose() {
     _viewModeProvider?.removeListener(_viewModeListener!);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -1143,6 +1152,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       BuildContext context, CanteenHomeProvider canteenProvider) {
     // Fetch contacts when opening the bottom sheet
     canteenProvider.fetchContacts(context);
+    canteenProvider.setSearchQuery("");
+    _searchController.text = "";
 
     showModalBottomSheet(
       context: context,
@@ -1150,8 +1161,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.7,
-          minChildSize: 0.5,
+          initialChildSize: 0.95,
+          minChildSize: 0.7,
           maxChildSize: 0.95,
           builder: (context, scrollController) {
             return Container(
@@ -1189,6 +1200,32 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           ],
                         ),
                       ],
+                    ),
+                  ),
+                  // Search Bar (moved here)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    child: Consumer<CanteenHomeProvider>(
+                      builder: (context, provider, child) {
+                        // Keep controller in sync if searchQuery changes from outside
+                        if (_searchController.text != provider.searchQuery) {
+                          _searchController.text = provider.searchQuery;
+                          _searchController.selection = TextSelection.fromPosition(
+                            TextPosition(offset: _searchController.text.length),
+                          );
+                        }
+                        return TextField(
+                          decoration: InputDecoration(
+                            hintText: 'Search',
+                            prefixIcon: Icon(Icons.search),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                          ),
+                          controller: _searchController,
+                        );
+                      },
                     ),
                   ),
                   // Content based on state
@@ -1256,7 +1293,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           );
                         }
 
-                        if (provider.contacts.isEmpty) {
+                        final filtered = provider.filteredContacts;
+                        if (filtered.isEmpty) {
                           return Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1268,7 +1306,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'No contacts available',
+                                  'No contacts found',
                                   style: TextStyleClass.poppinsMedium(
                                     fontSize: 16,
                                     color: Colors.grey[600],
@@ -1281,11 +1319,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
                         return ListView.separated(
                           controller: scrollController,
-                          itemCount: provider.contacts.length,
+                          itemCount: filtered.length,
                           separatorBuilder: (_, __) =>
                               Divider(height: 1, color: Colors.grey[200]),
                           itemBuilder: (context, index) {
-                            final contact = provider.contacts[index];
+                            final contact = filtered[index];
                             return ListTile(
                               leading: CircleAvatar(
                                 backgroundColor: ColorClass.brandLightGreen,
