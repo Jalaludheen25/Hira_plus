@@ -390,14 +390,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Hall/Venue',
-          style: TextStyleClass.poppinsRegular(
-            fontSize: 12,
-            color: ColorClass.neutral500,
-          ),
-        ),
-        const SizedBox(height: 8),
+       
         DropdownButtonFormField<String>(
           value: _selectedHall,
           decoration: InputDecoration(

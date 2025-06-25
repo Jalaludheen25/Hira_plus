@@ -319,7 +319,10 @@ class _HomeListViewState extends State<HomeListView> {
     double size = 24.0,
   }) {
     final now = DateTime.now();
-    final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
+    final isDinner = mealType.toLowerCase() == 'dinner';
+    final cutoffTime = isDinner
+        ? DateTime(now.year, now.month, now.day, 14, 0) // 2:00 PM for dinner
+        : DateTime(now.year, now.month, now.day, 6, 0); // 6:00 AM for others
     final checkDate = DateTime(date.year, date.month, date.day);
     final isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
     final isRestrictedToday =

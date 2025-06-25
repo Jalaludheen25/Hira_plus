@@ -168,17 +168,20 @@ class MonthCalendarView extends StatelessWidget {
                 final hasDinner =
                     mealProvider.isMealMarked(currentDate, 'dinner');
 
-                // Check if date is restricted (past or today after 6 AM)
+                // Check if date is restricted (past or today after cutoff per meal)
                 final now = DateTime.now();
-                final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
                 final checkDate = DateTime(
                     currentDate.year, currentDate.month, currentDate.day);
                 final isPast =
                     checkDate.isBefore(DateTime(now.year, now.month, now.day));
-                final isRestrictedToday = checkDate.isAtSameMomentAs(
-                        DateTime(now.year, now.month, now.day)) &&
-                    now.isAfter(cutoffTime);
-                final isRestricted = isPast || isRestrictedToday;
+                final isRestrictedTodayBreakfast = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 6, 0));
+                final isRestrictedTodayLunch = isRestrictedTodayBreakfast;
+                final isRestrictedTodayDinner = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 14, 0));
+                final isRestrictedBreakfast = isPast || isRestrictedTodayBreakfast;
+                final isRestrictedLunch = isPast || isRestrictedTodayLunch;
+                final isRestrictedDinner = isPast || isRestrictedTodayDinner;
+                // If all meals are restricted, show lock overlay
+                final allRestricted = isRestrictedBreakfast && isRestrictedLunch && isRestrictedDinner;
 
                 return GestureDetector(
                   onTap: () => _showMealBottomSheet(
@@ -193,7 +196,7 @@ class MonthCalendarView extends StatelessWidget {
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: isRestricted
+                        color: allRestricted
                             ? ColorClass
                                 .neutral300 // Lighter color for restricted dates
                             : isToday
@@ -205,7 +208,7 @@ class MonthCalendarView extends StatelessWidget {
                     child: Stack(
                       children: [
                         Opacity(
-                          opacity: isRestricted
+                          opacity: allRestricted
                               ? 0.7
                               : 1.0, // Faded appearance for restricted dates
                           child: Padding(
@@ -221,7 +224,7 @@ class MonthCalendarView extends StatelessWidget {
                                         ? ColorClass.brandDarkGreen
                                         : currentDate.weekday == DateTime.sunday
                                             ? Colors.red
-                                            : isRestricted
+                                            : allRestricted
                                                 ? ColorClass
                                                     .neutral400 // Lighter text for restricted dates
                                                 : ColorClass.textMain900,
@@ -234,11 +237,11 @@ class MonthCalendarView extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       _buildMealIndicator(
-                                          'B', hasBreakfast, isToday),
+                                          'B', hasBreakfast, isToday, isRestrictedBreakfast),
                                       _buildMealIndicator(
-                                          'L', hasLunch, isToday),
+                                          'L', hasLunch, isToday, isRestrictedLunch),
                                       _buildMealIndicator(
-                                          'D', hasDinner, isToday),
+                                          'D', hasDinner, isToday, isRestrictedDinner),
                                     ],
                                   ),
                                 ),
@@ -247,7 +250,7 @@ class MonthCalendarView extends StatelessWidget {
                           ),
                         ),
                         // Add lock icon overlay for restricted dates
-                        if (isRestricted)
+                        if (allRestricted)
                           Positioned(
                             top: 2,
                             right: 2,
@@ -277,22 +280,17 @@ class MonthCalendarView extends StatelessWidget {
 
   void _showMealBottomSheet(BuildContext context, DateTime date,
       bool hasBreakfast, bool hasLunch, bool hasDinner) {
-    // Check if date is in the past or if it's today and past 6 AM (restriction logic)
     final now = DateTime.now();
-
-    // Set cutoff time to 6:00 AM today
-    final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
     final checkDate = DateTime(date.year, date.month, date.day);
-
-    // Check if the date is in the past or if it's today and past 6 AM
-    final isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
-    final isRestrictedToday =
-        checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) &&
-            now.isAfter(cutoffTime);
-    final isRestricted = isPast || isRestrictedToday;
-
-    // If restricted, show warning dialog instead of the meal selection sheet
-    if (isRestricted) {
+    bool isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
+    bool isRestrictedTodayBreakfast = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 6, 0));
+    bool isRestrictedTodayLunch = isRestrictedTodayBreakfast;
+    bool isRestrictedTodayDinner = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 14, 0));
+    bool isRestrictedBreakfast = isPast || isRestrictedTodayBreakfast;
+    bool isRestrictedLunch = isPast || isRestrictedTodayLunch;
+    bool isRestrictedDinner = isPast || isRestrictedTodayDinner;
+    // If all meals are restricted, show warning dialog instead of the meal selection sheet
+    if (isRestrictedBreakfast && isRestrictedLunch && isRestrictedDinner) {
       showDialog(
         context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -304,9 +302,11 @@ class MonthCalendarView extends StatelessWidget {
             ),
           ),
           content: Text(
-            isRestrictedToday
-                ? 'Can\'t modify meal for today after 6:00 AM.'
-                : 'Can\'t modify meal for past dates.',
+            isRestrictedTodayDinner
+                ? 'Can\'t modify dinner for today after 2:00 PM.'
+                : isRestrictedTodayBreakfast
+                    ? 'Can\'t modify breakfast/lunch for today after 6:00 AM.'
+                    : 'Can\'t modify meal for past dates.',
             style: TextStyleClass.poppinsRegular(
               fontSize: 12,
               color: ColorClass.textMain900,
@@ -328,20 +328,17 @@ class MonthCalendarView extends StatelessWidget {
       );
       return;
     }
-
     // Track original and current meal states
     Map<String, bool> originalMealStates = {
       'breakfast': hasBreakfast,
       'lunch': hasLunch,
       'dinner': hasDinner,
     };
-
     Map<String, bool> currentMealStates = {
       'breakfast': hasBreakfast,
       'lunch': hasLunch,
       'dinner': hasDinner,
     };
-
     showModalBottomSheet(
       context: context,
       backgroundColor: ColorClass.brandWhite,
@@ -370,39 +367,45 @@ class MonthCalendarView extends StatelessWidget {
                   'Breakfast',
                   currentMealStates['breakfast']!,
                   Icons.coffee,
-                  () {
-                    setState(() {
-                      currentMealStates['breakfast'] =
-                          !currentMealStates['breakfast']!;
-                    });
-                    debugPrint(
-                        'Breakfast toggled to: ${currentMealStates['breakfast']}');
-                  },
+                  isRestrictedBreakfast
+                      ? null
+                      : () {
+                          setState(() {
+                            currentMealStates['breakfast'] =
+                                !currentMealStates['breakfast']!;
+                          });
+                          debugPrint(
+                              'Breakfast toggled to: ${currentMealStates['breakfast']}');
+                        },
                 ),
                 _buildToggleableMealTile(
                   'Lunch',
                   currentMealStates['lunch']!,
                   Icons.restaurant,
-                  () {
-                    setState(() {
-                      currentMealStates['lunch'] = !currentMealStates['lunch']!;
-                    });
-                    debugPrint(
-                        'Lunch toggled to: ${currentMealStates['lunch']}');
-                  },
+                  isRestrictedLunch
+                      ? null
+                      : () {
+                          setState(() {
+                            currentMealStates['lunch'] = !currentMealStates['lunch']!;
+                          });
+                          debugPrint(
+                              'Lunch toggled to: ${currentMealStates['lunch']}');
+                        },
                 ),
                 _buildToggleableMealTile(
                   'Dinner',
                   currentMealStates['dinner']!,
                   Icons.dinner_dining,
-                  () {
-                    setState(() {
-                      currentMealStates['dinner'] =
-                          !currentMealStates['dinner']!;
-                    });
-                    debugPrint(
-                        'Dinner toggled to: ${currentMealStates['dinner']}');
-                  },
+                  isRestrictedDinner
+                      ? null
+                      : () {
+                          setState(() {
+                            currentMealStates['dinner'] =
+                                !currentMealStates['dinner']!;
+                          });
+                          debugPrint(
+                              'Dinner toggled to: ${currentMealStates['dinner']}');
+                        },
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -480,7 +483,7 @@ class MonthCalendarView extends StatelessWidget {
     String meal,
     bool isSelected,
     IconData mealIcon,
-    VoidCallback onTap,
+    VoidCallback? onTap,
   ) {
     return ListTile(
       leading: Icon(mealIcon, color: ColorClass.brandDarkGreen),
@@ -508,16 +511,9 @@ class MonthCalendarView extends StatelessWidget {
     );
   }
 
-  Widget _buildMealIndicator(String label, bool isSelected, bool isToday) {
+  Widget _buildMealIndicator(String label, bool isSelected, bool isToday, bool isRestricted) {
     final bool isTodayAndSelected = isToday && isSelected;
-
-    // Get current date/time to check restrictions
-    final now = DateTime.now();
-    final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
-    final isPastOrRestricted = now.isAfter(cutoffTime) && isToday;
-
-    // For restricted dates, show different styling
-    if (isPastOrRestricted) {
+    if (isRestricted) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 2),
         width: 16,
@@ -547,7 +543,6 @@ class MonthCalendarView extends StatelessWidget {
         ),
       );
     }
-
     // Normal meal indicator for non-restricted dates
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2),
