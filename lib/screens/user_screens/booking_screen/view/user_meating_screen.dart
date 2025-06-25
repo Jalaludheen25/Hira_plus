@@ -29,9 +29,11 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
 
   // Food controllers
   final _breakfastController = TextEditingController(text: '0');
-  final _midmorningSnacksController = TextEditingController(text: '0');
+  final _morningSnacksCountController = TextEditingController(text: '0');
+  final _morningTeaCountController = TextEditingController(text: '0');
   final _lunchController = TextEditingController(text: '0');
-  final _eveningsnacksController = TextEditingController(text: '0');
+  final _eveningSnacksCountController = TextEditingController(text: '0');
+  final _eveningTeaCountController = TextEditingController(text: '0');
   final _dinnerController = TextEditingController(text: '0');
 
   DateTime _startDatetime = DateTime.now().add(const Duration(hours: 1));
@@ -43,9 +45,9 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
 
   // Predefined halls - match backend enum
   final List<String> _halls = [
-    'Auditorium',
-    'Conference Hall',
-    'Meeting Space',
+    'Conference Hall [3rd Floor]',
+    'Auditorium [2nd Floor]',
+    'Meeting Space [1st Floor]',
   ];
 
   @override
@@ -60,9 +62,11 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
       _descriptionController.text = m.description;
       _noOfPersonsController.text = m.noOfPersons.toString();
       _breakfastController.text = m.breakfast.toString();
-      _midmorningSnacksController.text = m.midmorningSnacks.toString();
+      _morningSnacksCountController.text = m.morningSnacksCount.toString();
+      _morningTeaCountController.text = m.morningTeaCount.toString();
       _lunchController.text = m.lunch.toString();
-      _eveningsnacksController.text = m.eveningsnacks.toString();
+      _eveningSnacksCountController.text = m.eveningSnacksCount.toString();
+      _eveningTeaCountController.text = m.eveningTeaCount.toString();
       _dinnerController.text = m.dinner.toString();
       _startDatetime = m.startDatetime;
       _endDatetime = m.endDatetime;
@@ -80,9 +84,11 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     _descriptionController.dispose();
     _noOfPersonsController.dispose();
     _breakfastController.dispose();
-    _midmorningSnacksController.dispose();
+    _morningSnacksCountController.dispose();
+    _morningTeaCountController.dispose();
     _lunchController.dispose();
-    _eveningsnacksController.dispose();
+    _eveningSnacksCountController.dispose();
+    _eveningTeaCountController.dispose();
     _dinnerController.dispose();
     super.dispose();
   }
@@ -230,8 +236,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
                     style: TextStyleClass.poppinsSemiBold(fontSize: 16),
                   ),
                   const SizedBox(height: 12),
-
-                  // Food options grid
+                  // Food options grid - Morning
                   Row(
                     children: [
                       Expanded(
@@ -243,33 +248,49 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildFoodCountField(
-                          controller: _midmorningSnacksController,
+                          controller: _morningSnacksCountController,
                           label: 'Morning Snacks',
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-
                   Row(
                     children: [
+                      Expanded(
+                        child: _buildFoodCountField(
+                          controller: _morningTeaCountController,
+                          label: 'Morning Tea',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: _buildFoodCountField(
                           controller: _lunchController,
                           label: 'Lunch',
                         ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildFoodCountField(
+                          controller: _eveningSnacksCountController,
+                          label: 'Evening Snacks',
+                        ),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _buildFoodCountField(
-                          controller: _eveningsnacksController,
-                          label: 'Evening Snacks',
+                          controller: _eveningTeaCountController,
+                          label: 'Evening Tea',
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-
                   _buildFoodCountField(
                     controller: _dinnerController,
                     label: 'Dinner',
@@ -529,13 +550,15 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
         'description': _descriptionController.text.trim(),
         'startDatetime': _startDatetime.toIso8601String(),
         'endDatetime': _endDatetime.toIso8601String(),
-        'hall': _selectedHall ?? 'Auditorium',
+        'hall': _selectedHall ?? 'Conference Hall [3rd Floor]',
         'noOfPersons': int.parse(_noOfPersonsController.text),
         'foodRequired': _foodRequired,
         'breakfast': int.parse(_breakfastController.text),
-        'midmorningSnacks': int.parse(_midmorningSnacksController.text),
+        'morningSnacksCount': int.parse(_morningSnacksCountController.text),
+        'morningTeaCount': int.parse(_morningTeaCountController.text),
         'lunch': int.parse(_lunchController.text),
-        'eveningsnacks': int.parse(_eveningsnacksController.text),
+        'eveningSnacksCount': int.parse(_eveningSnacksCountController.text),
+        'eveningTeaCount': int.parse(_eveningTeaCountController.text),
         'dinner': int.parse(_dinnerController.text),
         'department': widget.meeting?.department ?? '',
       };
@@ -564,13 +587,15 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
       description: _descriptionController.text.trim(),
       startDatetime: _startDatetime,
       endDatetime: _endDatetime,
-      hall: _selectedHall ?? 'Auditorium',
+      hall: _selectedHall ?? 'Conference Hall [3rd Floor]',
       noOfPersons: int.parse(_noOfPersonsController.text),
       foodRequired: _foodRequired,
       breakfast: int.parse(_breakfastController.text),
-      midmorningSnacks: int.parse(_midmorningSnacksController.text),
+      morningSnacksCount: int.parse(_morningSnacksCountController.text),
+      morningTeaCount: int.parse(_morningTeaCountController.text),
       lunch: int.parse(_lunchController.text),
-      eveningsnacks: int.parse(_eveningsnacksController.text),
+      eveningSnacksCount: int.parse(_eveningSnacksCountController.text),
+      eveningTeaCount: int.parse(_eveningTeaCountController.text),
       dinner: int.parse(_dinnerController.text),
     );
 

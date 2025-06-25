@@ -27,9 +27,11 @@ class UserMeetingProvider extends ChangeNotifier {
     required int noOfPersons,
     required bool foodRequired,
     required int breakfast,
-    required int midmorningSnacks,
+    required int morningSnacksCount,
+    required int morningTeaCount,
     required int lunch,
-    required int eveningsnacks,
+    required int eveningSnacksCount,
+    required int eveningTeaCount,
     required int dinner,
   }) async {
     try {
@@ -51,9 +53,11 @@ class UserMeetingProvider extends ChangeNotifier {
         'noOfPersons': noOfPersons,
         'foodRequired': foodRequired,
         'breakfast': breakfast,
-        'midmorningSnacks': midmorningSnacks,
+        'morningSnacksCount': morningSnacksCount,
+        'morningTeaCount': morningTeaCount,
         'lunch': lunch,
-        'eveningsnacks': eveningsnacks,
+        'eveningSnacksCount': eveningSnacksCount,
+        'eveningTeaCount': eveningTeaCount,
         'dinner': dinner,
       };
 

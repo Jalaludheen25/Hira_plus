@@ -164,14 +164,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     if (meeting.breakfast > 0) {
       foodItems.add('Breakfast (${meeting.breakfast})');
     }
-    if (meeting.midmorningSnacks > 0) {
-      foodItems.add('Morning Snacks (${meeting.midmorningSnacks})');
+    if (meeting.morningSnacksCount > 0) {
+      foodItems.add('Morning Snacks (${meeting.morningSnacksCount})');
+    }
+    if (meeting.morningTeaCount > 0) {
+      foodItems.add('Morning Tea (${meeting.morningTeaCount})');
     }
     if (meeting.lunch > 0) {
       foodItems.add('Lunch (${meeting.lunch})');
     }
-    if (meeting.eveningsnacks > 0) {
-      foodItems.add('Evening Snacks (${meeting.eveningsnacks})');
+    if (meeting.eveningSnacksCount > 0) {
+      foodItems.add('Evening Snacks (${meeting.eveningSnacksCount})');
+    }
+    if (meeting.eveningTeaCount > 0) {
+      foodItems.add('Evening Tea (${meeting.eveningTeaCount})');
     }
     if (meeting.dinner > 0) {
       foodItems.add('Dinner (${meeting.dinner})');

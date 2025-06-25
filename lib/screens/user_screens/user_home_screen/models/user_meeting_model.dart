@@ -8,9 +8,11 @@ class MeetingModel {
   final int noOfPersons;
   final bool foodRequired;
   final int breakfast;
-  final int midmorningSnacks;
+  final int morningSnacksCount;
+  final int morningTeaCount;
   final int lunch;
-  final int eveningsnacks;
+  final int eveningSnacksCount;
+  final int eveningTeaCount;
   final int dinner;
   final String department;
   final String status;
@@ -29,9 +31,11 @@ class MeetingModel {
     required this.noOfPersons,
     required this.foodRequired,
     required this.breakfast,
-    required this.midmorningSnacks,
+    required this.morningSnacksCount,
+    required this.morningTeaCount,
     required this.lunch,
-    required this.eveningsnacks,
+    required this.eveningSnacksCount,
+    required this.eveningTeaCount,
     required this.dinner,
     required this.department,
     required this.status,
@@ -54,9 +58,11 @@ class MeetingModel {
       noOfPersons: json['noOfPersons'] ?? 0,
       foodRequired: json['foodRequired'] ?? false,
       breakfast: json['breakfast'] ?? 0,
-      midmorningSnacks: json['midmorningSnacks'] ?? 0,
+      morningSnacksCount: json['morningSnacksCount'] ?? 0,
+      morningTeaCount: json['morningTeaCount'] ?? 0,
       lunch: json['lunch'] ?? 0,
-      eveningsnacks: json['eveningsnacks'] ?? 0,
+      eveningSnacksCount: json['eveningSnacksCount'] ?? 0,
+      eveningTeaCount: json['eveningTeaCount'] ?? 0,
       dinner: json['dinner'] ?? 0,
       department: (json['department'] is Map)
           ? (json['department']['title'] ?? '').toString()
@@ -80,9 +86,11 @@ class MeetingModel {
       'noOfPersons': noOfPersons,
       'foodRequired': foodRequired,
       'breakfast': breakfast,
-      'midmorningSnacks': midmorningSnacks,
+      'morningSnacksCount': morningSnacksCount,
+      'morningTeaCount': morningTeaCount,
       'lunch': lunch,
-      'eveningsnacks': eveningsnacks,
+      'eveningSnacksCount': eveningSnacksCount,
+      'eveningTeaCount': eveningTeaCount,
       'dinner': dinner,
       'department': department,
       'status': status,
@@ -99,16 +107,13 @@ class MeetingModel {
   bool get isRejected => status.toLowerCase() == 'rejected';
 
   // Helper getter for total food count
-  int get totalFoodCount =>
-      breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
+  int get totalFoodCount => breakfast + lunch + dinner;
 
   // Helper method to get food breakdown as a string
   String get foodBreakdown {
     List<String> items = [];
     if (breakfast > 0) items.add('Breakfast: $breakfast');
-    if (midmorningSnacks > 0) items.add('Morning Snacks: $midmorningSnacks');
     if (lunch > 0) items.add('Lunch: $lunch');
-    if (eveningsnacks > 0) items.add('Evening Snacks: $eveningsnacks');
     if (dinner > 0) items.add('Dinner: $dinner');
     return items.isEmpty ? 'No food required' : items.join(', ');
   }
