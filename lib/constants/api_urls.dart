@@ -174,6 +174,11 @@ class ApiUrls {
     return '$baseUrl/reception/check-ins/today';
   }
 
+  // ################## USER CHECK IN STATUS ##################
+  static String getUserCheckInStatus() {
+    return '$baseUrl/auth/today-checked-in';
+  }
+
   // Get today's check-outs
   static String getTodayCheckOuts() {
     return '$baseUrl/reception/checkouts/today';

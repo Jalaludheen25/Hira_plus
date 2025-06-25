@@ -3,26 +3,65 @@ import 'package:provider/provider.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_model.dart';
 
-class HomeListView extends StatelessWidget {
+class HomeListView extends StatefulWidget {
   final ScrollController scrollController;
   final String Function(int) getMonthName;
   final String Function(int) getDayName;
   final double itemHeight;
-  const HomeListView(
-      {required this.scrollController,
-      required this.getMonthName,
-      required this.getDayName,
-      this.itemHeight = 56.0,
-      Key? key})
-      : super(key: key);
+  const HomeListView({
+    required this.scrollController,
+    required this.getMonthName,
+    required this.getDayName,
+    this.itemHeight = 56.0,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<HomeListView> createState() => _HomeListViewState();
+}
+
+class _HomeListViewState extends State<HomeListView> {
+  late Map<DateTime, MealModel> _localMeals;
+  late List<DateTime> _allDays;
+  bool _isLoading = false;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final canteenProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
+    _allDays = List<DateTime>.from(canteenProvider.allDays);
+    _localMeals = {for (var meal in canteenProvider.meals) DateTime(meal.date.year, meal.date.month, meal.date.day): meal};
+    _isLoading = canteenProvider.isLoading;
+    _errorMessage = canteenProvider.errorMessage;
+  }
+
+  void updateMeal(DateTime date, MealModel meal) {
+    setState(() {
+      _localMeals[DateTime(date.year, date.month, date.day)] = meal;
+    });
+  }
+
+  bool isMealMarked(DateTime date, String mealType) {
+    final meal = _localMeals[DateTime(date.year, date.month, date.day)];
+    if (meal == null) return false;
+    switch (mealType.toLowerCase()) {
+      case 'breakfast':
+        return meal.breakfast;
+      case 'lunch':
+        return meal.lunch;
+      case 'dinner':
+        return meal.dinner;
+      default:
+        return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final canteenProvider = Provider.of<CanteenHomeProvider>(context);
-    final mealProvider = Provider.of<CanteenHomeProvider>(context);
-
-    if (mealProvider.isLoading) {
+    if (_isLoading) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -34,17 +73,13 @@ class HomeListView extends StatelessWidget {
         ),
       );
     }
-
-    if (mealProvider.errorMessage.isNotEmpty) {
+    if (_errorMessage.isNotEmpty) {
       IconData errorIcon = Icons.error_outline;
       Color errorColor = Colors.red;
-
-      // Different styling for auth errors vs network errors
-      if (mealProvider.errorMessage.contains('Authentication')) {
+      if (_errorMessage.contains('Authentication')) {
         errorIcon = Icons.lock_outline;
         errorColor = Colors.orange;
       }
-
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -54,7 +89,7 @@ class HomeListView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 22.0),
               child: Text(
-                mealProvider.errorMessage,
+                _errorMessage,
                 textAlign: TextAlign.center,
                 style: TextStyleClass.poppinsMedium(
                   fontSize: 12,
@@ -63,46 +98,44 @@ class HomeListView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            if (mealProvider.meals.isNotEmpty)
-              Text(
-                "Showing cached data from last sync",
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
-            const SizedBox(height: 12),
             ElevatedButton.icon(
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorClass.brandDarkGreen,
                 foregroundColor: Colors.white,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              onPressed: () => mealProvider.fetchUserMeals(context),
+              onPressed: () async {
+                setState(() {
+                  _isLoading = true;
+                  _errorMessage = '';
+                });
+                final canteenProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
+                await canteenProvider.fetchUserMeals(context);
+                setState(() {
+                  _localMeals = {for (var meal in canteenProvider.meals) DateTime(meal.date.year, meal.date.month, meal.date.day): meal};
+                  _isLoading = canteenProvider.isLoading;
+                  _errorMessage = canteenProvider.errorMessage;
+                });
+              },
             ),
           ],
         ),
       );
     }
-
-    // Build a list of items: for each date, if first of month, add a banner, then the day row
     final List<_HomeListItem> items = [];
-    for (final date in canteenProvider.allDays) {
+    for (final date in _allDays) {
       if (date.day == 1) {
         items.add(_HomeListItem.banner(date));
       }
       items.add(_HomeListItem.day(date));
     }
-
     return ListView.builder(
-      controller: scrollController,
-      itemCount: items.length + 1, // +1 for header
+      controller: widget.scrollController,
+      itemCount: items.length + 1,
       itemBuilder: (context, index) {
         if (index == 0) {
-          // Header row
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
             decoration: BoxDecoration(
@@ -149,7 +182,7 @@ class HomeListView extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 6),
                   child: Text(
-                    '${getMonthName(date.month)} ${date.year}',
+                    '${widget.getMonthName(date.month)} ${date.year}',
                     style: TextStyleClass.poppinsMedium(
                       fontSize: 12,
                       color: ColorClass.brandDarkGreen,
@@ -182,11 +215,11 @@ class HomeListView extends StatelessWidget {
           final isToday = date.day == DateTime.now().day &&
               date.month == DateTime.now().month &&
               date.year == DateTime.now().year;
-          final hasBreakfast = mealProvider.isMealMarked(date, 'breakfast');
-          final hasLunch = mealProvider.isMealMarked(date, 'lunch');
-          final hasDinner = mealProvider.isMealMarked(date, 'dinner');
+          final hasBreakfast = isMealMarked(date, 'breakfast');
+          final hasLunch = isMealMarked(date, 'lunch');
+          final hasDinner = isMealMarked(date, 'dinner');
           return SizedBox(
-            height: itemHeight,
+            height: widget.itemHeight,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
               decoration: BoxDecoration(
@@ -231,7 +264,7 @@ class HomeListView extends StatelessWidget {
                           ),
                         const SizedBox(height: 4),
                         Text(
-                          ' ${getDayName(date.weekday)}',
+                          ' ${widget.getDayName(date.weekday)}',
                           style: TextStyleClass.poppinsMedium(
                             fontSize: 12,
                             color: ColorClass.neutral400,
@@ -250,7 +283,6 @@ class HomeListView extends StatelessWidget {
                           date: date,
                           isChecked: hasBreakfast,
                           mealType: 'breakfast',
-                          isEnabled: true,
                           size: 24.0,
                         ),
                         _buildMealCheckbox(
@@ -258,7 +290,6 @@ class HomeListView extends StatelessWidget {
                           date: date,
                           isChecked: hasLunch,
                           mealType: 'lunch',
-                          isEnabled: true,
                           size: 24.0,
                         ),
                         _buildMealCheckbox(
@@ -266,7 +297,6 @@ class HomeListView extends StatelessWidget {
                           date: date,
                           isChecked: hasDinner,
                           mealType: 'dinner',
-                          isEnabled: true,
                           size: 24.0,
                         ),
                       ],
@@ -281,35 +311,24 @@ class HomeListView extends StatelessWidget {
     );
   }
 
-  // Updated helper method to build clickable meal checkboxes
   Widget _buildMealCheckbox({
     required BuildContext context,
     required DateTime date,
     required bool isChecked,
     required String mealType,
-    required bool isEnabled,
     double size = 24.0,
   }) {
-    final mealProvider =
-        Provider.of<CanteenHomeProvider>(context, listen: false);
     final now = DateTime.now();
-
-    // Set cutoff time to 6:00 AM today
     final cutoffTime = DateTime(now.year, now.month, now.day, 6, 0);
     final checkDate = DateTime(date.year, date.month, date.day);
-
-    // Check if the date is in the past or if it's today and past 6 AM
     final isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
     final isRestrictedToday =
         checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) &&
             now.isAfter(cutoffTime);
     final isRestricted = isPast || isRestrictedToday;
-
-    // Use different styles for restricted dates
     if (isRestricted) {
       return GestureDetector(
         onTap: () {
-          // Show restriction dialog when user tries to interact with restricted dates
           showDialog(
             context: context,
             builder: (BuildContext context) => AlertDialog(
@@ -372,14 +391,55 @@ class HomeListView extends StatelessWidget {
         ),
       );
     }
-
-    // Normal checkbox for non-restricted dates
     return Transform.scale(
       scale: size / 24.0,
       child: Checkbox(
         value: isChecked,
-        onChanged: (newValue) {
-          _updateMeal(context, mealProvider, date, mealType, newValue ?? false);
+        onChanged: (newValue) async {
+          // Prepare meal parameters
+          bool? breakfast;
+          bool? lunch;
+          bool? dinner;
+          switch (mealType.toLowerCase()) {
+            case 'breakfast':
+              breakfast = newValue;
+              break;
+            case 'lunch':
+              lunch = newValue;
+              break;
+            case 'dinner':
+              dinner = newValue;
+              break;
+          }
+          final canteenProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
+          final result = await canteenProvider.updateMeal(
+            context,
+            date: date,
+            breakfast: breakfast,
+            lunch: lunch,
+            dinner: dinner,
+          );
+          if (result != null) {
+            updateMeal(date, result);
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('$mealType updated successfully'),
+                  backgroundColor: Colors.green,
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            }
+          } else {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to update $mealType'),
+                  backgroundColor: ColorClass.redBase,
+                ),
+              );
+            }
+          }
         },
         activeColor: ColorClass.brandLightGreen,
         checkColor: ColorClass.brandDarkGreen,
@@ -387,116 +447,6 @@ class HomeListView extends StatelessWidget {
         visualDensity: VisualDensity.compact,
       ),
     );
-  }
-
-  // New helper method to handle meal updates
-  Future<void> _updateMeal(
-    BuildContext context,
-    CanteenHomeProvider mealProvider,
-    DateTime date,
-    String mealType,
-    bool newValue,
-  ) async {
-    try {
-      debugPrint(
-          'Updating $mealType for ${date.toIso8601String().split('T')[0]} to: $newValue');
-
-      // Prepare meal parameters based on mealType
-      bool? breakfast;
-      bool? lunch;
-      bool? dinner;
-
-      switch (mealType.toLowerCase()) {
-        case 'breakfast':
-          breakfast = newValue;
-          break;
-        case 'lunch':
-          lunch = newValue;
-          break;
-        case 'dinner':
-          dinner = newValue;
-          break;
-      }
-
-      // Show a loading indicator
-      final loadingOverlay = _showLoadingOverlay(context);
-
-      // Make the API call to update the meal
-      final result = await mealProvider.updateMeal(
-        context,
-        date: date,
-        breakfast: breakfast,
-        lunch: lunch,
-        dinner: dinner,
-      );
-
-      // Hide loading indicator
-      loadingOverlay.remove();
-
-      // Check if the widget is still mounted before showing feedback
-      if (context.mounted) {
-        // Show appropriate feedback
-        if (result != null) {
-          debugPrint(
-              '✅ Successfully updated $mealType for ${date.day}-${date.month}-${date.year}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$mealType updated successfully'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 1),
-            ),
-          );
-        } else {
-          debugPrint('❌ Failed to update $mealType');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to update $mealType'),
-              backgroundColor: ColorClass.redBase,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      debugPrint('❌ Error updating meal: $e');
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: ColorClass.redBase,
-          ),
-        );
-      }
-    }
-  }
-
-  // Helper method to show a loading overlay
-  OverlayEntry _showLoadingOverlay(BuildContext context) {
-    final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: 0,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        child: Container(
-          color: Colors.transparent,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    Overlay.of(context).insert(overlayEntry);
-    return overlayEntry;
   }
 }
 

@@ -9,6 +9,7 @@ import 'package:hira_plus/screens/user_screens/user_home_screen/models/meal_mode
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/meal_service.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/contact_service.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/contact_model.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/today_checkin_model.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
 
 enum HomeViewMode { list, month }
@@ -42,6 +43,11 @@ class CanteenHomeProvider extends ChangeNotifier {
   String _contactsError = '';
   String _searchQuery = '';
 
+  // Check-in state
+  TodayCheckInModel? _todayCheckIns;
+  bool _isLoadingCheckIns = false;
+  String _checkInsError = '';
+
   // Getters
   // View mode getters
   HomeViewMode get mode => _mode;
@@ -64,6 +70,11 @@ class CanteenHomeProvider extends ChangeNotifier {
   String get contactsError => _contactsError;
   String get searchQuery => _searchQuery;
 
+  // Check-in getters
+  TodayCheckInModel? get todayCheckIns => _todayCheckIns;
+  bool get isLoadingCheckIns => _isLoadingCheckIns;
+  String get checkInsError => _checkInsError;
+
   // Computed filtered contacts based on search query
   List<ContactModel> get filteredContacts {
     if (_searchQuery.isEmpty) return _contacts;
@@ -74,6 +85,12 @@ class CanteenHomeProvider extends ChangeNotifier {
              contact.department.toLowerCase().contains(lowerQuery) ||
              contact.designation.toLowerCase().contains(lowerQuery);
     }).toList();
+  }
+
+  // Returns a set of checked-in user names for quick lookup
+  Set<String> get checkedInUserNames {
+    if (_todayCheckIns == null) return {};
+    return _todayCheckIns!.checkIns.map((c) => c.user.name).toSet();
   }
 
   // Constructor
@@ -453,5 +470,26 @@ class CanteenHomeProvider extends ChangeNotifier {
     _searchQuery = '';
     _updateAllDays(null);
     notifyListeners();
+  }
+
+  // Check-in methods
+  Future<void> fetchTodayCheckIns(BuildContext context) async {
+    try {
+      _isLoadingCheckIns = true;
+      _checkInsError = '';
+      notifyListeners();
+      final result = await _contactService.getTodayCheckIns(context);
+      if (result != null) {
+        _todayCheckIns = result;
+      } else {
+        _checkInsError = 'Failed to fetch today\'s check-ins.';
+      }
+      _isLoadingCheckIns = false;
+      notifyListeners();
+    } catch (e) {
+      _isLoadingCheckIns = false;
+      _checkInsError = 'Error fetching today\'s check-ins: \\${e.toString()}';
+      notifyListeners();
+    }
   }
 }

@@ -48,7 +48,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       
       // Fetch meals data when screen loads
       canteenProvider.fetchUserMeals(context);
-      _scrollToToday(canteenProvider);
       _setupViewModeListener();
       canteenProvider.fetchBanner();
       
@@ -64,9 +63,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       if (_viewModeProvider!.mode == HomeViewMode.list) {
         final canteenProvider =
             Provider.of<CanteenHomeProvider>(context, listen: false);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollToToday(canteenProvider);
-        });
+        // WidgetsBinding.instance.addPostFrameCallback((_) {
+        //   _scrollToToday(canteenProvider);
+        // });
       }
     };
     _viewModeProvider?.addListener(_viewModeListener!);
@@ -86,7 +85,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final canteenProvider =
           Provider.of<CanteenHomeProvider>(context, listen: false);
-      _scrollToToday(canteenProvider);
+      // _scrollToToday(canteenProvider); // REMOVE THIS
       // Set user info for profile card
       final profileProvider =
           Provider.of<ProfileScreenProvider>(context, listen: false);
@@ -966,7 +965,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   void _showMealMarkBottomSheet(
       BuildContext context, CanteenHomeProvider canteenProvider) {
-    // Always show today's date and list view when opening
     canteenProvider.setMode(HomeViewMode.list);
     canteenProvider.setSelectedDate(DateTime.now(), context);
     showModalBottomSheet(
@@ -976,144 +974,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        final canteenProvider = Provider.of<CanteenHomeProvider>(context);
-        debugPrint('Current HomeViewMode: ${canteenProvider.mode}');
-
-        // Ensure scroll to today when in list mode
-        if (canteenProvider.mode == HomeViewMode.list) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _scrollToToday(canteenProvider);
-          });
-        }
-
-        return DraggableScrollableSheet(
-          initialChildSize: 0.85,
-          minChildSize: 0.7,
-          maxChildSize: 0.95,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              child: Column(
-                children: [
-                  // Close button and view toggle
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(),
-                      Text("Mark Your Meals",
-                          style: TextStyleClass.poppinsSemiBold(
-                              fontSize: 18, color: ColorClass.brandDarkGreen)),
-                      Container(
-                        padding: const EdgeInsets.only(top: 8.0, right: 8.0),
-                        alignment: Alignment.topRight,
-                        child: IconButton(
-                          icon: Icon(Icons.close, size: 30),
-                          onPressed: () => Navigator.pop(context),
-                          color: ColorClass.brandDarkGreen,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Toggle between list and calendar view
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        TextButton.icon(
-                          onPressed: canteenProvider.mode == HomeViewMode.list
-                              ? null
-                              : () =>
-                                  canteenProvider.setMode(HomeViewMode.list),
-                          icon: Icon(Icons.list,
-                              color: canteenProvider.mode == HomeViewMode.list
-                                  ? ColorClass.brandDarkGreen
-                                  : Colors.grey),
-                          label: Text('List',
-                              style: TextStyleClass.poppinsRegular(
-                                  fontSize: 15,
-                                  color:
-                                      canteenProvider.mode == HomeViewMode.list
-                                          ? ColorClass.brandDarkGreen
-                                          : Colors.grey)),
-                        ),
-                        TextButton.icon(
-                          onPressed: canteenProvider.mode == HomeViewMode.month
-                              ? null
-                              : () =>
-                                  canteenProvider.setMode(HomeViewMode.month),
-                          icon: Icon(Icons.calendar_month,
-                              color: canteenProvider.mode == HomeViewMode.month
-                                  ? ColorClass.brandDarkGreen
-                                  : Colors.grey),
-                          label: Text('Calendar',
-                              style: TextStyleClass.poppinsRegular(
-                                  fontSize: 15,
-                                  color:
-                                      canteenProvider.mode == HomeViewMode.month
-                                          ? ColorClass.brandDarkGreen
-                                          : Colors.grey)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: canteenProvider.mode == HomeViewMode.list
-                        ? Stack(
-                            children: [
-                              HomeListView(
-                                scrollController: _scrollController,
-                                getMonthName: _getMonthName,
-                                getDayName: _getDayName,
-                                itemHeight: 90.0, // Increased from 56.0 to 80.0
-                              ),
-                              Positioned(
-                                bottom: 16,
-                                right: 16,
-                                child: TodayFAB(
-                                  onPressed: () {
-                                    canteenProvider.setSelectedDate(
-                                        DateTime.now(), context);
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      _scrollToToday(canteenProvider);
-                                    });
-                                  },
-                                ),
-                              ),
-                            ],
-                          )
-                        : MonthCalendarView(
-                            selectedDate: canteenProvider.selectedDate,
-                            getMonthName: _getMonthName,
-                            onMonthChanged: (int delta) {
-                              final currentYear = DateTime.now().year;
-                              final currentMonth =
-                                  canteenProvider.selectedDate.month;
-                              final newMonth = currentMonth + delta;
-                              final newYear =
-                                  canteenProvider.selectedDate.year +
-                                      ((newMonth - 1) ~/ 12);
-                              final normalizedMonth = ((newMonth - 1) % 12) + 1;
-                              if (newYear == currentYear &&
-                                  normalizedMonth >= 1 &&
-                                  normalizedMonth <= 12) {
-                                final newDate =
-                                    DateTime(newYear, normalizedMonth, 1);
-                                canteenProvider.setSelectedDate(
-                                    newDate, context);
-                              }
-                            },
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
+        return MealMarkingSheet(
+          canteenProvider: canteenProvider,
+          getMonthName: _getMonthName,
+          getDayName: _getDayName,
         );
       },
     );
@@ -1154,6 +1018,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     canteenProvider.fetchContacts(context);
     canteenProvider.setSearchQuery("");
     _searchController.text = "";
+    // Fetch today's check-ins
+    canteenProvider.fetchTodayCheckIns(context);
 
     showModalBottomSheet(
       context: context,
@@ -1324,18 +1190,40 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               Divider(height: 1, color: Colors.grey[200]),
                           itemBuilder: (context, index) {
                             final contact = filtered[index];
+                            final isCheckedIn = provider.checkedInUserNames.contains(contact.name);
                             return ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor: ColorClass.brandLightGreen,
-                                child: Text(
-                                  contact.name.isNotEmpty
-                                      ? contact.name[0].toUpperCase()
-                                      : '?',
-                                  style: TextStyleClass.poppinsBold(
-                                    fontSize: 16,
-                                    color: ColorClass.brandDarkGreen,
+                              leading: Stack(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: ColorClass.brandLightGreen,
+                                    child: Text(
+                                      contact.name.isNotEmpty
+                                          ? contact.name[0].toUpperCase()
+                                          : '?',
+                                      style: TextStyleClass.poppinsBold(
+                                        fontSize: 16,
+                                        color: ColorClass.brandDarkGreen,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  if (isCheckedIn)
+                                    Positioned(
+                                      right: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 14,
+                                        height: 14,
+                                        decoration: BoxDecoration(
+                                          color: ColorClass.greenDark,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                               title: Text(
                                 contact.name,
@@ -1392,6 +1280,204 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+}
+
+class MealMarkingSheet extends StatefulWidget {
+  final CanteenHomeProvider canteenProvider;
+  final String Function(int) getMonthName;
+  final String Function(int) getDayName;
+  const MealMarkingSheet({
+    required this.canteenProvider,
+    required this.getMonthName,
+    required this.getDayName,
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  State<MealMarkingSheet> createState() => _MealMarkingSheetState();
+}
+
+class _MealMarkingSheetState extends State<MealMarkingSheet> {
+  late final ScrollController _localScrollController;
+  bool _scrolledToToday = false;
+  late bool isListMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _localScrollController = ScrollController();
+    isListMode = true; // Default to list mode on open
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrolledToToday && isListMode) {
+        final todayIndex = widget.canteenProvider.getTodayIndex();
+        if (todayIndex != -1 && _localScrollController.hasClients) {
+          _localScrollController.animateTo(
+            todayIndex * 90.0,
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+          );
+        }
+        _scrolledToToday = true;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _localScrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final canteenProvider = widget.canteenProvider;
+    return DraggableScrollableSheet(
+      initialChildSize: 0.85,
+      minChildSize: 0.7,
+      maxChildSize: 0.95,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              // Close button and view toggle
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(),
+                  Text("Mark Your Meals",
+                      style: TextStyleClass.poppinsSemiBold(
+                          fontSize: 18, color: ColorClass.brandDarkGreen)),
+                  Container(
+                    padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                    alignment: Alignment.topRight,
+                    child: IconButton(
+                      icon: Icon(Icons.close, size: 30),
+                      onPressed: () => Navigator.pop(context),
+                      color: ColorClass.brandDarkGreen,
+                    ),
+                  ),
+                ],
+              ),
+              // Toggle between list and calendar view
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton.icon(
+                      onPressed: isListMode
+                          ? null
+                          : () {
+                              setState(() {
+                                isListMode = true;
+                                _scrolledToToday = false;
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  final todayIndex = canteenProvider.getTodayIndex();
+                                  if (todayIndex != -1 && _localScrollController.hasClients) {
+                                    _localScrollController.animateTo(
+                                      todayIndex * 90.0,
+                                      duration: const Duration(milliseconds: 500),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  }
+                                  _scrolledToToday = true;
+                                });
+                              });
+                            },
+                      icon: Icon(Icons.list,
+                          color: isListMode
+                              ? ColorClass.brandDarkGreen
+                              : Colors.grey),
+                      label: Text('List',
+                          style: TextStyleClass.poppinsRegular(
+                              fontSize: 15,
+                              color: isListMode
+                                  ? ColorClass.brandDarkGreen
+                                  : Colors.grey)),
+                    ),
+                    TextButton.icon(
+                      onPressed: !isListMode
+                          ? null
+                          : () {
+                              setState(() {
+                                isListMode = false;
+                              });
+                            },
+                      icon: Icon(Icons.calendar_month,
+                          color: !isListMode
+                              ? ColorClass.brandDarkGreen
+                              : Colors.grey),
+                      label: Text('Calendar',
+                          style: TextStyleClass.poppinsRegular(
+                              fontSize: 15,
+                              color: !isListMode
+                                  ? ColorClass.brandDarkGreen
+                                  : Colors.grey)),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: isListMode
+                    ? Stack(
+                        children: [
+                          HomeListView(
+                            scrollController: _localScrollController,
+                            getMonthName: widget.getMonthName,
+                            getDayName: widget.getDayName,
+                            itemHeight: 90.0,
+                          ),
+                          Positioned(
+                            bottom: 16,
+                            right: 16,
+                            child: TodayFAB(
+                              onPressed: () {
+                                canteenProvider.setSelectedDate(
+                                    DateTime.now(), context);
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  final todayIndex = canteenProvider.getTodayIndex();
+                                  if (todayIndex != -1 && _localScrollController.hasClients) {
+                                    _localScrollController.animateTo(
+                                      todayIndex * 90.0,
+                                      duration: const Duration(milliseconds: 500),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      )
+                    : MonthCalendarView(
+                        selectedDate: canteenProvider.selectedDate,
+                        getMonthName: widget.getMonthName,
+                        onMonthChanged: (int delta) {
+                          final currentYear = DateTime.now().year;
+                          final currentMonth = canteenProvider.selectedDate.month;
+                          final newMonth = currentMonth + delta;
+                          final newYear = canteenProvider.selectedDate.year + ((newMonth - 1) ~/ 12);
+                          final normalizedMonth = ((newMonth - 1) % 12) + 1;
+                          if (newYear == currentYear &&
+                              normalizedMonth >= 1 &&
+                              normalizedMonth <= 12) {
+                            final newDate = DateTime(newYear, normalizedMonth, 1);
+                            canteenProvider.setSelectedDate(newDate, context);
+                          }
+                        },
+                      ),
+              ),
+            ],
+          ),
         );
       },
     );
