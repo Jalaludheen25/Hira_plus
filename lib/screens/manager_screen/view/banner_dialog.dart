@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:toastification/toastification.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/manager_screen/provider/banner_upload_provider.dart';
+import 'package:hira_plus/utils/permission_helper.dart';
 
 class BannerDialog extends StatelessWidget {
   const BannerDialog({Key? key}) : super(key: key);
@@ -14,71 +13,38 @@ class BannerDialog extends StatelessWidget {
   Future<void> _pickImage(BuildContext context) async {
     debugPrint('[BannerDialog] 📸 Starting image picker process');
 
-    // First check the current permission status
-    var status = await Permission.photos.status;
-    debugPrint('[BannerDialog] 🔐 Current photo permission status: $status');
+    try {
+      final selectedFile =
+          await PermissionHelper.pickImageWithPermission(context);
 
-    if (status.isDenied) {
-      // If denied for the first time, request permission
-      status = await Permission.photos.request();
-      debugPrint('[BannerDialog] 🔐 Requested permission status: $status');
-    }
-
-    if (status.isGranted) {
-      debugPrint('[BannerDialog] ✅ Permission granted, opening gallery');
-      final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-      if (pickedFile != null) {
-        final file = File(pickedFile.path);
-        final fileSize = await file.length();
-        final fileExtension = pickedFile.path.split('.').last.toLowerCase();
+      if (selectedFile != null) {
+        final fileSize = await selectedFile.length();
+        final fileExtension = selectedFile.path.split('.').last.toLowerCase();
 
         debugPrint(
-            '[BannerDialog] 📁 File selected: ${pickedFile.path}, Size: $fileSize bytes, Type: $fileExtension');
+            '[BannerDialog] 📁 File selected: ${selectedFile.path}, Size: $fileSize bytes, Type: $fileExtension');
 
         Provider.of<BannerUploadProvider>(context, listen: false)
-            .setImage(file);
+            .setImage(selectedFile);
         debugPrint('[BannerDialog] ✅ File set successfully');
       } else {
         debugPrint('[BannerDialog] ❌ No image selected by user');
       }
-    } else if (status.isPermanentlyDenied) {
-      debugPrint('[BannerDialog] 🚫 Permission permanently denied');
+    } catch (e) {
+      debugPrint('[BannerDialog] 💥 Error picking image: $e');
 
-      // Show a dialog explaining why we need permission and how to enable it
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Photo Access Required'),
-          content: const Text(
-              'To upload banners, we need access to your photos. Please enable photo access in your device settings.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                openAppSettings();
-              },
-              child: const Text('Open Settings'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      debugPrint('[BannerDialog] ❌ Permission denied: $status');
-      toastification.show(
-        context: context,
-        title: const Text('Permission denied to access photos.'),
-        type: ToastificationType.error,
-        style: ToastificationStyle.fillColored,
-        autoCloseDuration: const Duration(seconds: 2),
-        primaryColor: ColorClass.redBase  ,
-        backgroundColor: ColorClass.white,
-      );
+      // Check if context is still valid before showing toast
+      if (context.mounted) {
+        toastification.show(
+          context: context,
+          title: Text('Error selecting image: ${e.toString()}'),
+          type: ToastificationType.error,
+          style: ToastificationStyle.fillColored,
+          autoCloseDuration: const Duration(seconds: 3),
+          primaryColor: ColorClass.redBase,
+          backgroundColor: ColorClass.white,
+        );
+      }
     }
   }
 
@@ -249,7 +215,8 @@ class BannerDialog extends StatelessWidget {
                     onPressed: provider.isLoading
                         ? null
                         : () {
-                            debugPrint('[BannerDialog] ❌ Dialog cancelled by user');
+                            debugPrint(
+                                '[BannerDialog] ❌ Dialog cancelled by user');
                             Navigator.of(context).pop(false);
                           },
                     child: const Text('Cancel'),

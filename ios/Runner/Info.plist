@@ -50,11 +50,9 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to upload banners.</string>
+	<string>This app needs access to your photo library to select images for banner uploads.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>We need access to your camera to upload banners.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We need to save images to your photo library.</string>
+	<string>This app needs access to your camera to take photos for banner uploads.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app includes libraries that may request location access, but we do not use your location.</string>
 </dict>
