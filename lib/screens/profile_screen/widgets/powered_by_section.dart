@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/global_variables.dart';
 import 'package:hira_plus/constants/icons_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 
@@ -14,6 +15,10 @@ class PoweredBySection extends StatelessWidget {
                 fontSize: 14, color: ColorClass.neutral400)),
         const SizedBox(height: 8),
         Image.asset(IconClass.d4dxLogo, height: 60),
+        const SizedBox(height: 8),
+        Text('v${GlobalVariables.appVersion}',
+            style: TextStyleClass.poppinsRegular(
+                fontSize: 12, color: ColorClass.neutral400)),
       ],
     );
   }

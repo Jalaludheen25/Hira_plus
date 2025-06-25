@@ -4,6 +4,8 @@ import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/icons_class.dart';
+import 'package:hira_plus/constants/global_variables.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'dart:developer' as developer;
@@ -57,17 +59,19 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _checkVersionAndAuth() async {
     try {
       await Future.delayed(const Duration(seconds: 3));
-      
+
       if (!mounted) return;
 
       // First check if app needs update
-      final versionProvider = Provider.of<VersionCheckProvider>(context, listen: false);
+      final versionProvider =
+          Provider.of<VersionCheckProvider>(context, listen: false);
       await versionProvider.checkVersion();
 
       if (!mounted) return;
 
       if (versionProvider.needsUpdate) {
-        _logger.i('🔄 [VERSION] Update needed, navigating to force update screen');
+        _logger
+            .i('🔄 [VERSION] Update needed, navigating to force update screen');
         if (mounted) {
           navigatePRTo(context: context, route: Routes.forceUpdate);
         }
@@ -83,17 +87,18 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       if (isLoggedIn) {
-        _logger.i('🔑 [AUTH] User is logged in, user type: ${authProvider.userType}');
+        _logger.i(
+            '🔑 [AUTH] User is logged in, user type: ${authProvider.userType}');
 
         // Navigate to appropriate screen based on user type
         if (!mounted) return;
-        
+
         if (authProvider.userType == 'Manager') {
           _logger.i('🔍 [AUTH] Starting manager validation...');
           developer.log('🔍 Starting manager validation...');
-          
+
           final isManagerValid = await authProvider.checkManagerLoginStatus();
-          
+
           if (!mounted) return;
 
           if (isManagerValid) {
@@ -187,7 +192,7 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                   ),
-                  
+
                   // Bottom spacer to leave room for building image
                   Expanded(
                     flex: 2,
@@ -196,10 +201,11 @@ class _SplashScreenState extends State<SplashScreen>
                 ],
               ),
             ),
-            
+
             // PoweredBy section positioned in the center of the building image
             Positioned(
-              bottom: 80, // Adjust this value to center it on your building image
+              bottom:
+                  80, // Adjust this value to center it on your building image
               left: 0,
               right: 0,
               child: AnimatedBuilder(
@@ -210,14 +216,31 @@ class _SplashScreenState extends State<SplashScreen>
                     child: Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Image.asset(IconClass.dxLogoWhite,width: 58,height: 58,),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              IconClass.dxLogoWhite,
+                              width: 58,
+                              height: 58,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'v${GlobalVariables.appVersion}',
+                              style: TextStyleClass.poppinsRegular(
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   );
                 },
               ),
             ),
-            
+
             // Bottom building image positioned absolutely at the bottom
             Positioned(
               bottom: 0,
@@ -236,7 +259,8 @@ class _SplashScreenState extends State<SplashScreen>
                         height: null, // Let it determine height automatically
                         fallbackIcon: Icons.business,
                         fallbackColor: Colors.white70,
-                        fitType: BoxFit.fitWidth, // Show full image, fit to width
+                        fitType:
+                            BoxFit.fitWidth, // Show full image, fit to width
                       ),
                     ),
                   );
@@ -265,13 +289,16 @@ class _SplashScreenState extends State<SplashScreen>
       fit: fitType,
       errorBuilder: (context, error, stackTrace) {
         // Fallback widget when image fails to load
-        _logger.w('🖼️ [IMAGE] Failed to load image: $assetPath - Error: $error');
+        _logger
+            .w('🖼️ [IMAGE] Failed to load image: $assetPath - Error: $error');
         return Container(
           width: width,
           height: height ?? 150, // Default height for fallback
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
-            borderRadius: fitType == BoxFit.cover ? BorderRadius.zero : BorderRadius.circular(12),
+            borderRadius: fitType == BoxFit.cover
+                ? BorderRadius.zero
+                : BorderRadius.circular(12),
             border: Border.all(color: Colors.white.withOpacity(0.2)),
           ),
           child: Icon(
