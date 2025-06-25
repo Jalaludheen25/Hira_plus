@@ -31,9 +31,13 @@ class _HomeListViewState extends State<HomeListView> {
   @override
   void initState() {
     super.initState();
-    final canteenProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
+    final canteenProvider =
+        Provider.of<CanteenHomeProvider>(context, listen: false);
     _allDays = List<DateTime>.from(canteenProvider.allDays);
-    _localMeals = {for (var meal in canteenProvider.meals) DateTime(meal.date.year, meal.date.month, meal.date.day): meal};
+    _localMeals = {
+      for (var meal in canteenProvider.meals)
+        DateTime(meal.date.year, meal.date.month, meal.date.day): meal
+    };
     _isLoading = canteenProvider.isLoading;
     _errorMessage = canteenProvider.errorMessage;
   }
@@ -76,49 +80,100 @@ class _HomeListViewState extends State<HomeListView> {
     if (_errorMessage.isNotEmpty) {
       IconData errorIcon = Icons.error_outline;
       Color errorColor = Colors.red;
-      if (_errorMessage.contains('Authentication')) {
+      String retryButtonText = 'Retry';
+
+      // Customize UI based on error type
+      if (_errorMessage.contains('Authentication') ||
+          _errorMessage.contains('Unauthorized')) {
         errorIcon = Icons.lock_outline;
         errorColor = Colors.orange;
+        retryButtonText = 'Login Again';
+      } else if (_errorMessage.contains('timeout') ||
+          _errorMessage.contains('Connection timeout')) {
+        errorIcon = Icons.wifi_off;
+        errorColor = Colors.blue;
+        retryButtonText = 'Retry Connection';
+      } else if (_errorMessage.contains('No internet') ||
+          _errorMessage.contains('network')) {
+        errorIcon = Icons.signal_wifi_off;
+        errorColor = Colors.blue;
+        retryButtonText = 'Check Network';
       }
+
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(errorIcon, size: 28, color: errorColor),
-            const SizedBox(height: 12),
+            Icon(errorIcon, size: 48, color: errorColor),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 22.0),
               child: Text(
                 _errorMessage,
                 textAlign: TextAlign.center,
                 style: TextStyleClass.poppinsMedium(
-                  fontSize: 12,
+                  fontSize: 14,
                   color: errorColor,
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              icon: Icon(_isLoading ? Icons.hourglass_empty : Icons.refresh),
+              label: Text(_isLoading ? 'Retrying...' : retryButtonText),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ColorClass.brandDarkGreen,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
-              onPressed: () async {
-                setState(() {
-                  _isLoading = true;
-                  _errorMessage = '';
-                });
-                final canteenProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
-                await canteenProvider.fetchUserMeals(context);
-                setState(() {
-                  _localMeals = {for (var meal in canteenProvider.meals) DateTime(meal.date.year, meal.date.month, meal.date.day): meal};
-                  _isLoading = canteenProvider.isLoading;
-                  _errorMessage = canteenProvider.errorMessage;
-                });
-              },
+              onPressed: _isLoading
+                  ? null
+                  : () async {
+                      setState(() {
+                        _isLoading = true;
+                        _errorMessage = '';
+                      });
+
+                      try {
+                        final canteenProvider =
+                            Provider.of<CanteenHomeProvider>(context,
+                                listen: false);
+                        await canteenProvider.fetchUserMeals(context);
+
+                        setState(() {
+                          _localMeals = {
+                            for (var meal in canteenProvider.meals)
+                              DateTime(meal.date.year, meal.date.month,
+                                  meal.date.day): meal
+                          };
+                          _isLoading = canteenProvider.isLoading;
+                          _errorMessage = canteenProvider.errorMessage;
+                        });
+
+                        if (canteenProvider.errorMessage.isEmpty &&
+                            context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text('Meals loaded successfully!'),
+                                ],
+                              ),
+                              backgroundColor: Colors.green,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setState(() {
+                          _isLoading = false;
+                          _errorMessage = 'Failed to retry: ${e.toString()}';
+                        });
+                      }
+                    },
             ),
           ],
         ),
@@ -414,7 +469,8 @@ class _HomeListViewState extends State<HomeListView> {
               dinner = newValue;
               break;
           }
-          final canteenProvider = Provider.of<CanteenHomeProvider>(context, listen: false);
+          final canteenProvider =
+              Provider.of<CanteenHomeProvider>(context, listen: false);
           final result = await canteenProvider.updateMeal(
             context,
             date: date,

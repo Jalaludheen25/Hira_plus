@@ -1,6 +1,5 @@
 import 'dart:developer';
 import 'dart:io';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hira_plus/providers/date_provider.dart';
@@ -10,7 +9,6 @@ import 'package:hira_plus/screens/user_screens/user_home_screen/services/meal_se
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/contact_service.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/contact_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/today_checkin_model.dart';
-import 'package:hira_plus/utils/shared_utils.dart';
 
 enum HomeViewMode { list, month }
 
@@ -81,9 +79,9 @@ class CanteenHomeProvider extends ChangeNotifier {
     final lowerQuery = _searchQuery.toLowerCase();
     return _contacts.where((contact) {
       return contact.name.toLowerCase().contains(lowerQuery) ||
-             contact.phoneNumber.toLowerCase().contains(lowerQuery) ||
-             contact.department.toLowerCase().contains(lowerQuery) ||
-             contact.designation.toLowerCase().contains(lowerQuery);
+          contact.phoneNumber.toLowerCase().contains(lowerQuery) ||
+          contact.department.toLowerCase().contains(lowerQuery) ||
+          contact.designation.toLowerCase().contains(lowerQuery);
     }).toList();
   }
 
@@ -175,68 +173,56 @@ class CanteenHomeProvider extends ChangeNotifier {
       _isLoading = false;
       _lastFetchTime = DateTime.now();
 
-      // Save meal data to shared preferences for offline access
-      await _saveMealsToCache();
-
       log('✅ Successfully updated meals in provider. Count: ${_meals.length}');
       notifyListeners();
     } on HttpException catch (e) {
       log('🚨 HTTP error in meal provider: $e');
       _isLoading = false;
 
-      if (e.toString().contains('401')) {
+      // Provide more specific error messages
+      if (e.toString().contains('401') ||
+          e.toString().contains('Unauthorized')) {
         _errorMessage = 'Authentication error. Please login again.';
+      } else if (e.toString().contains('timeout') ||
+          e.toString().contains('Connection timeout')) {
+        _errorMessage =
+            'Connection timeout. Please check your network and try again.';
+      } else if (e.toString().contains('No internet') ||
+          e.toString().contains('network')) {
+        _errorMessage =
+            'No internet connection. Please check your network and try again.';
+      } else if (e.toString().contains('500') ||
+          e.toString().contains('Server error')) {
+        _errorMessage = 'Server error. Please try again later.';
+      } else if (e.toString().contains('503') ||
+          e.toString().contains('unavailable')) {
+        _errorMessage =
+            'Service temporarily unavailable. Please try again later.';
       } else {
         _errorMessage =
             'Failed to load meals. Please check your connection and try again.';
       }
 
-      // Try to load from cache if available
-      await _loadMealsFromCache();
       notifyListeners();
     } catch (e) {
       log('❌ Error in meal provider: $e');
       _isLoading = false;
-      _errorMessage = 'Failed to load meals. Please try again.';
 
-      // Try to load from cache if available
-      await _loadMealsFromCache();
+      // Handle different types of errors
+      if (e.toString().contains('timeout')) {
+        _errorMessage =
+            'Connection timeout. Please check your network and try again.';
+      } else if (e.toString().contains('SocketException') ||
+          e.toString().contains('network')) {
+        _errorMessage =
+            'Network error. Please check your internet connection and try again.';
+      } else if (e.toString().contains('FormatException')) {
+        _errorMessage = 'Invalid data format received. Please try again.';
+      } else {
+        _errorMessage = 'Failed to load meals. Please try again.';
+      }
+
       notifyListeners();
-    }
-  }
-
-  Future<void> _saveMealsToCache() async {
-    try {
-      if (_meals.isNotEmpty) {
-        final mealJsonList =
-            _meals.map((meal) => jsonEncode(meal.toJson())).toList();
-        final mealJsonString = jsonEncode(mealJsonList);
-        await SharedUtils.setString('cached_meals', mealJsonString);
-        log('💾 Saved ${_meals.length} meals to cache');
-      }
-    } catch (e) {
-      log('❌ Error saving meals to cache: $e');
-    }
-  }
-
-  Future<void> _loadMealsFromCache() async {
-    try {
-      if (_meals.isEmpty) {
-        final cachedMealsJson = await SharedUtils.getString('cached_meals');
-        if (cachedMealsJson.isNotEmpty) {
-          final List<dynamic> mealJsonList = jsonDecode(cachedMealsJson);
-          final cachedMeals = mealJsonList
-              .map((mealJson) => MealModel.fromJson(jsonDecode(mealJson)))
-              .toList();
-
-          if (cachedMeals.isNotEmpty) {
-            _meals = cachedMeals;
-            log('📂 Loaded ${_meals.length} meals from cache');
-          }
-        }
-      }
-    } catch (e) {
-      log('❌ Error loading meals from cache: $e');
     }
   }
 
@@ -337,10 +323,6 @@ class CanteenHomeProvider extends ChangeNotifier {
         _meals.add(updatedMeal);
       }
 
-      // Update cache
-      await _saveMealsToCache();
-      log('Meal cache updated', name: 'CanteenHomeProvider');
-
       // Only notify listeners once at the end
       notifyListeners();
 
@@ -358,8 +340,9 @@ class CanteenHomeProvider extends ChangeNotifier {
     final now = DateTime.now();
     final currentMonth = now.month;
     final currentYear = now.year;
-    
-    log('🔢 Calculating meal counts for month: $currentMonth/$currentYear', name: 'MealCounts');
+
+    log('🔢 Calculating meal counts for month: $currentMonth/$currentYear',
+        name: 'MealCounts');
 
     int breakfastCount = 0;
     int lunchCount = 0;
@@ -369,19 +352,20 @@ class CanteenHomeProvider extends ChangeNotifier {
     final firstDay = DateTime(currentYear, currentMonth, 1);
     final lastDay = DateTime(currentYear, currentMonth + 1, 0);
 
-    log('📅 Date range: ${firstDay.toString().split(' ')[0]} to ${lastDay.toString().split(' ')[0]}', name: 'MealCounts');
+    log('📅 Date range: ${firstDay.toString().split(' ')[0]} to ${lastDay.toString().split(' ')[0]}',
+        name: 'MealCounts');
 
     // Iterate through each day of the month
-    for (DateTime date = firstDay; 
-         date.isBefore(lastDay.add(const Duration(days: 1))); 
-         date = date.add(const Duration(days: 1))) {
-      
+    for (DateTime date = firstDay;
+        date.isBefore(lastDay.add(const Duration(days: 1)));
+        date = date.add(const Duration(days: 1))) {
       if (isMealMarked(date, 'breakfast')) breakfastCount++;
       if (isMealMarked(date, 'lunch')) lunchCount++;
       if (isMealMarked(date, 'dinner')) dinnerCount++;
     }
 
-    log('✅ Meal counts calculated: Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount', name: 'MealCounts');
+    log('✅ Meal counts calculated: Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount',
+        name: 'MealCounts');
 
     return {
       'breakfast': breakfastCount,
@@ -399,7 +383,8 @@ class CanteenHomeProvider extends ChangeNotifier {
   Future<void> fetchContacts(BuildContext context) async {
     try {
       if (_isLoadingContacts) {
-        log('🔄 Already fetching contacts, ignoring new request', name: 'CanteenHomeProvider');
+        log('🔄 Already fetching contacts, ignoring new request',
+            name: 'CanteenHomeProvider');
         return;
       }
 
@@ -407,28 +392,32 @@ class CanteenHomeProvider extends ChangeNotifier {
       _contactsError = '';
       notifyListeners();
 
-      log('🔄 Starting to fetch contacts in provider', name: 'CanteenHomeProvider');
+      log('🔄 Starting to fetch contacts in provider',
+          name: 'CanteenHomeProvider');
       final contactsResponse = await _contactService.getContacts(context);
 
       if (contactsResponse.success) {
         _contacts = contactsResponse.users;
-        log('✅ Successfully updated contacts in provider. Count: ${_contacts.length}', 
+        log('✅ Successfully updated contacts in provider. Count: ${_contacts.length}',
             name: 'CanteenHomeProvider');
       } else {
         _contactsError = 'Failed to fetch contacts from server';
-        log('❌ Contacts API returned success: false', name: 'CanteenHomeProvider');
+        log('❌ Contacts API returned success: false',
+            name: 'CanteenHomeProvider');
       }
 
       _isLoadingContacts = false;
       notifyListeners();
     } on HttpException catch (e) {
-      log('🚨 HTTP error in contacts provider: $e', name: 'CanteenHomeProvider');
+      log('🚨 HTTP error in contacts provider: $e',
+          name: 'CanteenHomeProvider');
       _isLoadingContacts = false;
 
       if (e.toString().contains('401')) {
         _contactsError = 'Authentication error. Please login again.';
       } else {
-        _contactsError = 'Failed to load contacts. Please check your connection and try again.';
+        _contactsError =
+            'Failed to load contacts. Please check your connection and try again.';
       }
 
       notifyListeners();
@@ -451,9 +440,9 @@ class CanteenHomeProvider extends ChangeNotifier {
     final lowerQuery = query.toLowerCase();
     return _contacts.where((contact) {
       return contact.name.toLowerCase().contains(lowerQuery) ||
-             contact.phoneNumber.toLowerCase().contains(lowerQuery) ||
-             contact.department.toLowerCase().contains(lowerQuery) ||
-             contact.designation.toLowerCase().contains(lowerQuery);
+          contact.phoneNumber.toLowerCase().contains(lowerQuery) ||
+          contact.department.toLowerCase().contains(lowerQuery) ||
+          contact.designation.toLowerCase().contains(lowerQuery);
     }).toList();
   }
 

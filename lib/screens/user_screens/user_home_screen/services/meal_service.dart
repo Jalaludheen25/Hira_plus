@@ -15,16 +15,25 @@ class MealService {
   Future<List<MealModel>> getUserMeals(BuildContext context) async {
     try {
       log('🔍 Checking user role for meal fetch');
+
+      // Check if we have a valid auth token first
+      final token = await SharedUtils.getString('auth_token');
+      if (token.isEmpty) {
+        log('❌ No auth token found, user needs to login');
+        throw const HttpException(
+            'Authentication token not found. Please login again.');
+      }
+
       final userType = await SharedUtils.getString('user_type');
       log('👤 User type: $userType');
 
       String url;
       if (userType == 'Manager') {
         url = '${ApiUrls.baseUrl}/admin/users/meals';
-        log('🎯 Using manager');
+        log('🎯 Using manager endpoint');
       } else if (userType == 'Mess Staff') {
         url = '${ApiUrls.baseUrl}/mess-staff/meals';
-        log('🎯 Using mess staff');
+        log('🎯 Using mess staff endpoint');
       } else {
         url = ApiUrls.getMealsForUser();
         log('🎯 Using regular user endpoint: $url');
@@ -33,23 +42,45 @@ class MealService {
       log('🍽️ Fetching meals for $userType');
       log('API URL: $url');
 
-      // Make API request
+      // Make API request with enhanced error handling
       final response = await HttpServiceUtils.fetchData(url, true);
       log('Response type: ${response.runtimeType}');
 
       // Check for empty response
       if (response == null) {
         log('❌ Error: Empty response from meals API');
-        return [];
+        throw const HttpException(
+            'No data received from server. Please try again.');
+      }
+
+      // Validate response structure
+      if (response is! List) {
+        log('❌ Error: Invalid response format, expected List but got ${response.runtimeType}');
+        throw const HttpException(
+            'Invalid data format received from server. Please try again.');
       }
 
       // Parse response into list
       final List<dynamic> mealsList = response;
       log('Number of meals received: ${mealsList.length}');
 
-      // Convert each JSON object to MealModel
-      final meals =
-          mealsList.map((mealJson) => MealModel.fromJson(mealJson)).toList();
+      // Convert each JSON object to MealModel with error handling
+      final List<MealModel> meals = [];
+      for (int i = 0; i < mealsList.length; i++) {
+        try {
+          final mealJson = mealsList[i];
+          if (mealJson is Map<String, dynamic>) {
+            final meal = MealModel.fromJson(mealJson);
+            meals.add(meal);
+          } else {
+            log('⚠️ Skipping invalid meal data at index $i: ${mealJson.runtimeType}');
+          }
+        } catch (e) {
+          log('⚠️ Error parsing meal at index $i: $e');
+          // Continue processing other meals instead of failing completely
+        }
+      }
+
       log('✅ Meals parsed successfully: ${meals.length} meals');
 
       // Sort meals by date (most recent first)
@@ -64,7 +95,16 @@ class MealService {
     } catch (e) {
       // Handle all other exceptions
       log('❌ Error fetching meals: $e');
-      rethrow;
+
+      // Provide more specific error messages
+      if (e.toString().contains('FormatException')) {
+        throw const HttpException(
+            'Invalid data format received from server. Please try again.');
+      } else if (e.toString().contains('TypeError')) {
+        throw const HttpException('Data parsing error. Please try again.');
+      } else {
+        rethrow;
+      }
     }
   }
 
