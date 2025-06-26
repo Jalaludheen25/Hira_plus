@@ -42,7 +42,8 @@ class MeetingProvider extends ChangeNotifier {
   Future<void> fetchMeetings(BuildContext context) async {
     try {
       if (_isLoading) {
-        log('🔄 Already fetching meetings, ignoring new request', name: 'MeetingProvider');
+        log('🔄 Already fetching meetings, ignoring new request',
+            name: 'MeetingProvider');
         return;
       }
 
@@ -59,7 +60,8 @@ class MeetingProvider extends ChangeNotifier {
       _meetings = meetings;
       _isLoading = false;
 
-      log('✅ Successfully updated meetings in provider. Count: ${_meetings.length}', name: 'MeetingProvider');
+      log('✅ Successfully updated meetings in provider. Count: ${_meetings.length}',
+          name: 'MeetingProvider');
       notifyListeners();
     } on HttpException catch (e) {
       log('🚨 HTTP error in meeting provider: $e', name: 'MeetingProvider');
@@ -68,7 +70,8 @@ class MeetingProvider extends ChangeNotifier {
       if (e.toString().contains('401')) {
         _errorMessage = 'Authentication error. Please login again.';
       } else {
-        _errorMessage = 'Failed to load meetings. Please check your connection and try again.';
+        _errorMessage =
+            'Failed to load meetings. Please check your connection and try again.';
       }
 
       notifyListeners();
@@ -125,7 +128,8 @@ class MeetingProvider extends ChangeNotifier {
       _meetings.insert(0, meeting);
       _isLoading = false;
 
-      log('✅ Meeting created successfully: ${meeting.id}', name: 'MeetingProvider');
+      log('✅ Meeting created successfully: ${meeting.id}',
+          name: 'MeetingProvider');
       notifyListeners();
 
       return meeting;
@@ -145,18 +149,21 @@ class MeetingProvider extends ChangeNotifier {
     String status,
   ) async {
     try {
-      log('🔄 Updating meeting status in provider: $meetingId -> $status', name: 'MeetingProvider');
+      log('🔄 Updating meeting status in provider: $meetingId -> $status',
+          name: 'MeetingProvider');
 
       // Find the meeting index first
-      final meetingIndex = _meetings.indexWhere((meeting) => meeting.id == meetingId);
+      final meetingIndex =
+          _meetings.indexWhere((meeting) => meeting.id == meetingId);
       if (meetingIndex == -1) {
-        log('❌ Meeting not found in local list: $meetingId', name: 'MeetingProvider');
+        log('❌ Meeting not found in local list: $meetingId',
+            name: 'MeetingProvider');
         return false;
       }
 
       // Store original meeting for rollback if needed
       final originalMeeting = _meetings[meetingIndex];
-      
+
       // Optimistically update the UI first for better UX
       final updatedMeeting = MeetingModel(
         id: originalMeeting.id,
@@ -177,6 +184,11 @@ class MeetingProvider extends ChangeNotifier {
         createdBy: originalMeeting.createdBy,
         createdAt: originalMeeting.createdAt,
         updatedAt: DateTime.now(),
+        rent: originalMeeting.rent,
+        morningSnacksCount: originalMeeting.morningSnacksCount,
+        morningTeaCount: originalMeeting.morningTeaCount,
+        eveningSnacksCount: originalMeeting.eveningSnacksCount,
+        eveningTeaCount: originalMeeting.eveningTeaCount,
       );
 
       // Update UI immediately (optimistic update)
@@ -193,17 +205,19 @@ class MeetingProvider extends ChangeNotifier {
 
         // Update with server response
         _meetings[meetingIndex] = serverUpdatedMeeting;
-        
+
         // Re-sort the list to maintain latest first order
         _meetings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        
-        log('✅ Meeting status updated successfully from server', name: 'MeetingProvider');
+
+        log('✅ Meeting status updated successfully from server',
+            name: 'MeetingProvider');
         notifyListeners();
 
         return true;
       } catch (e) {
         // Rollback optimistic update on API failure
-        log('❌ API call failed, rolling back optimistic update: $e', name: 'MeetingProvider');
+        log('❌ API call failed, rolling back optimistic update: $e',
+            name: 'MeetingProvider');
         _meetings[meetingIndex] = originalMeeting;
         notifyListeners();
         rethrow;
@@ -216,10 +230,12 @@ class MeetingProvider extends ChangeNotifier {
 
   /// Updates a specific meeting in the list
   void updateMeetingInList(MeetingModel updatedMeeting) {
-    final index = _meetings.indexWhere((meeting) => meeting.id == updatedMeeting.id);
+    final index =
+        _meetings.indexWhere((meeting) => meeting.id == updatedMeeting.id);
     if (index != -1) {
       _meetings[index] = updatedMeeting;
-      log('✅ Meeting updated in local list: ${updatedMeeting.id}', name: 'MeetingProvider');
+      log('✅ Meeting updated in local list: ${updatedMeeting.id}',
+          name: 'MeetingProvider');
       notifyListeners();
     }
   }
@@ -227,7 +243,8 @@ class MeetingProvider extends ChangeNotifier {
   /// Removes a meeting from the list
   void removeMeetingFromList(String meetingId) {
     _meetings.removeWhere((meeting) => meeting.id == meetingId);
-    log('✅ Meeting removed from local list: $meetingId', name: 'MeetingProvider');
+    log('✅ Meeting removed from local list: $meetingId',
+        name: 'MeetingProvider');
     notifyListeners();
   }
 

@@ -15,7 +15,7 @@ import 'package:intl/intl.dart';
 import 'dart:ui';
 import 'dart:async';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meating_screen.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meeting_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});

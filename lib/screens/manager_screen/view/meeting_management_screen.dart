@@ -71,14 +71,22 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
     if (meeting.breakfast > 0) {
       foodItems.add('Breakfast (${meeting.breakfast})');
     }
-    if (meeting.midmorningSnacks > 0) {
-      foodItems.add('Morning Snacks (${meeting.midmorningSnacks})');
+    if (meeting.midmorningSnacks > 0 || meeting.morningSnacksCount > 0) {
+      foodItems.add(
+          'Morning Snacks (${meeting.midmorningSnacks > 0 ? meeting.midmorningSnacks : meeting.morningSnacksCount})');
+    }
+    if (meeting.morningTeaCount > 0) {
+      foodItems.add('Morning Tea (${meeting.morningTeaCount})');
     }
     if (meeting.lunch > 0) {
       foodItems.add('Lunch (${meeting.lunch})');
     }
-    if (meeting.eveningsnacks > 0) {
-      foodItems.add('Evening Snacks (${meeting.eveningsnacks})');
+    if (meeting.eveningsnacks > 0 || meeting.eveningSnacksCount > 0) {
+      foodItems.add(
+          'Evening Snacks (${meeting.eveningsnacks > 0 ? meeting.eveningsnacks : meeting.eveningSnacksCount})');
+    }
+    if (meeting.eveningTeaCount > 0) {
+      foodItems.add('Evening Tea (${meeting.eveningTeaCount})');
     }
     if (meeting.dinner > 0) {
       foodItems.add('Dinner (${meeting.dinner})');
@@ -669,9 +677,9 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
   // Predefined halls - match backend enum
   final List<String> _halls = [
-    'Auditorium',
-    'Conference Hall',
-    'Meeting Space',
+    'Conference Hall [3rd Floor]',
+    'Auditorium [2nd Floor]',
+    'Meeting Space [1st Floor]',
   ];
 
   @override

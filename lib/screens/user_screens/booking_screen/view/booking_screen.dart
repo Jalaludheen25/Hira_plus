@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/view/bulk_food_list_screen.dart';
-import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meating_screen.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meeting_screen.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class BookingScreen extends StatelessWidget {

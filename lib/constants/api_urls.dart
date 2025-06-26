@@ -145,6 +145,11 @@ class ApiUrls {
     return '$baseUrl/admin/meetings/$meetingId';
   }
 
+  /// Update meeting status (admin)
+  static String adminUpdateMeetingStatus(String meetingId) {
+    return '$baseUrl/admin/meetings/$meetingId';
+  }
+
   // ################## GUEST MEALS FOR MESS STAFF ##################
 
   static String getBulkMealsForMessStaff() {
@@ -223,5 +228,4 @@ class ApiUrls {
   static String departmentsApi() {
     return '$baseUrl/admin/departments';
   }
-
 }
