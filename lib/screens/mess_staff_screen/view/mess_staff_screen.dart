@@ -50,6 +50,9 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   // Track expanded meeting cards
   final Set<String> _expandedMeetings = <String>{};
 
+  // Track expanded guest meal cards
+  final Set<String> _expandedGuestMeals = <String>{};
+
   @override
   void initState() {
     super.initState();
@@ -497,6 +500,86 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     });
   }
 
+  void _toggleGuestMealExpansion(String guestMealId) {
+    setState(() {
+      if (_expandedGuestMeals.contains(guestMealId)) {
+        _expandedGuestMeals.remove(guestMealId);
+      } else {
+        _expandedGuestMeals.add(guestMealId);
+      }
+    });
+  }
+
+  // Method to refresh all data
+  Future<void> _refreshData() async {
+    try {
+      _logger.i('🔄 [REFRESH] User initiated data refresh');
+      developer.log('🔄 User initiated data refresh', name: 'MessStaffScreen');
+
+      // Fetch meal data
+      final mealProvider =
+          Provider.of<MessStaffMealProvider>(context, listen: false);
+
+      // Fetch guest meal data
+      final guestMealProvider =
+          Provider.of<MessBulkMealProvider>(context, listen: false);
+
+      // Fetch meeting food requirements
+      final meetingFoodProvider =
+          Provider.of<MeetingFoodProvider>(context, listen: false);
+
+      // Execute all fetch operations in parallel for better performance
+      await Future.wait([
+        mealProvider.fetchMessStaffMeals(context),
+        guestMealProvider.fetchGuestMeals(context),
+        meetingFoodProvider.fetchMeetingFoodRequirements(context),
+      ]);
+
+      _logger.i('✅ [REFRESH] All data refreshed successfully');
+      developer.log('✅ All data refreshed successfully',
+          name: 'MessStaffScreen');
+
+      // Show success message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  LucideIcons.check,
+                  color: Colors.white,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Text('Data refreshed successfully'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      _logger.e('❌ [REFRESH] Error refreshing data: $e');
+      developer.log('❌ Error refreshing data: $e', name: 'MessStaffScreen');
+
+      // Show error message to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to refresh data. Please try again.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
   List<Widget> _buildFoodItemRows(List<dynamic> foodItems) {
     List<Widget> foodRows = [];
     for (int i = 0; i < foodItems.length; i += 3) {
@@ -687,53 +770,85 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
             child: Column(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Meal Summary',
-                                  style: TextStyleClass.poppinsSemiBold(
-                                      fontSize: 18)),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    DateFormat('EEEE').format(DateTime.now()),
-                                    style: TextStyleClass.poppinsRegular(
-                                        fontSize: 13,
-                                        color: ColorClass.neutral400),
-                                  ),
-                                  Text(
-                                    DateFormat('dd MMMM yyyy')
-                                        .format(DateTime.now()),
-                                    style: TextStyleClass.poppinsMedium(
-                                        fontSize: 12,
-                                        color: ColorClass.neutral400),
-                                  ),
-                                ],
-                              ),
-                            ],
+                  child: RefreshIndicator(
+                    onRefresh: _refreshData,
+                    color: ColorClass.brandDarkGreen,
+                    backgroundColor: ColorClass.brandWhite,
+                    strokeWidth: 2.5,
+                    displacement: 40,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Meal Summary',
+                                        style: TextStyleClass.poppinsSemiBold(
+                                            fontSize: 18)),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: [
+                                        Text(
+                                          DateFormat('EEEE')
+                                              .format(DateTime.now()),
+                                          style: TextStyleClass.poppinsRegular(
+                                              fontSize: 13,
+                                              color: ColorClass.neutral400),
+                                        ),
+                                        Text(
+                                          DateFormat('dd MMMM yyyy')
+                                              .format(DateTime.now()),
+                                          style: TextStyleClass.poppinsMedium(
+                                              fontSize: 12,
+                                              color: ColorClass.neutral400),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      LucideIcons.arrowDown,
+                                      size: 12,
+                                      color: ColorClass.neutral300,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Pull down to refresh',
+                                      style: TextStyleClass.poppinsRegular(
+                                          fontSize: 11,
+                                          color: ColorClass.neutral300),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        ValueListenableBuilder<int?>(
-                          valueListenable: _selectedMealNotifier,
-                          builder: (context, selectedMeal, _) =>
-                              _buildMealSummaryCard(
-                                  context, mealSummary, selectedMeal),
-                        ),
-                        _buildGuestFoodBookingSection(
-                            context, messBulkMealProvider),
-                        _buildFoodForMeetingSection(
-                            context, meetingFoodProvider),
-                        const SizedBox(height: 20),
-                      ],
+                          const SizedBox(height: 12),
+                          ValueListenableBuilder<int?>(
+                            valueListenable: _selectedMealNotifier,
+                            builder: (context, selectedMeal, _) =>
+                                _buildMealSummaryCard(
+                                    context, mealSummary, selectedMeal),
+                          ),
+                          _buildGuestFoodBookingSection(
+                              context, messBulkMealProvider),
+                          _buildFoodForMeetingSection(
+                              context, meetingFoodProvider),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -813,66 +928,105 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 );
               }
               return Column(
-                children: filteredGuestMeals
-                    .map((guestMeal) => Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(0),
-                          decoration: BoxDecoration(
-                            color: ColorClass.brandWhite,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                                color: ColorClass.neutral200, width: 1.2),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: ColorClass.brandWhite,
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(14),
-                                    topRight: Radius.circular(14),
+                children: filteredGuestMeals.map((guestMeal) {
+                  // Create a unique ID for each guest meal card
+                  final guestMealId =
+                      '${guestMeal.date.toIso8601String()}_${guestMeal.departmentNames}';
+                  final isExpanded = _expandedGuestMeals.contains(guestMealId);
+                  final totalMealCount = guestMeal.totalMealCount;
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    decoration: BoxDecoration(
+                      color: ColorClass.brandWhite,
+                      borderRadius: BorderRadius.circular(14),
+                      border:
+                          Border.all(color: ColorClass.neutral200, width: 1.2),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header - Always visible
+                        GestureDetector(
+                          onTap: () => _toggleGuestMealExpansion(guestMealId),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: ColorClass.brandWhite,
+                              borderRadius: isExpanded
+                                  ? const BorderRadius.only(
+                                      topLeft: Radius.circular(14),
+                                      topRight: Radius.circular(14),
+                                    )
+                                  : BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(guestMeal.departmentNames,
+                                          style: TextStyleClass.poppinsSemiBold(
+                                              fontSize: 15,
+                                              color:
+                                                  ColorClass.brandDarkGreen)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Total: $totalMealCount meals',
+                                        style: TextStyleClass.poppinsRegular(
+                                            fontSize: 12,
+                                            color: ColorClass.neutral700),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: Text(guestMeal.departmentNames,
-                                    style: TextStyleClass.poppinsSemiBold(
-                                        fontSize: 15,
-                                        color: ColorClass.brandDarkGreen)),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: ColorClass.brandLightGreen
-                                      .withOpacity(0.13),
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(14),
-                                    bottomRight: Radius.circular(14),
-                                  ),
+                                Icon(
+                                  isExpanded
+                                      ? LucideIcons.chevronUp
+                                      : LucideIcons.chevronDown,
+                                  color: ColorClass.brandDarkGreen,
+                                  size: 20,
                                 ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    _buildGuestMealCountCard(
-                                        'BREAKFAST',
-                                        LucideIcons.sunMedium,
-                                        guestMeal.breakfastCount),
-                                    _buildGuestMealCountCard('LUNCH',
-                                        LucideIcons.sun, guestMeal.lunchCount),
-                                    _buildGuestMealCountCard(
-                                        'DINNER',
-                                        LucideIcons.moon,
-                                        guestMeal.dinnerCount),
-                                  ],
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ))
-                    .toList(),
+                        ),
+
+                        // Expandable content - Meal breakdown
+                        if (isExpanded) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 14),
+                            decoration: BoxDecoration(
+                              color:
+                                  ColorClass.brandLightGreen.withOpacity(0.13),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(14),
+                                bottomRight: Radius.circular(14),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildGuestMealCountCard(
+                                    'BREAKFAST',
+                                    LucideIcons.sunMedium,
+                                    guestMeal.breakfastCount),
+                                _buildGuestMealCountCard('LUNCH',
+                                    LucideIcons.sun, guestMeal.lunchCount),
+                                _buildGuestMealCountCard('DINNER',
+                                    LucideIcons.moon, guestMeal.dinnerCount),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }).toList(),
               );
             },
           ),
