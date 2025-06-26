@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meeting_list_provider.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart' as UserMeeting;
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart'
+    as UserMeeting;
 import '../widgets/month_calendar_view.dart';
 import '../widgets/home_list_view.dart';
 import '../widgets/today_fab.dart';
@@ -45,12 +46,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           Provider.of<CanteenHomeProvider>(context, listen: false);
       final meetingProvider =
           Provider.of<MeetingListProvider>(context, listen: false);
-      
+
       // Fetch meals data when screen loads
       canteenProvider.fetchUserMeals(context);
       _setupViewModeListener();
       canteenProvider.fetchBanner();
-      
+
       // Fetch meetings for all users
       meetingProvider.fetchMeetings(context);
     });
@@ -160,7 +161,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   // Helper method to build detailed food text
   String _buildFoodDetailsText(UserMeeting.MeetingModel meeting) {
     List<String> foodItems = [];
-    
+
     if (meeting.breakfast > 0) {
       foodItems.add('Breakfast (${meeting.breakfast})');
     }
@@ -182,11 +183,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     if (meeting.dinner > 0) {
       foodItems.add('Dinner (${meeting.dinner})');
     }
-    
+
     if (foodItems.isEmpty) {
       return 'No food specified';
     }
-    
+
     return foodItems.join(', ');
   }
 
@@ -483,7 +484,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   // Enhanced Show Meetings Bottom Sheet with edit/delete functionality
   void _showMeetingsBottomSheet(BuildContext context) {
     // Refresh meetings when opening
-    final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
+    final meetingProvider =
+        Provider.of<MeetingListProvider>(context, listen: false);
     meetingProvider.fetchMeetings(context);
 
     showModalBottomSheet(
@@ -515,14 +517,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             Text(
                               'All Meetings',
                               style: TextStyleClass.poppinsSemiBold(
-                                  fontSize: 18, color: ColorClass.brandDarkGreen),
+                                  fontSize: 18,
+                                  color: ColorClass.brandDarkGreen),
                             ),
                             Row(
                               children: [
                                 IconButton(
-                                  onPressed: () => provider.fetchMeetings(context),
+                                  onPressed: () =>
+                                      provider.fetchMeetings(context),
                                   icon: const Icon(Icons.refresh,
-                                      size: 30, color: ColorClass.brandDarkGreen),
+                                      size: 30,
+                                      color: ColorClass.brandDarkGreen),
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.close, size: 30),
@@ -536,7 +541,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ),
                       // Content
                       Expanded(
-                        child: _buildMeetingsContent(provider, scrollController),
+                        child:
+                            _buildMeetingsContent(provider, scrollController),
                       ),
                     ],
                   );
@@ -549,7 +555,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildMeetingsContent(MeetingListProvider provider, ScrollController scrollController) {
+  Widget _buildMeetingsContent(
+      MeetingListProvider provider, ScrollController scrollController) {
     if (provider.isLoading) {
       return const Center(
         child: Column(
@@ -623,9 +630,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       );
     }
 
-    // Sort meetings by latest first
-    final sortedMeetings = List<UserMeeting.MeetingModel>.from(provider.meetings)
-      ..sort((a, b) => b.startDatetime.compareTo(a.startDatetime));
+    // Sort meetings by meeting date (earliest first)
+    final sortedMeetings =
+        List<UserMeeting.MeetingModel>.from(provider.meetings)
+          ..sort((a, b) => a.startDatetime.compareTo(b.startDatetime));
 
     return ListView.separated(
       controller: scrollController,
@@ -640,15 +648,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildMeetingCard(UserMeeting.MeetingModel meeting) {
-    final formattedStartDate = DateFormat('EEEE, MMMM d, yyyy').format(meeting.startDatetime);
-    final formattedStartTime = DateFormat('h:mm a').format(meeting.startDatetime);
+    final formattedStartDate =
+        DateFormat('EEEE, MMMM d, yyyy').format(meeting.startDatetime);
+    final formattedStartTime =
+        DateFormat('h:mm a').format(meeting.startDatetime);
     final formattedEndTime = DateFormat('h:mm a').format(meeting.endDatetime);
-    final   statusDetails = _getStatusDetails(meeting);
-    final isDeptHead = Provider.of<AuthProvider>(context, listen: false).isDeptHead;
+    final statusDetails = _getStatusDetails(meeting);
+    final isDeptHead =
+        Provider.of<AuthProvider>(context, listen: false).isDeptHead;
     final canShowEdit = isDeptHead && meeting.isPending;
     final canShowDelete = canShowEdit;
-    final meetingProvider = Provider.of<MeetingListProvider>(context, listen: false);
-    
+    final meetingProvider =
+        Provider.of<MeetingListProvider>(context, listen: false);
+
     return Container(
       decoration: BoxDecoration(
         color: ColorClass.brandWhite,
@@ -706,7 +718,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: statusDetails['backgroundColor'],
                     borderRadius: BorderRadius.circular(8),
@@ -733,23 +746,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // Meeting Details
             _buildDetailRow(LucideIcons.calendar, formattedStartDate),
             const SizedBox(height: 4),
-            _buildDetailRow(LucideIcons.clock, '$formattedStartTime - $formattedEndTime'),
+            _buildDetailRow(
+                LucideIcons.clock, '$formattedStartTime - $formattedEndTime'),
             const SizedBox(height: 4),
             _buildDetailRow(LucideIcons.mapPin, meeting.hall),
             const SizedBox(height: 4),
-            _buildDetailRow(LucideIcons.users, '${meeting.noOfPersons} attendees'),
+            _buildDetailRow(
+                LucideIcons.users, '${meeting.noOfPersons} attendees'),
             const SizedBox(height: 4),
             _buildDetailRow(LucideIcons.building, meeting.department),
-            
+
             if (meeting.foodRequired) ...[
               const SizedBox(height: 4),
-              _buildDetailRow(LucideIcons.utensils, _buildFoodDetailsText(meeting)),
+              _buildDetailRow(
+                  LucideIcons.utensils, _buildFoodDetailsText(meeting)),
             ],
-            
+
             const SizedBox(height: 8),
             Text(
               'Created: ${DateFormat('MMM d, h:mm a').format(meeting.createdAt)}',
@@ -766,9 +782,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        await _handleEditMeeting(context, meeting, meetingProvider);
+                        await _handleEditMeeting(
+                            context, meeting, meetingProvider);
                       },
-                      icon: Icon(LucideIcons.edit, size: 14, color: ColorClass.brandDarkGreen),
+                      icon: Icon(LucideIcons.edit,
+                          size: 14, color: ColorClass.brandDarkGreen),
                       label: Text(
                         'Edit',
                         style: TextStyleClass.poppinsMedium(
@@ -790,9 +808,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () async {
-                          await _handleDeleteMeeting(context, meeting, meetingProvider);
+                          await _handleDeleteMeeting(
+                              context, meeting, meetingProvider);
                         },
-                        icon: Icon(LucideIcons.trash2, size: 14, color: ColorClass.redDark),
+                        icon: Icon(LucideIcons.trash2,
+                            size: 14, color: ColorClass.redDark),
                         label: Text(
                           'Delete',
                           style: TextStyleClass.poppinsMedium(
@@ -842,13 +862,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   // Enhanced edit meeting handler with validation
-  Future<void> _handleEditMeeting(BuildContext context, UserMeeting.MeetingModel meeting, MeetingListProvider meetingProvider) async {
+  Future<void> _handleEditMeeting(
+      BuildContext context,
+      UserMeeting.MeetingModel meeting,
+      MeetingListProvider meetingProvider) async {
     try {
       // Additional validation before navigating to edit
       if (!meeting.isPending) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Only pending meetings can be edited. This meeting is ${meeting.status}.'),
+            content: Text(
+                'Only pending meetings can be edited. This meeting is ${meeting.status}.'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -876,7 +900,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       if (!refreshedMeeting.isPending) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Meeting status changed to ${refreshedMeeting.status}. Only pending meetings can be edited.'),
+            content: Text(
+                'Meeting status changed to ${refreshedMeeting.status}. Only pending meetings can be edited.'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -907,13 +932,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   // Enhanced delete meeting handler with validation
-  Future<void> _handleDeleteMeeting(BuildContext context, UserMeeting.MeetingModel meeting, MeetingListProvider meetingProvider) async {
+  Future<void> _handleDeleteMeeting(
+      BuildContext context,
+      UserMeeting.MeetingModel meeting,
+      MeetingListProvider meetingProvider) async {
     try {
       // Additional validation for delete
       if (!meeting.isPending) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Only pending meetings can be deleted. This meeting is ${meeting.status}.'),
+            content: Text(
+                'Only pending meetings can be deleted. This meeting is ${meeting.status}.'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -929,8 +958,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             children: [
               Text('Are you sure you want to delete this meeting?'),
               SizedBox(height: 8),
-              Text('Meeting: ${meeting.title}', style: TextStyle(fontWeight: FontWeight.bold)),
-              Text('Date: ${DateFormat('MMM d, yyyy').format(meeting.startDatetime)}'),
+              Text('Meeting: ${meeting.title}',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                  'Date: ${DateFormat('MMM d, yyyy').format(meeting.startDatetime)}'),
               SizedBox(height: 8),
             ],
           ),
@@ -1082,7 +1113,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         // Keep controller in sync if searchQuery changes from outside
                         if (_searchController.text != provider.searchQuery) {
                           _searchController.text = provider.searchQuery;
-                          _searchController.selection = TextSelection.fromPosition(
+                          _searchController.selection =
+                              TextSelection.fromPosition(
                             TextPosition(offset: _searchController.text.length),
                           );
                         }
@@ -1093,7 +1125,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 12),
                           ),
                           controller: _searchController,
                         );
@@ -1196,7 +1229,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                               Divider(height: 1, color: Colors.grey[200]),
                           itemBuilder: (context, index) {
                             final contact = filtered[index];
-                            final isCheckedIn = provider.checkedInUserNames.contains(contact.name);
+                            final isCheckedIn = provider.checkedInUserNames
+                                .contains(contact.name);
                             return ListTile(
                               leading: Stack(
                                 children: [
@@ -1349,8 +1383,7 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
         return Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: Column(
             children: [
@@ -1386,12 +1419,16 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
                               setState(() {
                                 isListMode = true;
                                 _scrolledToToday = false;
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  final todayIndex = canteenProvider.getTodayIndex();
-                                  if (todayIndex != -1 && _localScrollController.hasClients) {
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  final todayIndex =
+                                      canteenProvider.getTodayIndex();
+                                  if (todayIndex != -1 &&
+                                      _localScrollController.hasClients) {
                                     _localScrollController.animateTo(
                                       todayIndex * 90.0,
-                                      duration: const Duration(milliseconds: 500),
+                                      duration:
+                                          const Duration(milliseconds: 500),
                                       curve: Curves.easeInOut,
                                     );
                                   }
@@ -1449,12 +1486,16 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
                               onPressed: () {
                                 canteenProvider.setSelectedDate(
                                     DateTime.now(), context);
-                                WidgetsBinding.instance.addPostFrameCallback((_) {
-                                  final todayIndex = canteenProvider.getTodayIndex();
-                                  if (todayIndex != -1 && _localScrollController.hasClients) {
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  final todayIndex =
+                                      canteenProvider.getTodayIndex();
+                                  if (todayIndex != -1 &&
+                                      _localScrollController.hasClients) {
                                     _localScrollController.animateTo(
                                       todayIndex * 90.0,
-                                      duration: const Duration(milliseconds: 500),
+                                      duration:
+                                          const Duration(milliseconds: 500),
                                       curve: Curves.easeInOut,
                                     );
                                   }
@@ -1469,14 +1510,17 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
                         getMonthName: widget.getMonthName,
                         onMonthChanged: (int delta) {
                           final currentYear = DateTime.now().year;
-                          final currentMonth = canteenProvider.selectedDate.month;
+                          final currentMonth =
+                              canteenProvider.selectedDate.month;
                           final newMonth = currentMonth + delta;
-                          final newYear = canteenProvider.selectedDate.year + ((newMonth - 1) ~/ 12);
+                          final newYear = canteenProvider.selectedDate.year +
+                              ((newMonth - 1) ~/ 12);
                           final normalizedMonth = ((newMonth - 1) % 12) + 1;
                           if (newYear == currentYear &&
                               normalizedMonth >= 1 &&
                               normalizedMonth <= 12) {
-                            final newDate = DateTime(newYear, normalizedMonth, 1);
+                            final newDate =
+                                DateTime(newYear, normalizedMonth, 1);
                             canteenProvider.setSelectedDate(newDate, context);
                           }
                         },
