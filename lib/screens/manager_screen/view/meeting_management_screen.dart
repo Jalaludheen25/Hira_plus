@@ -361,6 +361,12 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
             const SizedBox(height: 6),
             _buildDetailRow(LucideIcons.building, meeting.department),
 
+            // Show rent if it's greater than 0
+            if (meeting.rent > 0) ...[
+              const SizedBox(height: 6),
+              _buildDetailRow(LucideIcons.dollarSign, 'Rent: ₹${meeting.rent}'),
+            ],
+
             if (meeting.foodRequired) ...[
               const SizedBox(height: 6),
               _buildDetailRow(
@@ -659,8 +665,10 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   // Food controllers
   final _breakfastController = TextEditingController(text: '0');
   final _midmorningSnacksController = TextEditingController(text: '0');
+  final _morningTeaController = TextEditingController(text: '0');
   final _lunchController = TextEditingController(text: '0');
   final _eveningsnacksController = TextEditingController(text: '0');
+  final _eveningTeaController = TextEditingController(text: '0');
   final _dinnerController = TextEditingController(text: '0');
 
   DateTime _startDatetime = DateTime.now().add(const Duration(hours: 1));
@@ -707,8 +715,10 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     if (_foodRequired) {
       _breakfastController.text = meeting.breakfast.toString();
       _midmorningSnacksController.text = meeting.midmorningSnacks.toString();
+      _morningTeaController.text = meeting.morningTeaCount.toString();
       _lunchController.text = meeting.lunch.toString();
       _eveningsnacksController.text = meeting.eveningsnacks.toString();
+      _eveningTeaController.text = meeting.eveningTeaCount.toString();
       _dinnerController.text = meeting.dinner.toString();
     }
 
@@ -817,8 +827,10 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     _noOfPersonsController.dispose();
     _breakfastController.dispose();
     _midmorningSnacksController.dispose();
+    _morningTeaController.dispose();
     _lunchController.dispose();
     _eveningsnacksController.dispose();
+    _eveningTeaController.dispose();
     _dinnerController.dispose();
     super.dispose();
   }
@@ -990,15 +1002,34 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
                   children: [
                     Expanded(
                       child: _buildFoodCountField(
-                        controller: _lunchController,
-                        label: 'Lunch',
+                        controller: _morningTeaController,
+                        label: 'Morning Tea',
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildFoodCountField(
+                        controller: _lunchController,
+                        label: 'Lunch',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildFoodCountField(
                         controller: _eveningsnacksController,
                         label: 'Evening Snacks',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildFoodCountField(
+                        controller: _eveningTeaController,
+                        label: 'Evening Tea',
                       ),
                     ),
                   ],
@@ -1351,8 +1382,10 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
         foodRequired: _foodRequired,
         breakfast: int.parse(_breakfastController.text),
         midmorningSnacks: int.parse(_midmorningSnacksController.text),
+        morningTeaCount: int.parse(_morningTeaController.text),
         lunch: int.parse(_lunchController.text),
         eveningsnacks: int.parse(_eveningsnacksController.text),
+        eveningTeaCount: int.parse(_eveningTeaController.text),
         dinner: int.parse(_dinnerController.text),
         department: _selectedDepartment ?? 'IT',
       );
@@ -1368,8 +1401,10 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
         foodRequired: _foodRequired,
         breakfast: int.parse(_breakfastController.text),
         midmorningSnacks: int.parse(_midmorningSnacksController.text),
+        morningTeaCount: int.parse(_morningTeaController.text),
         lunch: int.parse(_lunchController.text),
         eveningsnacks: int.parse(_eveningsnacksController.text),
+        eveningTeaCount: int.parse(_eveningTeaController.text),
         dinner: int.parse(_dinnerController.text),
         department: _selectedDepartment ?? 'IT',
       );

@@ -95,8 +95,10 @@ class MeetingProvider extends ChangeNotifier {
     required bool foodRequired,
     required int breakfast,
     required int midmorningSnacks,
+    required int morningTeaCount,
     required int lunch,
     required int eveningsnacks,
+    required int eveningTeaCount,
     required int dinner,
     required String department,
   }) async {
@@ -118,8 +120,10 @@ class MeetingProvider extends ChangeNotifier {
         foodRequired: foodRequired,
         breakfast: breakfast,
         midmorningSnacks: midmorningSnacks,
+        morningTeaCount: morningTeaCount,
         lunch: lunch,
         eveningsnacks: eveningsnacks,
+        eveningTeaCount: eveningTeaCount,
         dinner: dinner,
         department: department,
       );
@@ -176,8 +180,10 @@ class MeetingProvider extends ChangeNotifier {
         foodRequired: originalMeeting.foodRequired,
         breakfast: originalMeeting.breakfast,
         midmorningSnacks: originalMeeting.midmorningSnacks,
+        morningTeaCount: originalMeeting.morningTeaCount,
         lunch: originalMeeting.lunch,
         eveningsnacks: originalMeeting.eveningsnacks,
+        eveningTeaCount: originalMeeting.eveningTeaCount,
         dinner: originalMeeting.dinner,
         department: originalMeeting.department,
         status: status, // Update the status
@@ -186,9 +192,7 @@ class MeetingProvider extends ChangeNotifier {
         updatedAt: DateTime.now(),
         rent: originalMeeting.rent,
         morningSnacksCount: originalMeeting.morningSnacksCount,
-        morningTeaCount: originalMeeting.morningTeaCount,
         eveningSnacksCount: originalMeeting.eveningSnacksCount,
-        eveningTeaCount: originalMeeting.eveningTeaCount,
       );
 
       // Update UI immediately (optimistic update)
@@ -289,8 +293,10 @@ class MeetingProvider extends ChangeNotifier {
     required bool foodRequired,
     required int breakfast,
     required int midmorningSnacks,
+    required int morningTeaCount,
     required int lunch,
     required int eveningsnacks,
+    required int eveningTeaCount,
     required int dinner,
     required String department,
   }) async {
@@ -313,8 +319,10 @@ class MeetingProvider extends ChangeNotifier {
         foodRequired: foodRequired,
         breakfast: breakfast,
         midmorningSnacks: midmorningSnacks,
+        morningTeaCount: morningTeaCount,
         lunch: lunch,
         eveningsnacks: eveningsnacks,
+        eveningTeaCount: eveningTeaCount,
         dinner: dinner,
         department: department,
       );

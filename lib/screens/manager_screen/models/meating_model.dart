@@ -94,16 +94,13 @@ class MeetingModel {
       'noOfPersons': noOfPersons,
       'foodRequired': foodRequired,
       'breakfast': breakfast,
-      'midmorningSnacks': morningSnacksCount,
-      'morningSnacksCount': morningSnacksCount,
+      'morningSnacksCount': midmorningSnacks,
       'morningTeaCount': morningTeaCount,
       'lunch': lunch,
-      'eveningsnacks': eveningSnacksCount,
-      'eveningSnacksCount': eveningSnacksCount,
+      'eveningSnacksCount': eveningsnacks,
       'eveningTeaCount': eveningTeaCount,
       'dinner': dinner,
       'department': department,
-      'rent': rent,
     };
   }
 

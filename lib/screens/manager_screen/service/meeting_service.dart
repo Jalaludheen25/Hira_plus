@@ -20,20 +20,23 @@ class MeetingService {
 
       // Check for empty response
       if (response == null) {
-        log('❌ Error: Empty response from meetings API', name: 'MeetingService');
+        log('❌ Error: Empty response from meetings API',
+            name: 'MeetingService');
         return [];
       }
 
       // Parse response
       final Map<String, dynamic> responseData = response;
       final List<dynamic> meetingsList = responseData['meetings'] ?? [];
-      log('Number of meetings received: ${meetingsList.length}', name: 'MeetingService');
+      log('Number of meetings received: ${meetingsList.length}',
+          name: 'MeetingService');
 
       // Convert each JSON object to MeetingModel
       final meetings = meetingsList
           .map((meetingJson) => MeetingModel.fromJson(meetingJson))
           .toList();
-      log('✅ Meetings parsed successfully: ${meetings.length} meetings', name: 'MeetingService');
+      log('✅ Meetings parsed successfully: ${meetings.length} meetings',
+          name: 'MeetingService');
 
       // Sort meetings by date (most recent first)
       meetings.sort((a, b) => b.startDatetime.compareTo(a.startDatetime));
@@ -60,8 +63,10 @@ class MeetingService {
     required bool foodRequired,
     required int breakfast,
     required int midmorningSnacks,
+    required int morningTeaCount,
     required int lunch,
     required int eveningsnacks,
+    required int eveningTeaCount,
     required int dinner,
     required String department,
   }) async {
@@ -80,9 +85,11 @@ class MeetingService {
         'noOfPersons': noOfPersons,
         'foodRequired': foodRequired,
         'breakfast': breakfast,
-        'midmorningSnacks': midmorningSnacks,
+        'morningSnacksCount': midmorningSnacks,
+        'morningTeaCount': morningTeaCount,
         'lunch': lunch,
-        'eveningsnacks': eveningsnacks,
+        'eveningSnacksCount': eveningsnacks,
+        'eveningTeaCount': eveningTeaCount,
         'dinner': dinner,
         'department': department,
       };
@@ -91,24 +98,28 @@ class MeetingService {
 
       // Make API request
       log('Sending POST request to server...', name: 'MeetingService');
-      final response = await HttpServiceUtils.postData(url, requestBody, context);
+      final response =
+          await HttpServiceUtils.postData(url, requestBody, context);
       log('Response received from server', name: 'MeetingService');
 
       if (response == null) {
-        log('❌ Error: Empty response from meetings API', name: 'MeetingService');
+        log('❌ Error: Empty response from meetings API',
+            name: 'MeetingService');
         throw HttpException('Failed to create meeting: Empty response');
       }
 
       // Parse response
       log('Parsing response data', name: 'MeetingService');
       final responseData = response is String ? jsonDecode(response) : response;
-      
+
       if (responseData['success'] != true) {
-        throw HttpException(responseData['message'] ?? 'Failed to create meeting');
+        throw HttpException(
+            responseData['message'] ?? 'Failed to create meeting');
       }
 
       final meeting = MeetingModel.fromJson(responseData['meeting']);
-      log('✅ Meeting created successfully: ${meeting.id}', name: 'MeetingService');
+      log('✅ Meeting created successfully: ${meeting.id}',
+          name: 'MeetingService');
 
       return meeting;
     } on HttpException catch (e) {
@@ -134,21 +145,25 @@ class MeetingService {
       final requestBody = {'status': status};
       log('Request body: $requestBody', name: 'MeetingService');
 
-      final response = await HttpServiceUtils.putData(url, requestBody, context);
+      final response =
+          await HttpServiceUtils.putData(url, requestBody, context);
 
       if (response == null) {
-        log('❌ Error: Empty response from meetings API', name: 'MeetingService');
+        log('❌ Error: Empty response from meetings API',
+            name: 'MeetingService');
         throw HttpException('Failed to update meeting: Empty response');
       }
 
       final responseData = response is String ? jsonDecode(response) : response;
-      
+
       if (responseData['success'] != true) {
-        throw HttpException(responseData['message'] ?? 'Failed to update meeting');
+        throw HttpException(
+            responseData['message'] ?? 'Failed to update meeting');
       }
 
       final meeting = MeetingModel.fromJson(responseData['meeting']);
-      log('✅ Meeting status updated successfully: ${meeting.id}', name: 'MeetingService');
+      log('✅ Meeting status updated successfully: ${meeting.id}',
+          name: 'MeetingService');
 
       return meeting;
     } on HttpException catch (e) {
@@ -170,7 +185,8 @@ class MeetingService {
       }
       final responseData = response is String ? jsonDecode(response) : response;
       if (responseData['success'] != true) {
-        throw HttpException(responseData['message'] ?? 'Failed to delete meeting');
+        throw HttpException(
+            responseData['message'] ?? 'Failed to delete meeting');
       }
       return true;
     } catch (e) {
@@ -192,8 +208,10 @@ class MeetingService {
     required bool foodRequired,
     required int breakfast,
     required int midmorningSnacks,
+    required int morningTeaCount,
     required int lunch,
     required int eveningsnacks,
+    required int eveningTeaCount,
     required int dinner,
     required String department,
   }) async {
@@ -211,30 +229,36 @@ class MeetingService {
         'noOfPersons': noOfPersons,
         'foodRequired': foodRequired,
         'breakfast': breakfast,
-        'midmorningSnacks': midmorningSnacks,
+        'morningSnacksCount': midmorningSnacks,
+        'morningTeaCount': morningTeaCount,
         'lunch': lunch,
-        'eveningsnacks': eveningsnacks,
+        'eveningSnacksCount': eveningsnacks,
+        'eveningTeaCount': eveningTeaCount,
         'dinner': dinner,
         'department': department,
       };
 
       log('Request body: $requestBody', name: 'MeetingService');
 
-      final response = await HttpServiceUtils.putData(url, requestBody, context);
+      final response =
+          await HttpServiceUtils.putData(url, requestBody, context);
       log('Response received from server', name: 'MeetingService');
 
       if (response == null) {
-        log('❌ Error: Empty response from meetings API', name: 'MeetingService');
+        log('❌ Error: Empty response from meetings API',
+            name: 'MeetingService');
         throw HttpException('Failed to update meeting: Empty response');
       }
 
       final responseData = response is String ? jsonDecode(response) : response;
       if (responseData['success'] != true) {
-        throw HttpException(responseData['message'] ?? 'Failed to update meeting');
+        throw HttpException(
+            responseData['message'] ?? 'Failed to update meeting');
       }
 
       final meeting = MeetingModel.fromJson(responseData['meeting']);
-      log('✅ Meeting updated successfully: [4m${meeting.id}[24m', name: 'MeetingService');
+      log('✅ Meeting updated successfully: [4m${meeting.id}[24m',
+          name: 'MeetingService');
       return meeting;
     } on HttpException catch (e) {
       log('❌ HTTP Error updating meeting: $e', name: 'MeetingService');
