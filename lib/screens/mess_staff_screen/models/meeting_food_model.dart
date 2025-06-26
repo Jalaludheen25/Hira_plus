@@ -72,24 +72,31 @@ class DateRange {
 class OverallTotals {
   final int breakfast;
   final int midmorningSnacks;
+  final int morningTeaCount;
   final int lunch;
   final int eveningsnacks;
+  final int eveningTeaCount;
   final int dinner;
 
   OverallTotals({
     required this.breakfast,
     required this.midmorningSnacks,
+    required this.morningTeaCount,
     required this.lunch,
     required this.eveningsnacks,
+    required this.eveningTeaCount,
     required this.dinner,
   });
 
   factory OverallTotals.fromJson(Map<String, dynamic> json) {
     return OverallTotals(
       breakfast: json['breakfast'] ?? 0,
-      midmorningSnacks: json['midmorningSnacks'] ?? 0,
+      midmorningSnacks:
+          json['midmorningSnacks'] ?? json['morningSnacksCount'] ?? 0,
+      morningTeaCount: json['morningTeaCount'] ?? 0,
       lunch: json['lunch'] ?? 0,
-      eveningsnacks: json['eveningsnacks'] ?? 0,
+      eveningsnacks: json['eveningsnacks'] ?? json['eveningSnacksCount'] ?? 0,
+      eveningTeaCount: json['eveningTeaCount'] ?? 0,
       dinner: json['dinner'] ?? 0,
     );
   }
@@ -98,22 +105,32 @@ class OverallTotals {
     return {
       'breakfast': breakfast,
       'midmorningSnacks': midmorningSnacks,
+      'morningTeaCount': morningTeaCount,
       'lunch': lunch,
       'eveningsnacks': eveningsnacks,
+      'eveningTeaCount': eveningTeaCount,
       'dinner': dinner,
     };
   }
 
   // Get total count of all meals
   int get totalCount =>
-      breakfast + midmorningSnacks + lunch + eveningsnacks + dinner;
+      breakfast +
+      midmorningSnacks +
+      morningTeaCount +
+      lunch +
+      eveningsnacks +
+      eveningTeaCount +
+      dinner;
 
   // Get list of food items with their counts
   List<FoodItem> get foodItems => [
         FoodItem(name: 'Breakfast', count: breakfast),
         FoodItem(name: 'Mid Morning Snacks', count: midmorningSnacks),
+        FoodItem(name: 'Morning Tea', count: morningTeaCount),
         FoodItem(name: 'Lunch', count: lunch),
         FoodItem(name: 'Evening Snacks', count: eveningsnacks),
+        FoodItem(name: 'Evening Tea', count: eveningTeaCount),
         FoodItem(name: 'Dinner', count: dinner),
       ];
 

@@ -47,6 +47,9 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       ValueNotifier<DateTime>(DateTime.now());
   bool _showPrintShareBar = false;
 
+  // Track expanded meeting cards
+  final Set<String> _expandedMeetings = <String>{};
+
   @override
   void initState() {
     super.initState();
@@ -482,6 +485,53 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     setState(() {
       _showPrintShareBar = !_showPrintShareBar;
     });
+  }
+
+  void _toggleMeetingExpansion(String meetingId) {
+    setState(() {
+      if (_expandedMeetings.contains(meetingId)) {
+        _expandedMeetings.remove(meetingId);
+      } else {
+        _expandedMeetings.add(meetingId);
+      }
+    });
+  }
+
+  List<Widget> _buildFoodItemRows(List<dynamic> foodItems) {
+    List<Widget> foodRows = [];
+    for (int i = 0; i < foodItems.length; i += 3) {
+      final rowItems = foodItems.skip(i).take(3).toList();
+      foodRows.add(
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: rowItems
+              .map((food) => Expanded(
+                    child: Column(
+                      children: [
+                        Icon(_getFoodIcon(food.name),
+                            size: 20, color: ColorClass.brandDarkGreen),
+                        const SizedBox(height: 2),
+                        Text(food.name.toUpperCase(),
+                            textAlign: TextAlign.center,
+                            style: TextStyleClass.poppinsRegular(
+                                fontSize: 9, color: ColorClass.brandDarkGreen)),
+                        Text(food.count.toString(),
+                            style: TextStyleClass.poppinsBold(
+                                fontSize: 13,
+                                color: ColorClass.brandDarkGreen)),
+                      ],
+                    ),
+                  ))
+              .toList(),
+        ),
+      );
+
+      // Add spacing between rows if not the last row
+      if (i + 3 < foodItems.length) {
+        foodRows.add(const SizedBox(height: 12));
+      }
+    }
+    return foodRows;
   }
 
   Widget _buildAnimatedPrintShareBar(BuildContext context) {
@@ -932,12 +982,11 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               return Column(
                 children: meetings.map((meeting) {
                   final foodItems = meeting.foodCounts.activeFoodItems;
-                  final firstRow = foodItems.take(3).toList();
-                  final secondRow =
-                      foodItems.length > 3 ? foodItems.skip(3).toList() : [];
+                  final isExpanded = _expandedMeetings.contains(meeting.id);
+                  final totalFoodCount = meeting.foodCounts.totalCount;
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(0),
                     decoration: BoxDecoration(
                       color: ColorClass.brandWhite,
                       borderRadius: BorderRadius.circular(14),
@@ -947,97 +996,73 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: ColorClass.brandWhite,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(14),
-                              topRight: Radius.circular(14),
+                        // Header - Always visible
+                        GestureDetector(
+                          onTap: () => _toggleMeetingExpansion(meeting.id),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: ColorClass.brandWhite,
+                              borderRadius: isExpanded
+                                  ? const BorderRadius.only(
+                                      topLeft: Radius.circular(14),
+                                      topRight: Radius.circular(14),
+                                    )
+                                  : BorderRadius.circular(14),
                             ),
-                          ),
-                          child: Text(meeting.title,
-                              style: TextStyleClass.poppinsSemiBold(
-                                  fontSize: 15,
-                                  color: ColorClass.brandDarkGreen)),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 14),
-                          decoration: BoxDecoration(
-                            color: ColorClass.brandLightGreen.withOpacity(0.13),
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(14),
-                              bottomRight: Radius.circular(14),
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: firstRow
-                                    .map((food) => Expanded(
-                                          child: Column(
-                                            children: [
-                                              Icon(_getFoodIcon(food.name),
-                                                  size: 20,
-                                                  color: ColorClass
-                                                      .brandDarkGreen),
-                                              const SizedBox(height: 2),
-                                              Text(food.name.toUpperCase(),
-                                                  style: TextStyleClass
-                                                      .poppinsRegular(
-                                                          fontSize: 10,
-                                                          color: ColorClass
-                                                              .brandDarkGreen)),
-                                              Text(food.count.toString(),
-                                                  style: TextStyleClass
-                                                      .poppinsBold(
-                                                          fontSize: 13,
-                                                          color: ColorClass
-                                                              .brandDarkGreen)),
-                                            ],
-                                          ),
-                                        ))
-                                    .toList(),
-                              ),
-                              if (secondRow.isNotEmpty) ...[
-                                const SizedBox(height: 8),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: secondRow
-                                      .map((food) => Expanded(
-                                            child: Column(
-                                              children: [
-                                                Icon(_getFoodIcon(food.name),
-                                                    size: 20,
-                                                    color: ColorClass
-                                                        .brandDarkGreen),
-                                                const SizedBox(height: 2),
-                                                Text(food.name.toUpperCase(),
-                                                    style: TextStyleClass
-                                                        .poppinsRegular(
-                                                            fontSize: 10,
-                                                            color: ColorClass
-                                                                .brandDarkGreen)),
-                                                Text(food.count.toString(),
-                                                    style: TextStyleClass
-                                                        .poppinsBold(
-                                                            fontSize: 13,
-                                                            color: ColorClass
-                                                                .brandDarkGreen)),
-                                              ],
-                                            ),
-                                          ))
-                                      .toList(),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(meeting.title,
+                                          style: TextStyleClass.poppinsSemiBold(
+                                              fontSize: 15,
+                                              color:
+                                                  ColorClass.brandDarkGreen)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        meeting.department,
+                                        style: TextStyleClass.poppinsRegular(
+                                            fontSize: 12,
+                                            color: ColorClass.neutral700),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Icon(
+                                  isExpanded
+                                      ? LucideIcons.chevronUp
+                                      : LucideIcons.chevronDown,
+                                  color: ColorClass.brandDarkGreen,
+                                  size: 20,
                                 ),
                               ],
-                            ],
+                            ),
                           ),
                         ),
+
+                        // Expandable content - Food items
+                        if (isExpanded && foodItems.isNotEmpty) ...[
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 14),
+                            decoration: BoxDecoration(
+                              color:
+                                  ColorClass.brandLightGreen.withOpacity(0.13),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(14),
+                                bottomRight: Radius.circular(14),
+                              ),
+                            ),
+                            child: Column(
+                              children: _buildFoodItemRows(foodItems),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   );
@@ -1060,9 +1085,13 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         return LucideIcons.moon;
       case 'evening snacks':
       case 'eve. snacks':
-        return LucideIcons.coffee;
+        return LucideIcons.cookie;
       case 'mid morning snacks':
-        return LucideIcons.coffee;
+        return LucideIcons.cookie;
+      case 'morning tea':
+        return LucideIcons.cupSoda;
+      case 'evening tea':
+        return LucideIcons.cupSoda;
       default:
         return LucideIcons.utensils;
     }
@@ -1548,8 +1577,8 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 pw.Divider(),
                 pw.SizedBox(height: 8),
 
-                // Food items
-                ...todayMeetingTotals.activeFoodItems.map(
+                // Food items - show all food items including those with 0 count for completeness
+                ...todayMeetingTotals.foodItems.map(
                   (item) => pw.Padding(
                     padding: const pw.EdgeInsets.only(bottom: 6),
                     child: pw.Row(
