@@ -35,8 +35,7 @@ class MonthCalendarView extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_left, size: 28),
                 color: ColorClass.brandDarkGreen,
-                onPressed:
-                    selectedDate.month == 1 ? null : () => onMonthChanged(-1),
+                onPressed: () => onMonthChanged(-1),
               ),
               Text(
                 '${getMonthName(selectedDate.month)} ${selectedDate.year}',
@@ -46,8 +45,7 @@ class MonthCalendarView extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.arrow_right, size: 28),
                 color: ColorClass.brandDarkGreen,
-                onPressed:
-                    selectedDate.month == 12 ? null : () => onMonthChanged(1),
+                onPressed: () => onMonthChanged(1),
               ),
             ],
           ),
@@ -174,14 +172,21 @@ class MonthCalendarView extends StatelessWidget {
                     currentDate.year, currentDate.month, currentDate.day);
                 final isPast =
                     checkDate.isBefore(DateTime(now.year, now.month, now.day));
-                final isRestrictedTodayBreakfast = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 6, 0));
+                final isRestrictedTodayBreakfast = checkDate.isAtSameMomentAs(
+                        DateTime(now.year, now.month, now.day)) &&
+                    now.isAfter(DateTime(now.year, now.month, now.day, 6, 0));
                 final isRestrictedTodayLunch = isRestrictedTodayBreakfast;
-                final isRestrictedTodayDinner = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 14, 0));
-                final isRestrictedBreakfast = isPast || isRestrictedTodayBreakfast;
+                final isRestrictedTodayDinner = checkDate.isAtSameMomentAs(
+                        DateTime(now.year, now.month, now.day)) &&
+                    now.isAfter(DateTime(now.year, now.month, now.day, 14, 0));
+                final isRestrictedBreakfast =
+                    isPast || isRestrictedTodayBreakfast;
                 final isRestrictedLunch = isPast || isRestrictedTodayLunch;
                 final isRestrictedDinner = isPast || isRestrictedTodayDinner;
                 // If all meals are restricted, show lock overlay
-                final allRestricted = isRestrictedBreakfast && isRestrictedLunch && isRestrictedDinner;
+                final allRestricted = isRestrictedBreakfast &&
+                    isRestrictedLunch &&
+                    isRestrictedDinner;
 
                 return GestureDetector(
                   onTap: () => _showMealBottomSheet(
@@ -236,12 +241,12 @@ class MonthCalendarView extends StatelessWidget {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      _buildMealIndicator(
-                                          'B', hasBreakfast, isToday, isRestrictedBreakfast),
-                                      _buildMealIndicator(
-                                          'L', hasLunch, isToday, isRestrictedLunch),
-                                      _buildMealIndicator(
-                                          'D', hasDinner, isToday, isRestrictedDinner),
+                                      _buildMealIndicator('B', hasBreakfast,
+                                          isToday, isRestrictedBreakfast),
+                                      _buildMealIndicator('L', hasLunch,
+                                          isToday, isRestrictedLunch),
+                                      _buildMealIndicator('D', hasDinner,
+                                          isToday, isRestrictedDinner),
                                     ],
                                   ),
                                 ),
@@ -283,9 +288,13 @@ class MonthCalendarView extends StatelessWidget {
     final now = DateTime.now();
     final checkDate = DateTime(date.year, date.month, date.day);
     bool isPast = checkDate.isBefore(DateTime(now.year, now.month, now.day));
-    bool isRestrictedTodayBreakfast = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 6, 0));
+    bool isRestrictedTodayBreakfast =
+        checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) &&
+            now.isAfter(DateTime(now.year, now.month, now.day, 6, 0));
     bool isRestrictedTodayLunch = isRestrictedTodayBreakfast;
-    bool isRestrictedTodayDinner = checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) && now.isAfter(DateTime(now.year, now.month, now.day, 14, 0));
+    bool isRestrictedTodayDinner =
+        checkDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day)) &&
+            now.isAfter(DateTime(now.year, now.month, now.day, 14, 0));
     bool isRestrictedBreakfast = isPast || isRestrictedTodayBreakfast;
     bool isRestrictedLunch = isPast || isRestrictedTodayLunch;
     bool isRestrictedDinner = isPast || isRestrictedTodayDinner;
@@ -386,7 +395,8 @@ class MonthCalendarView extends StatelessWidget {
                       ? null
                       : () {
                           setState(() {
-                            currentMealStates['lunch'] = !currentMealStates['lunch']!;
+                            currentMealStates['lunch'] =
+                                !currentMealStates['lunch']!;
                           });
                           debugPrint(
                               'Lunch toggled to: ${currentMealStates['lunch']}');
@@ -511,7 +521,8 @@ class MonthCalendarView extends StatelessWidget {
     );
   }
 
-  Widget _buildMealIndicator(String label, bool isSelected, bool isToday, bool isRestricted) {
+  Widget _buildMealIndicator(
+      String label, bool isSelected, bool isToday, bool isRestricted) {
     final bool isTodayAndSelected = isToday && isSelected;
     if (isRestricted) {
       return Container(

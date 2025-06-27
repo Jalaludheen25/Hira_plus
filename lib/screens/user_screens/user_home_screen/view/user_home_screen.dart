@@ -1505,24 +1505,46 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
                           ),
                         ],
                       )
-                    : MonthCalendarView(
-                        selectedDate: canteenProvider.selectedDate,
-                        getMonthName: widget.getMonthName,
-                        onMonthChanged: (int delta) {
-                          final currentYear = DateTime.now().year;
-                          final currentMonth =
-                              canteenProvider.selectedDate.month;
-                          final newMonth = currentMonth + delta;
-                          final newYear = canteenProvider.selectedDate.year +
-                              ((newMonth - 1) ~/ 12);
-                          final normalizedMonth = ((newMonth - 1) % 12) + 1;
-                          if (newYear == currentYear &&
-                              normalizedMonth >= 1 &&
-                              normalizedMonth <= 12) {
-                            final newDate =
-                                DateTime(newYear, normalizedMonth, 1);
-                            canteenProvider.setSelectedDate(newDate, context);
-                          }
+                    : Consumer<CanteenHomeProvider>(
+                        builder: (context, provider, child) {
+                          return MonthCalendarView(
+                            selectedDate: provider.selectedDate,
+                            getMonthName: widget.getMonthName,
+                            onMonthChanged: (int delta) {
+                              final currentDate = provider.selectedDate;
+                              DateTime newDate;
+
+                              if (delta > 0) {
+                                // Next month
+                                if (currentDate.month == 12) {
+                                  newDate =
+                                      DateTime(currentDate.year + 1, 1, 1);
+                                } else {
+                                  newDate = DateTime(currentDate.year,
+                                      currentDate.month + 1, 1);
+                                }
+                              } else {
+                                // Previous month
+                                if (currentDate.month == 1) {
+                                  newDate =
+                                      DateTime(currentDate.year - 1, 12, 1);
+                                } else {
+                                  newDate = DateTime(currentDate.year,
+                                      currentDate.month - 1, 1);
+                                }
+                              }
+
+                              // Set reasonable limits - allow navigation 2 years back and 1 year forward
+                              final now = DateTime.now();
+                              final minDate = DateTime(now.year - 2, 1, 1);
+                              final maxDate = DateTime(now.year + 1, 12, 31);
+
+                              if (newDate.isAfter(minDate) &&
+                                  newDate.isBefore(maxDate)) {
+                                provider.setSelectedDate(newDate, context);
+                              }
+                            },
+                          );
                         },
                       ),
               ),
