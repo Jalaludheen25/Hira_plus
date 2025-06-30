@@ -619,10 +619,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No meetings available',
+              'No active meetings available',
               style: TextStyleClass.poppinsMedium(
                 fontSize: 16,
                 color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Past meetings are automatically hidden',
+              style: TextStyleClass.poppinsRegular(
+                fontSize: 14,
+                color: Colors.grey[500],
               ),
             ),
           ],

@@ -12,17 +12,36 @@ class MeetingProvider extends ChangeNotifier {
   bool _isLoading = false;
   String _errorMessage = '';
 
-  // Getters
-  List<MeetingModel> get meetings => _meetings;
+  // Getters - Modified to filter out past meetings
+  List<MeetingModel> get meetings {
+    final now = DateTime.now();
+    return _meetings
+        .where((meeting) => meeting.endDatetime.isAfter(now))
+        .toList();
+  }
+
+  // Helper getter to get all meetings including past ones (for internal use)
+  List<MeetingModel> get allMeetings => _meetings;
+
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
 
-  // Filtered lists - updated for only approved and pending
-  List<MeetingModel> get pendingMeetings =>
-      _meetings.where((meeting) => meeting.isPending).toList();
+  // Filtered lists - updated for only approved and pending (excluding past meetings)
+  List<MeetingModel> get pendingMeetings {
+    final now = DateTime.now();
+    return _meetings
+        .where(
+            (meeting) => meeting.isPending && meeting.endDatetime.isAfter(now))
+        .toList();
+  }
 
-  List<MeetingModel> get approvedMeetings =>
-      _meetings.where((meeting) => meeting.isApproved).toList();
+  List<MeetingModel> get approvedMeetings {
+    final now = DateTime.now();
+    return _meetings
+        .where(
+            (meeting) => meeting.isApproved && meeting.endDatetime.isAfter(now))
+        .toList();
+  }
 
   List<MeetingModel> get scheduledMeetings {
     final now = DateTime.now();
@@ -33,7 +52,7 @@ class MeetingProvider extends ChangeNotifier {
 
   List<MeetingModel> get pastMeetings {
     final now = DateTime.now();
-    return approvedMeetings
+    return _meetings
         .where((meeting) => meeting.endDatetime.isBefore(now))
         .toList();
   }
@@ -60,7 +79,7 @@ class MeetingProvider extends ChangeNotifier {
       _meetings = meetings;
       _isLoading = false;
 
-      log('✅ Successfully updated meetings in provider. Count: ${_meetings.length}',
+      log('✅ Successfully updated meetings in provider. Total count: ${_meetings.length}, Active (non-past) count: ${meetings.length}',
           name: 'MeetingProvider');
       notifyListeners();
     } on HttpException catch (e) {

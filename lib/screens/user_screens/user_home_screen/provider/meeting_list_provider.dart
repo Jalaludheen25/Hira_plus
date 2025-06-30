@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart'; 
+import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/user_meeting_service.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
 
@@ -16,27 +16,57 @@ class MeetingListProvider extends ChangeNotifier {
   String _errorMessage = '';
   DateTime _lastFetchTime = DateTime(2000);
 
-  // Getters
-  List<MeetingModel> get meetings => _meetings;
+  // Getters - Modified to filter out past meetings
+  List<MeetingModel> get meetings {
+    final now = DateTime.now();
+    return _meetings
+        .where((meeting) => meeting.endDatetime.isAfter(now))
+        .toList();
+  }
+
+  // Helper getter to get all meetings including past ones (for internal use)
+  List<MeetingModel> get allMeetings => _meetings;
+
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
   DateTime get lastFetchTime => _lastFetchTime;
 
-  // Computed getters
-  List<MeetingModel> get pendingMeetings => _meetings.where((m) => m.isPending).toList();
-  List<MeetingModel> get approvedMeetings => _meetings.where((m) => m.isApproved).toList();
-  List<MeetingModel> get rejectedMeetings => _meetings.where((m) => m.isRejected).toList();
+  // Computed getters - Updated to exclude past meetings
+  List<MeetingModel> get pendingMeetings {
+    final now = DateTime.now();
+    return _meetings
+        .where((m) => m.isPending && m.endDatetime.isAfter(now))
+        .toList();
+  }
+
+  List<MeetingModel> get approvedMeetings {
+    final now = DateTime.now();
+    return _meetings
+        .where((m) => m.isApproved && m.endDatetime.isAfter(now))
+        .toList();
+  }
+
+  List<MeetingModel> get rejectedMeetings {
+    final now = DateTime.now();
+    return _meetings
+        .where((m) => m.isRejected && m.endDatetime.isAfter(now))
+        .toList();
+  }
+
   List<MeetingModel> get todaysMeetings {
     final today = DateTime.now();
     return _meetings.where((meeting) {
       final meetingDate = meeting.startDatetime;
       return meetingDate.year == today.year &&
-             meetingDate.month == today.month &&
-             meetingDate.day == today.day;
+          meetingDate.month == today.month &&
+          meetingDate.day == today.day &&
+          meeting.endDatetime.isAfter(
+              today); // Exclude past meetings even if they started today
     }).toList();
   }
 
-  int get totalMeetingsCount => _meetings.length;
+  int get totalMeetingsCount =>
+      meetings.length; // Updated to use filtered meetings
   int get pendingCount => pendingMeetings.length;
   int get approvedCount => approvedMeetings.length;
   int get rejectedCount => rejectedMeetings.length;
@@ -46,7 +76,8 @@ class MeetingListProvider extends ChangeNotifier {
   Future<void> fetchMeetings(BuildContext context) async {
     try {
       if (_isLoading) {
-        log('🔄 Already fetching meetings, ignoring new request', name: 'MeetingListProvider');
+        log('🔄 Already fetching meetings, ignoring new request',
+            name: 'MeetingListProvider');
         return;
       }
 
@@ -54,7 +85,8 @@ class MeetingListProvider extends ChangeNotifier {
       _errorMessage = '';
       notifyListeners();
 
-      log('🔄 Starting to fetch meetings in provider', name: 'MeetingListProvider');
+      log('🔄 Starting to fetch meetings in provider',
+          name: 'MeetingListProvider');
       final meetings = await _meetingService.getUserMeetings(context);
 
       _meetings = meetings;
@@ -64,11 +96,12 @@ class MeetingListProvider extends ChangeNotifier {
       // Save meeting data to shared preferences for offline access
       await _saveMeetingsToCache();
 
-      log('✅ Successfully updated meetings in provider. Count: ${_meetings.length}', name: 'MeetingListProvider');
-      
+      log('✅ Successfully updated meetings in provider. Total count: ${_meetings.length}, Active (non-past) count: ${meetings.length}',
+          name: 'MeetingListProvider');
+
       // Sort meetings by latest first
       _meetings.sort((a, b) => b.startDatetime.compareTo(a.startDatetime));
-      
+
       notifyListeners();
     } on HttpException catch (e) {
       log('🚨 HTTP error in meeting provider: $e', name: 'MeetingListProvider');
@@ -77,7 +110,8 @@ class MeetingListProvider extends ChangeNotifier {
       if (e.toString().contains('401')) {
         _errorMessage = 'Authentication error. Please login again.';
       } else {
-        _errorMessage = 'Failed to load meetings. Please check your connection and try again.';
+        _errorMessage =
+            'Failed to load meetings. Please check your connection and try again.';
       }
 
       // Try to load from cache if available
@@ -98,10 +132,12 @@ class MeetingListProvider extends ChangeNotifier {
   Future<void> _saveMeetingsToCache() async {
     try {
       if (_meetings.isNotEmpty) {
-        final meetingJsonList = _meetings.map((meeting) => jsonEncode(meeting.toJson())).toList();
+        final meetingJsonList =
+            _meetings.map((meeting) => jsonEncode(meeting.toJson())).toList();
         final meetingJsonString = jsonEncode(meetingJsonList);
         await SharedUtils.setString('cached_meetings', meetingJsonString);
-        log('💾 Saved ${_meetings.length} meetings to cache', name: 'MeetingListProvider');
+        log('💾 Saved ${_meetings.length} meetings to cache',
+            name: 'MeetingListProvider');
       }
     } catch (e) {
       log('❌ Error saving meetings to cache: $e', name: 'MeetingListProvider');
@@ -112,59 +148,70 @@ class MeetingListProvider extends ChangeNotifier {
   Future<void> _loadMeetingsFromCache() async {
     try {
       if (_meetings.isEmpty) {
-        final cachedMeetingsJson = await SharedUtils.getString('cached_meetings');
+        final cachedMeetingsJson =
+            await SharedUtils.getString('cached_meetings');
         if (cachedMeetingsJson.isNotEmpty) {
           final List<dynamic> meetingJsonList = jsonDecode(cachedMeetingsJson);
           final cachedMeetings = meetingJsonList
-              .map((meetingJson) => MeetingModel.fromJson(jsonDecode(meetingJson)))
+              .map((meetingJson) =>
+                  MeetingModel.fromJson(jsonDecode(meetingJson)))
               .toList();
 
           if (cachedMeetings.isNotEmpty) {
             _meetings = cachedMeetings;
             // Sort meetings by latest first
-            _meetings.sort((a, b) => b.startDatetime.compareTo(a.startDatetime));
-            log('📂 Loaded ${_meetings.length} meetings from cache', name: 'MeetingListProvider');
+            _meetings
+                .sort((a, b) => b.startDatetime.compareTo(a.startDatetime));
+            log('📂 Loaded ${_meetings.length} meetings from cache',
+                name: 'MeetingListProvider');
           }
         }
       }
     } catch (e) {
-      log('❌ Error loading meetings from cache: $e', name: 'MeetingListProvider');
+      log('❌ Error loading meetings from cache: $e',
+          name: 'MeetingListProvider');
     }
   }
 
-  /// Gets meetings for a specific date
+  /// Gets meetings for a specific date (excluding past meetings)
   List<MeetingModel> getMeetingsForDate(DateTime date) {
+    final now = DateTime.now();
     return _meetings.where((meeting) {
       final meetingDate = meeting.startDatetime;
       return meetingDate.year == date.year &&
-             meetingDate.month == date.month &&
-             meetingDate.day == date.day;
+          meetingDate.month == date.month &&
+          meetingDate.day == date.day &&
+          meeting.endDatetime.isAfter(now); // Exclude past meetings
     }).toList();
   }
 
-  /// Gets meetings for current week
+  /// Gets meetings for current week (excluding past meetings)
   List<MeetingModel> getWeekMeetings() {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final endOfWeek = startOfWeek.add(const Duration(days: 6));
-    
+
     return _meetings.where((meeting) {
       final meetingDate = meeting.startDatetime;
-      return meetingDate.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-             meetingDate.isBefore(endOfWeek.add(const Duration(days: 1)));
+      return meetingDate
+              .isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
+          meetingDate.isBefore(endOfWeek.add(const Duration(days: 1))) &&
+          meeting.endDatetime.isAfter(now); // Exclude past meetings
     }).toList();
   }
 
-  /// Gets meetings for current month
+  /// Gets meetings for current month (excluding past meetings)
   List<MeetingModel> getMonthMeetings() {
     final now = DateTime.now();
     final startOfMonth = DateTime(now.year, now.month, 1);
     final endOfMonth = DateTime(now.year, now.month + 1, 0);
-    
+
     return _meetings.where((meeting) {
       final meetingDate = meeting.startDatetime;
-      return meetingDate.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
-             meetingDate.isBefore(endOfMonth.add(const Duration(days: 1)));
+      return meetingDate
+              .isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+          meetingDate.isBefore(endOfMonth.add(const Duration(days: 1))) &&
+          meeting.endDatetime.isAfter(now); // Exclude past meetings
     }).toList();
   }
 
@@ -181,12 +228,14 @@ class MeetingListProvider extends ChangeNotifier {
       _isLoading = true;
       _errorMessage = '';
       notifyListeners();
-      
-      log('🗑️ Attempting to delete meeting: $meetingId', name: 'MeetingListProvider');
-      
+
+      log('🗑️ Attempting to delete meeting: $meetingId',
+          name: 'MeetingListProvider');
+
       final success = await _meetingService.deleteMeeting(context, meetingId);
       if (success) {
-        log('✅ Meeting deleted successfully, refreshing list', name: 'MeetingListProvider');
+        log('✅ Meeting deleted successfully, refreshing list',
+            name: 'MeetingListProvider');
         // Remove the meeting from local list immediately for better UX
         _meetings.removeWhere((meeting) => meeting.id == meetingId);
         await _saveMeetingsToCache(); // Update cache
@@ -206,7 +255,8 @@ class MeetingListProvider extends ChangeNotifier {
       _errorMessage = 'Failed to delete meeting. Please try again.';
       final errorStr = e.toString().toLowerCase();
       if (context.mounted) {
-        if (errorStr.contains('not found') || errorStr.contains('cannot be deleted')) {
+        if (errorStr.contains('not found') ||
+            errorStr.contains('cannot be deleted')) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("You can't delete this meeting."),
@@ -229,43 +279,48 @@ class MeetingListProvider extends ChangeNotifier {
   }
 
   /// Updates a meeting by ID (DeptHead only)
-  Future<void> updateMeeting(BuildContext context, String meetingId, Map<String, dynamic> meetingData) async {
+  Future<void> updateMeeting(BuildContext context, String meetingId,
+      Map<String, dynamic> meetingData) async {
     try {
       _isLoading = true;
       _errorMessage = '';
       notifyListeners();
-      
-      log('📝 Attempting to update meeting: $meetingId', name: 'MeetingListProvider');
+
+      log('📝 Attempting to update meeting: $meetingId',
+          name: 'MeetingListProvider');
       log('📦 Update data: $meetingData', name: 'MeetingListProvider');
-      
+
       // Check if meeting exists in local list before making API call
       final existingMeeting = _meetings.firstWhere(
         (meeting) => meeting.id == meetingId,
         orElse: () => throw Exception('Meeting not found in local list'),
       );
-      
+
       // Check if meeting can be edited (only pending meetings)
       if (!existingMeeting.isPending) {
-        throw Exception('Only pending meetings can be edited. This meeting is ${existingMeeting.status}.');
+        throw Exception(
+            'Only pending meetings can be edited. This meeting is ${existingMeeting.status}.');
       }
-      
-      final updatedMeeting = await _meetingService.updateMeeting(context, meetingId, meetingData);
-      
+
+      final updatedMeeting =
+          await _meetingService.updateMeeting(context, meetingId, meetingData);
+
       if (updatedMeeting != null) {
         log('✅ Meeting updated successfully', name: 'MeetingListProvider');
-        
+
         // Update the meeting in local list immediately for better UX
-        final index = _meetings.indexWhere((meeting) => meeting.id == meetingId);
+        final index =
+            _meetings.indexWhere((meeting) => meeting.id == meetingId);
         if (index != -1) {
           _meetings[index] = updatedMeeting;
           // Maintain sorting
           _meetings.sort((a, b) => b.startDatetime.compareTo(a.startDatetime));
           await _saveMeetingsToCache(); // Update cache
         }
-        
+
         // Also fetch latest data from server to ensure consistency
         await fetchMeetings(context);
-        
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -278,7 +333,7 @@ class MeetingListProvider extends ChangeNotifier {
     } on HttpException catch (e) {
       log('❌ HTTP error updating meeting: $e', name: 'MeetingListProvider');
       _errorMessage = _getDetailedErrorMessage(e.toString());
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -291,7 +346,7 @@ class MeetingListProvider extends ChangeNotifier {
     } catch (e) {
       log('❌ Error updating meeting: $e', name: 'MeetingListProvider');
       _errorMessage = 'Failed to update meeting. Please try again.';
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

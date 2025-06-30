@@ -219,7 +219,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No Meetings Found',
+              'No Active Meetings Found',
               style: TextStyleClass.poppinsSemiBold(
                 fontSize: 20,
                 color: ColorClass.neutral500,
@@ -227,7 +227,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Create your first meeting using the "Create Meeting" button below',
+              'No upcoming meetings available. Past meetings are automatically hidden.\nCreate a new meeting using the button below.',
               textAlign: TextAlign.center,
               style: TextStyleClass.poppinsRegular(
                 fontSize: 16,
