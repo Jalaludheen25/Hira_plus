@@ -73,8 +73,8 @@ class MeetingProvider extends ChangeNotifier {
       log('🔄 Starting to fetch meetings in provider', name: 'MeetingProvider');
       final meetings = await _meetingService.getAllMeetings(context);
 
-      // Sort meetings by creation date (latest first)
-      meetings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      // Sort meetings by meeting date (earliest first)
+      meetings.sort((a, b) => a.startDatetime.compareTo(b.startDatetime));
 
       _meetings = meetings;
       _isLoading = false;
@@ -147,8 +147,9 @@ class MeetingProvider extends ChangeNotifier {
         department: department,
       );
 
-      // Add new meeting to local list at the beginning (latest first)
-      _meetings.insert(0, meeting);
+      // Add new meeting to local list and sort by meeting date
+      _meetings.add(meeting);
+      _meetings.sort((a, b) => a.startDatetime.compareTo(b.startDatetime));
       _isLoading = false;
 
       log('✅ Meeting created successfully: ${meeting.id}',
@@ -229,8 +230,8 @@ class MeetingProvider extends ChangeNotifier {
         // Update with server response
         _meetings[meetingIndex] = serverUpdatedMeeting;
 
-        // Re-sort the list to maintain latest first order
-        _meetings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        // Re-sort the list to maintain meeting date order
+        _meetings.sort((a, b) => a.startDatetime.compareTo(b.startDatetime));
 
         log('✅ Meeting status updated successfully from server',
             name: 'MeetingProvider');
@@ -257,6 +258,8 @@ class MeetingProvider extends ChangeNotifier {
         _meetings.indexWhere((meeting) => meeting.id == updatedMeeting.id);
     if (index != -1) {
       _meetings[index] = updatedMeeting;
+      // Re-sort to maintain meeting date order
+      _meetings.sort((a, b) => a.startDatetime.compareTo(b.startDatetime));
       log('✅ Meeting updated in local list: ${updatedMeeting.id}',
           name: 'MeetingProvider');
       notifyListeners();
@@ -346,10 +349,11 @@ class MeetingProvider extends ChangeNotifier {
         department: department,
       );
 
-      // Update the meeting in the local list
+      // Update the meeting in the local list and re-sort by meeting date
       final index = _meetings.indexWhere((m) => m.id == meetingId);
       if (index != -1) {
         _meetings[index] = updatedMeeting;
+        _meetings.sort((a, b) => a.startDatetime.compareTo(b.startDatetime));
       }
       _isLoading = false;
       notifyListeners();
