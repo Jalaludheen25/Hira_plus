@@ -57,6 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 8),
         Pinput(
           length: 6,
+          keyboardType: TextInputType.number,
           onChanged: (value) {
             authProvider.setOtp(value);
           },
@@ -310,6 +311,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                 // Update the role
                                 authProvider.setSelectedRole(selected);
+
+                                // Dismiss any open keyboard so that the
+                                // next focused field shows the correct
+                                // keyboard layout (numeric vs. text).
+                                FocusScope.of(context).unfocus();
+
+                                // Force hide keyboard (handles some devices
+                                // where unfocus alone doesn\'t close it)
+                                SystemChannels.textInput
+                                    .invokeMethod('TextInput.hide');
                               }
                             },
                             child: Container(
