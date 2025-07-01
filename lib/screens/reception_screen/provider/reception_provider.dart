@@ -83,6 +83,13 @@ class ReceptionProvider extends ChangeNotifier {
 
   // Back button handling method
   bool shouldExitOnBack(BuildContext context) {
+    // Check if there are any modal routes (bottom sheets, dialogs, etc.) open
+    // If there are, let the navigation system handle the back button naturally
+    if (Navigator.of(context).canPop()) {
+      return true; // Allow the back navigation to proceed (close modal)
+    }
+
+    // No modal routes open, handle app exit logic
     if (_lastBackPressed == null ||
         DateTime.now().difference(_lastBackPressed!) > Duration(seconds: 2)) {
       _lastBackPressed = DateTime.now();

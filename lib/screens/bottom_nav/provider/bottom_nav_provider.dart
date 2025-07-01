@@ -15,11 +15,19 @@ class BottomNavProvider extends ChangeNotifier {
   }
 
   bool shouldExitOnBack(BuildContext context) {
-    if (_lastBackPressed == null || DateTime.now().difference(_lastBackPressed!) > Duration(seconds: 2)) {
+    // Check if there are any modal routes (bottom sheets, dialogs, etc.) open
+    // If there are, let the navigation system handle the back button naturally
+    if (Navigator.of(context).canPop()) {
+      return true; // Allow the back navigation to proceed (close modal)
+    }
+
+    // No modal routes open, handle app exit logic
+    if (_lastBackPressed == null ||
+        DateTime.now().difference(_lastBackPressed!) > Duration(seconds: 2)) {
       _lastBackPressed = DateTime.now();
       toastification.show(
         context: context,
-        title: Text('Back again to exit'),
+        title: Text('Press back again to exit'),
         type: ToastificationType.info,
         autoCloseDuration: Duration(seconds: 2),
       );
@@ -27,4 +35,4 @@ class BottomNavProvider extends ChangeNotifier {
     }
     return true;
   }
-} 
+}
