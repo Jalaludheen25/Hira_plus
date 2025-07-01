@@ -124,140 +124,169 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: ColorClass.brandWhite,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
+      builder: (context) {
+        String searchQuery = '';
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final filteredDetails = searchQuery.isEmpty
+                ? details
+                : details
+                    .where((item) => (item['name'] ?? '')
+                        .toLowerCase()
+                        .contains(searchQuery.toLowerCase()))
+                    .toList();
+
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.8,
               decoration: BoxDecoration(
-                color: ColorClass.neutral300,
-                borderRadius: BorderRadius.circular(2),
+                color: ColorClass.brandWhite,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-            ),
-
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: Column(
                 children: [
-                  Text(
-                    '$mealLabel - Detailed List',
-                    style: TextStyleClass.poppinsSemiBold(fontSize: 18),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      LucideIcons.x,
-                      color: ColorClass.neutral500,
+                  // Handle bar
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(top: 12, bottom: 8),
+                    decoration: BoxDecoration(
+                      color: ColorClass.neutral300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                ],
-              ),
-            ),
 
-            // Count
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    'Total: ${details.length}',
-                    style: TextStyleClass.poppinsBold(
-                      fontSize: 16,
-                      color: ColorClass.brandDarkGreen,
+                  // Header
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '$mealLabel - Detailed List',
+                          style: TextStyleClass.poppinsSemiBold(fontSize: 18),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(
+                            LucideIcons.x,
+                            color: ColorClass.neutral500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 8),
-
-            // List content
-            Expanded(
-              child: details.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            LucideIcons.users,
-                            size: 48,
-                            color: ColorClass.neutral300,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No users found for this meal',
-                            style: TextStyleClass.poppinsRegular(
-                              fontSize: 16,
-                              color: ColorClass.neutral400,
-                            ),
-                          ),
-                        ],
+                  // Search bar
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    child: TextField(
+                      onChanged: (value) => setState(() {
+                        searchQuery = value;
+                      }),
+                      decoration: InputDecoration(
+                        hintText: 'Search user name',
+                        prefixIcon: Icon(LucideIcons.search,
+                            color: ColorClass.neutral400, size: 20),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 0, horizontal: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: ColorClass.neutral300),
+                        ),
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: details.length,
-                      itemBuilder: (context, index) {
-                        final item = details[index];
-                        return Container(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: ColorClass.neutral200,
-                                width: 0.5,
-                              ),
-                            ),
+                    ),
+                  ),
+
+                  // Count
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Total: ${filteredDetails.length}',
+                          style: TextStyleClass.poppinsBold(
+                            fontSize: 16,
+                            color: ColorClass.brandDarkGreen,
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item['name'] ?? '',
-                                style:
-                                    TextStyleClass.poppinsMedium(fontSize: 16),
-                              ),
-                              // if (item['type']?.isNotEmpty == true) ...[
-                              //   const SizedBox(height: 2),
-                              //   Text(
-                              //     item['type']!,
-                              //     style: TextStyleClass.poppinsRegular(
-                              //       fontSize: 13,
-                              //       color: ColorClass.neutral400,
-                              //     ),
-                              //   ),
-                              // ],
-                              if (item['room']?.isNotEmpty == true) ...[
-                                const SizedBox(height: 1),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // List content
+                  Expanded(
+                    child: filteredDetails.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  LucideIcons.users,
+                                  size: 48,
+                                  color: ColorClass.neutral300,
+                                ),
+                                const SizedBox(height: 16),
                                 Text(
-                                  item['room']!,
+                                  'No users found',
                                   style: TextStyleClass.poppinsRegular(
-                                    fontSize: 13,
+                                    fontSize: 16,
                                     color: ColorClass.neutral400,
                                   ),
                                 ),
                               ],
-                            ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            itemCount: filteredDetails.length,
+                            itemBuilder: (context, index) {
+                              final item = filteredDetails[index];
+                              return Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: ColorClass.neutral200,
+                                      width: 0.5,
+                                    ),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['name'] ?? '',
+                                      style: TextStyleClass.poppinsMedium(
+                                          fontSize: 16),
+                                    ),
+                                    if (item['room']?.isNotEmpty == true) ...[
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        item['room']!,
+                                        style: TextStyleClass.poppinsRegular(
+                                          fontSize: 13,
+                                          color: ColorClass.neutral400,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
