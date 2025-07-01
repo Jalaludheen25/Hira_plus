@@ -65,6 +65,39 @@ class _LoginScreenState extends State<LoginScreen> {
             authProvider.setOtp(value);
           },
         ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton(
+            onPressed: () async {
+              try {
+                await authProvider.requestOtp(authProvider.phone);
+                // Provide success feedback
+                toastification.show(
+                  context: context,
+                  title: const Text('OTP resent successfully'),
+                  type: ToastificationType.success,
+                  autoCloseDuration: Duration(seconds: 2),
+                );
+              } catch (e) {
+                // Provide error feedback
+                toastification.show(
+                  context: context,
+                  title: Text('Failed to resend OTP: ${e.toString()}'),
+                  type: ToastificationType.error,
+                  autoCloseDuration: Duration(seconds: 2),
+                );
+              }
+            },
+            child: Text(
+              'Resend OTP',
+              style: TextStyle(
+                color: ColorClass.brandLightGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
