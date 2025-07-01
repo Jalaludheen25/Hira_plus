@@ -27,6 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // Toggles password visibility
+  bool _passwordVisible = false;
+
   @override
   void initState() {
     super.initState();
@@ -95,7 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           child: TextFormField(
             controller: _passwordController,
-            obscureText: true,
+            obscureText: !_passwordVisible,
             style: TextStyle(
               fontSize: 16,
               color: ColorClass.brandDarkGreen,
@@ -129,6 +132,18 @@ class _LoginScreenState extends State<LoginScreen> {
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 20,
                 vertical: 16,
+              ),
+              // Toggle password visibility
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                  color: ColorClass.brandDarkGreen,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _passwordVisible = !_passwordVisible;
+                  });
+                },
               ),
             ),
             onChanged: (value) {
