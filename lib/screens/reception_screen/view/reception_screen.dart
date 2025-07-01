@@ -18,6 +18,7 @@ import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/utils/navigation_helper.dart';
 import 'package:toastification/toastification.dart';
 import 'package:intl/intl.dart';
+import 'package:hira_plus/constants/global_variables.dart';
 
 class ReceptionScreen extends StatefulWidget {
   const ReceptionScreen({Key? key}) : super(key: key);
@@ -1070,7 +1071,7 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                       icon: LucideIcons.shieldCheck,
                       onTap: () async {
                         final Uri url =
-                            Uri.parse('https://d4dx.co/privacy-policy/');
+                            Uri.parse(GlobalVariables.privacyPolicyUrl);
                         await launchUrl(url,
                             mode: LaunchMode.externalApplication);
                       },
@@ -1088,21 +1089,10 @@ class _ReceptionScreenState extends State<ReceptionScreen> {
                     CustomDrawerItem(
                       title: 'About Us',
                       icon: LucideIcons.info,
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('About Us'),
-                            content: const Text(
-                                'This is dummy content for About Us.'),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Close'),
-                              ),
-                            ],
-                          ),
-                        );
+                      onTap: () async {
+                        final Uri url = Uri.parse(GlobalVariables.aboutUsUrl);
+                        await launchUrl(url,
+                            mode: LaunchMode.externalApplication);
                       },
                     ),
                     CustomDrawerItem(

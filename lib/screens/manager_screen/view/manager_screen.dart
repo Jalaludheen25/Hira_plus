@@ -27,6 +27,7 @@ import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/manager_bulk_food_list_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/meeting_management_screen.dart';
 import 'package:hira_plus/routes/app_routes.dart';
+import 'package:hira_plus/constants/global_variables.dart';
 import 'dart:developer' as developer;
 
 class ManagerScreen extends StatelessWidget {
@@ -916,7 +917,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Privacy Policy',
                 icon: LucideIcons.shieldCheck,
                 onTap: () async {
-                  final Uri url = Uri.parse('https://d4dx.co/privacy-policy/');
+                  final Uri url = Uri.parse(GlobalVariables.privacyPolicyUrl);
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
@@ -930,21 +931,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               CustomDrawerItem(
                 title: 'About Us',
                 icon: LucideIcons.info,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('About Us'),
-                      content:
-                          const Text('This is dummy content for About Us.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-                  );
+                onTap: () async {
+                  final Uri url = Uri.parse(GlobalVariables.aboutUsUrl);
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
               CustomDrawerItem(

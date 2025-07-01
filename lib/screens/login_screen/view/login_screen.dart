@@ -298,7 +298,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ],
                                 ).createShader(bounds),
                                 child: const Text(
-                                  'Mess Connect',
+                                  'Hira Plus',
                                   style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
@@ -310,7 +310,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 12),
                               Text(
-                                'Your Digital Mess Companion',
+                                'Hira Automation System',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: ColorClass.brandLightGreen

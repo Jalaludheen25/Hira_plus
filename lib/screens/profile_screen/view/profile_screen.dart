@@ -17,6 +17,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../widgets/profile_card.dart';
 import '../widgets/powered_by_section.dart';
 import 'package:logger/logger.dart';
+import 'package:hira_plus/constants/global_variables.dart';
 
 class ProfileScreen extends StatefulWidget {
   final Logger _logger = Logger();
@@ -86,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: LucideIcons.shieldCheck,
                     onTap: () async {
                       final Uri url =
-                          Uri.parse('https://d4dx.co/privacy-policy/');
+                          Uri.parse(GlobalVariables.privacyPolicyUrl);
                       await launchUrl(url,
                           mode: LaunchMode.externalApplication);
                     },
@@ -101,21 +102,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   CustomDrawerItem(
                     title: 'About Us',
                     icon: LucideIcons.info,
-                    onTap: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('About Us'),
-                          content:
-                              const Text('This is dummy content for About Us.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('Close'),
-                            ),
-                          ],
-                        ),
-                      );
+                    onTap: () async {
+                      final Uri url = Uri.parse(GlobalVariables.aboutUsUrl);
+                      await launchUrl(url,
+                          mode: LaunchMode.externalApplication);
                     },
                   ),
                   CustomDrawerItem(

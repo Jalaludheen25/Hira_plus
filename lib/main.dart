@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
-        title: 'Canteen App',
+        title: 'Hira Plus',
         theme: ThemeData(
           useMaterial3: true,
         ),

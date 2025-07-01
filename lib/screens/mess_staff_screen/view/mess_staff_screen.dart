@@ -30,6 +30,7 @@ import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/mess_staff_screen/models/meeting_food_model.dart';
+import 'package:hira_plus/constants/global_variables.dart';
 
 class MessStaffScreen extends StatefulWidget {
   const MessStaffScreen({super.key});
@@ -289,8 +290,6 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       },
     );
   }
-
-
 
   // Define the pages for the bottom navigation - back to 2 tabs
   List<Widget> _pages(BuildContext context) => [
@@ -1183,7 +1182,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 title: 'Privacy Policy',
                 icon: LucideIcons.shieldCheck,
                 onTap: () async {
-                  final Uri url = Uri.parse('https://d4dx.co/privacy-policy/');
+                  final Uri url = Uri.parse(GlobalVariables.privacyPolicyUrl);
                   await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
@@ -1200,21 +1199,9 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               CustomDrawerItem(
                 title: 'About Us',
                 icon: LucideIcons.info,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: const Text('About Us'),
-                      content:
-                          const Text('This is dummy content for About Us.'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => navigateBack(context),
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-                  );
+                onTap: () async {
+                  final Uri url = Uri.parse(GlobalVariables.aboutUsUrl);
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
                 },
               ),
               CustomDrawerItem(
