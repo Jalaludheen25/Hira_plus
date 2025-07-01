@@ -490,6 +490,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
@@ -1017,6 +1018,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     canteenProvider.setSelectedDate(DateTime.now(), context);
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       isDismissible: true,
       enableDrag: true,
@@ -1071,6 +1073,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
