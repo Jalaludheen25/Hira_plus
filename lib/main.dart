@@ -49,7 +49,6 @@ class MyApp extends StatelessWidget {
         navigatorKey: navigatorKey,
         title: 'Canteen App',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: ColorClass.primaryBase),
           useMaterial3: true,
         ),
         initialRoute: Routes.splash,

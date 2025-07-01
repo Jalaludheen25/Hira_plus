@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/services/user_meeting_service.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
+import 'package:provider/provider.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 
 class MeetingListProvider extends ChangeNotifier {
   final MeetingService _meetingService = MeetingService();
@@ -71,6 +73,38 @@ class MeetingListProvider extends ChangeNotifier {
   int get approvedCount => approvedMeetings.length;
   int get rejectedCount => rejectedMeetings.length;
   int get todaysCount => todaysMeetings.length;
+
+  /// Helper method to check if current user can modify a meeting
+  bool canModifyMeeting(BuildContext context, MeetingModel meeting) {
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final currentUserId = authProvider.userId;
+      final currentUserName = authProvider.userName;
+      final meetingCreatorId = meeting.createdBy;
+
+      log('🔐 [AUTH] Authorization check for meeting ${meeting.id}:');
+      log('   - Current user ID: $currentUserId');
+      log('   - Current user name: $currentUserName');
+      log('   - Meeting creator ID: $meetingCreatorId');
+
+      // Check both user ID and user name (backend inconsistency workaround)
+      final canModifyById =
+          currentUserId.isNotEmpty && currentUserId == meetingCreatorId;
+      final canModifyByName =
+          currentUserName.isNotEmpty && currentUserName == meetingCreatorId;
+      final canModify = canModifyById || canModifyByName;
+
+      log('   - Can modify by ID: $canModifyById');
+      log('   - Can modify by name: $canModifyByName');
+      log('   - Can modify: $canModify');
+
+      return canModify;
+    } catch (e) {
+      log('❌ [AUTH] Error checking authorization: $e',
+          name: 'MeetingListProvider');
+      return false;
+    }
+  }
 
   /// Fetches all meetings from the API
   Future<void> fetchMeetings(BuildContext context) async {
@@ -222,9 +256,31 @@ class MeetingListProvider extends ChangeNotifier {
     await fetchMeetings(context);
   }
 
-  /// Deletes a meeting by ID (DeptHead only)
+  /// Deletes a meeting by ID (creator only)
   Future<void> deleteMeeting(BuildContext context, String meetingId) async {
     try {
+      // Find the meeting first to check authorization
+      final meeting = _meetings.firstWhere(
+        (m) => m.id == meetingId,
+        orElse: () => throw Exception('Meeting not found'),
+      );
+
+      // Check authorization
+      if (!canModifyMeeting(context, meeting)) {
+        log('🚫 [AUTH] Unauthorized delete attempt blocked for meeting: $meetingId',
+            name: 'MeetingListProvider');
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You can only delete meetings that you created'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
       _isLoading = true;
       _errorMessage = '';
       notifyListeners();

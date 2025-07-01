@@ -9,6 +9,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'dart:developer' as developer;
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meeting_model.dart';
+import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 
 class UserMeetingScreen extends StatefulWidget {
   final MeetingModel? meeting;
@@ -50,12 +51,98 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     'Meeting Space [1st Floor]',
   ];
 
+  /// Helper method to check if current user can edit this meeting
+  bool _canEditMeeting() {
+    if (!widget.isEdit || widget.meeting == null) {
+      return true; // Creating new meeting is always allowed
+    }
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserId = authProvider.userId;
+    final currentUserName = authProvider.userName;
+    final meetingCreatorId = widget.meeting!.createdBy;
+
+    _logger.d('🔐 [AUTH] Checking edit permission:');
+    _logger.d('   - Current user ID: $currentUserId');
+    _logger.d('   - Current user name: $currentUserName');
+    _logger.d('   - Meeting creator ID: $meetingCreatorId');
+
+    // Check both user ID and user name (backend inconsistency workaround)
+    final canEditById =
+        currentUserId.isNotEmpty && currentUserId == meetingCreatorId;
+    final canEditByName =
+        currentUserName.isNotEmpty && currentUserName == meetingCreatorId;
+    final canEdit = canEditById || canEditByName;
+
+    _logger.d('   - Can edit by ID: $canEditById');
+    _logger.d('   - Can edit by name: $canEditByName');
+    _logger.d('   - Can edit: $canEdit');
+
+    return canEdit;
+  }
+
+  /// Helper method to show unauthorized access dialog
+  void _showUnauthorizedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                LucideIcons.lock,
+                color: ColorClass.redBase,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Unauthorized Access',
+                style: TextStyleClass.poppinsSemiBold(
+                  fontSize: 18,
+                  color: ColorClass.redBase,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'You can only edit meetings that you created. This meeting belongs to another user.',
+            style: TextStyleClass.poppinsRegular(fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Close the meeting screen too
+              },
+              child: Text(
+                'OK',
+                style: TextStyleClass.poppinsMedium(
+                  fontSize: 14,
+                  color: ColorClass.brandDarkGreen,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _logger.i('🏗️ [INIT] Initializing Create User Meeting Screen');
     developer.log('🏗️ Initializing Create User Meeting Screen',
         name: 'CreateUserMeetingScreen');
+
+    // Check authorization for editing
+    if (widget.isEdit && !_canEditMeeting()) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showUnauthorizedDialog();
+      });
+      return;
+    }
+
     if (widget.isEdit && widget.meeting != null) {
       final m = widget.meeting!;
       _titleController.text = m.title;
@@ -411,7 +498,6 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-       
         DropdownButtonFormField<String>(
           value: _selectedHall,
           decoration: InputDecoration(
@@ -544,6 +630,21 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
     final isEditing = widget.isEdit && widget.meeting != null;
 
     if (isEditing) {
+      // Check authorization before updating
+      if (!_canEditMeeting()) {
+        _logger.w('🚫 [AUTH] Unauthorized edit attempt blocked');
+        developer.log('🚫 Unauthorized edit attempt blocked',
+            name: 'UserMeetingScreen');
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You can only edit meetings that you created'),
+            backgroundColor: ColorClass.redBase,
+          ),
+        );
+        return;
+      }
+
       // Prepare meeting data for update
       final meetingData = {
         'title': _titleController.text.trim(),
@@ -566,6 +667,7 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
         context,
         widget.meeting!.id,
         meetingData,
+        meetingCreatorId: widget.meeting!.createdBy,
       );
       if (updatedMeeting != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

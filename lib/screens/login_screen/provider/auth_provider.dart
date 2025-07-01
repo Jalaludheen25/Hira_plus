@@ -24,6 +24,7 @@ class AuthProvider extends ChangeNotifier {
   String _designation = '';
   bool _isDeptHead = false;
   String _userId = '';
+  String _userName = '';
 
   String get phone => _phone;
   String get username => _username;
@@ -37,6 +38,7 @@ class AuthProvider extends ChangeNotifier {
   String get designation => _designation;
   bool get isDeptHead => _isDeptHead;
   String get userId => _userId;
+  String get userName => _userName;
 
   // Helper method to determine if current role uses OTP or password
   bool get isOtpBasedAuth => _selectedRole == 'User';
@@ -119,6 +121,17 @@ class AuthProvider extends ChangeNotifier {
   void setUserId(String value) {
     if (_userId != value) {
       _userId = value;
+      SharedUtils.setString('user_id', value); // Store to SharedPreferences
+      developer.log('👤 User ID set: $value', name: 'AuthProvider');
+      notifyListeners();
+    }
+  }
+
+  void setUserName(String value) {
+    if (_userName != value) {
+      _userName = value;
+      SharedUtils.setString('user_name', value); // Store to SharedPreferences
+      developer.log('👤 User Name set: $value', name: 'AuthProvider');
       notifyListeners();
     }
   }
@@ -132,6 +145,8 @@ class AuthProvider extends ChangeNotifier {
     _showOTPField = false;
     _department = '';
     _designation = '';
+    _userId = '';
+    _userName = '';
     developer.log('🧹 Auth provider state reset', name: 'AuthProvider');
     notifyListeners();
   }
@@ -162,6 +177,9 @@ class AuthProvider extends ChangeNotifier {
       final token = await SharedUtils.getString('auth_token');
       final userType = await SharedUtils.getString('user_type');
       final isDeptHead = await SharedUtils.getBoolean('is_dept_head');
+      final userId = await SharedUtils.getString('user_id'); // Load user ID
+      final userName =
+          await SharedUtils.getString('user_name'); // Load user name
 
       // Check for specific user type tokens
       String? specificToken;
@@ -188,11 +206,14 @@ class AuthProvider extends ChangeNotifier {
       _isLoggedIn = effectiveToken?.isNotEmpty == true;
       _userType = userType;
       _isDeptHead = isDeptHead;
+      _userId = userId ?? ''; // Set user ID
+      _userName = userName ?? ''; // Set user name
 
       _logger.i('🔹 [AUTH] Login status check results:');
       _logger.i('   - isLoggedIn: $_isLoggedIn');
       _logger.i('   - userType: $_userType');
       _logger.i('   - isDeptHead: $_isDeptHead');
+      _logger.i('   - userId: $_userId');
       _logger.i('   - effectiveToken: ${effectiveToken?.isNotEmpty}');
 
       developer.log(
@@ -363,6 +384,7 @@ class AuthProvider extends ChangeNotifier {
           final isDeptHead = userDetails['isDeptHead'] ?? false;
           setIsDeptHead(isDeptHead);
           setUserId(userDetails['_id'] ?? userDetails['id'] ?? '');
+          setUserName(userDetails['name'] ?? ''); // Store user name
         }
 
         // Store token and update login status
@@ -433,6 +455,7 @@ class AuthProvider extends ChangeNotifier {
         setIsDeptHead(isDeptHead);
         if (user != null) {
           setUserId(user['_id'] ?? user['id'] ?? '');
+          setUserName(user['name'] ?? ''); // Store user name
         }
 
         // Update ProfileScreenProvider with user info
@@ -569,6 +592,8 @@ class AuthProvider extends ChangeNotifier {
       await SharedUtils.setBoolean('is_dept_head', false);
       await SharedUtils.setString('user_department', '');
       await SharedUtils.setString('user_designation', '');
+      await SharedUtils.setString('user_id', '');
+      await SharedUtils.setString('user_name', '');
 
       // Reset internal state
       _isLoggedIn = false;
@@ -576,6 +601,8 @@ class AuthProvider extends ChangeNotifier {
       _isDeptHead = false;
       _department = '';
       _designation = '';
+      _userId = '';
+      _userName = '';
       reset();
 
       _logger.i('🟢 [AUTH] Logout successful - all tokens and data cleared');

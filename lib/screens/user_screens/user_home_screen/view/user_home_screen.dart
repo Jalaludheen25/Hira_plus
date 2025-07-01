@@ -662,12 +662,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         DateFormat('h:mm a').format(meeting.startDatetime);
     final formattedEndTime = DateFormat('h:mm a').format(meeting.endDatetime);
     final statusDetails = _getStatusDetails(meeting);
-    final isDeptHead =
-        Provider.of<AuthProvider>(context, listen: false).isDeptHead;
-    final canShowEdit = isDeptHead && meeting.isPending;
-    final canShowDelete = canShowEdit;
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final isDeptHead = authProvider.isDeptHead;
     final meetingProvider =
         Provider.of<MeetingListProvider>(context, listen: false);
+
+    // Updated authorization: user can edit/delete only their own meetings (and only if pending)
+    final isCreator = meetingProvider.canModifyMeeting(context, meeting);
+    final canShowEdit = isDeptHead && meeting.isPending && isCreator;
+    final canShowDelete = canShowEdit;
 
     return Container(
       decoration: BoxDecoration(
