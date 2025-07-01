@@ -11,7 +11,6 @@ import 'package:hira_plus/screens/manager_screen/provider/manager_bulk_food_prov
 import 'dart:developer' as developer;
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/manager_screen/models/manager_guest_meal_model.dart';
-import 'package:hira_plus/utils/service_utils.dart';
 import 'package:hira_plus/screens/manager_screen/provider/department_provider.dart';
 
 class ManagerBulkFoodMarkScreen extends StatefulWidget {

@@ -1,3 +1,5 @@
+// ignore_for_file: library_prefixes
+
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +15,6 @@ import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provide
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
-import 'dart:ui';
 import 'dart:async';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meeting_screen.dart';
@@ -62,8 +63,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         Provider.of<CanteenHomeProvider>(context, listen: false);
     _viewModeListener = () {
       if (_viewModeProvider!.mode == HomeViewMode.list) {
-        final canteenProvider =
-            Provider.of<CanteenHomeProvider>(context, listen: false);
+        Provider.of<CanteenHomeProvider>(context, listen: false);
         // WidgetsBinding.instance.addPostFrameCallback((_) {
         //   _scrollToToday(canteenProvider);
         // });
@@ -84,8 +84,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final canteenProvider =
-          Provider.of<CanteenHomeProvider>(context, listen: false);
+      Provider.of<CanteenHomeProvider>(context, listen: false);
       // _scrollToToday(canteenProvider); // REMOVE THIS
       // Set user info for profile card
       final profileProvider =
@@ -141,6 +140,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
 
+  // ignore: unused_element
   void _scrollToToday(CanteenHomeProvider canteenProvider) {
     final todayIndex = canteenProvider.getTodayIndex();
     if (todayIndex != -1) {

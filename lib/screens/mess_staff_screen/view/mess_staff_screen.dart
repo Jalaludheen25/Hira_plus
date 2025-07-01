@@ -290,136 +290,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
-  // Method to generate PDF for meeting food requirements
-  Future<void> _generateMeetingFoodPdf(BuildContext context,
-      {bool shareInsteadOfOpen = false}) async {
-    final meetingFoodProvider = context.read<MeetingFoodProvider>();
-    final selectedDate = _meetingFoodDateNotifier.value;
-    final todayMeetingTotals =
-        meetingFoodProvider.getTotalCountsForDate(selectedDate);
-    // Filter meetings to only those with food requirements
-    final List<Meeting> meetings = meetingFoodProvider
-        .getMeetingsForDate(selectedDate)
-        .where((meeting) => meeting.foodCounts.activeFoodItems.isNotEmpty)
-        .toList();
 
-    if (todayMeetingTotals == null || meetings.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('No meeting food data available to export')),
-      );
-      return;
-    }
-
-    try {
-      final pdf = pw.Document();
-
-      pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // Header
-              pw.Text(
-                'Meeting Food Requirements',
-                style:
-                    pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(height: 8),
-              pw.Text(
-                'Date: ${DateFormat('dd MMM yyyy').format(selectedDate)}',
-                style: pw.TextStyle(fontSize: 16),
-              ),
-              pw.SizedBox(height: 16),
-              // Food items summary
-              pw.Text(
-                'Food Requirements:',
-                style:
-                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(height: 8),
-              ...todayMeetingTotals.activeFoodItems.map(
-                (item) => pw.Padding(
-                  padding: const pw.EdgeInsets.only(bottom: 4),
-                  child: pw.Row(
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Text('${item.name}:',
-                          style: pw.TextStyle(fontSize: 14)),
-                      pw.Text('${item.count}',
-                          style: pw.TextStyle(
-                              fontSize: 14, fontWeight: pw.FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 20),
-              // Meetings details
-              pw.Text(
-                'Meeting Details (${meetings.length} meetings):',
-                style:
-                    pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(height: 12),
-              ...meetings.map(
-                (meeting) => pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('Department: ${meeting.department}',
-                        style: pw.TextStyle(fontSize: 12)),
-                    pw.Text('Created by: ${meeting.createdBy}',
-                        style: pw.TextStyle(fontSize: 12)),
-                    if (meeting.foodCounts.activeFoodItems.isNotEmpty) ...[
-                      pw.SizedBox(height: 4),
-                      pw.Text('Food Requirements:',
-                          style: pw.TextStyle(
-                              fontSize: 12, fontWeight: pw.FontWeight.bold)),
-                      ...meeting.foodCounts.activeFoodItems.map(
-                        (food) => pw.Text('  • ${food.name}: ${food.count}',
-                            style: pw.TextStyle(fontSize: 11)),
-                      ),
-                    ],
-                    pw.SizedBox(height: 12),
-                    pw.Divider(),
-                    pw.SizedBox(height: 8),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-
-      final output = await getTemporaryDirectory();
-      final file = File(
-          '${output.path}/meeting-food-requirements-${DateFormat('yyyy-MM-dd').format(selectedDate)}.pdf');
-      await file.writeAsBytes(await pdf.save());
-
-      if (shareInsteadOfOpen) {
-        await Share.shareXFiles([XFile(file.path)],
-            text:
-                'Meeting Food Requirements - ${DateFormat('dd MMM yyyy').format(selectedDate)}');
-      } else {
-        await OpenFile.open(file.path);
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(shareInsteadOfOpen
-              ? 'PDF shared successfully'
-              : 'PDF generated and opened'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to generate PDF: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
 
   // Define the pages for the bottom navigation - back to 2 tabs
   List<Widget> _pages(BuildContext context) => [
@@ -1166,7 +1037,6 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                 children: meetings.map((meeting) {
                   final foodItems = meeting.foodCounts.activeFoodItems;
                   final isExpanded = _expandedMeetings.contains(meeting.id);
-                  final totalFoodCount = meeting.foodCounts.totalCount;
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -1501,7 +1371,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       int grandTotal = regularMealCount + bulkMealCount + meetingFoodCount;
 
       // Helper function to create header
-      pw.Widget _buildHeader() {
+      pw.Widget buildHeader() {
         return pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
@@ -1591,16 +1461,6 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       }
 
       // Helper function to create page footer
-      pw.Widget _buildPageFooter(int pageNumber) {
-        return pw.Container(
-          alignment: pw.Alignment.center,
-          margin: const pw.EdgeInsets.only(top: 20),
-          child: pw.Text(
-            'Page $pageNumber',
-            style: pw.TextStyle(fontSize: 10, color: PdfColors.grey600),
-          ),
-        );
-      }
 
       // Create content widgets list
       List<pw.Widget> contentWidgets = [];
@@ -1658,7 +1518,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       if (bulkMealCount > 0) {
         contentWidgets.add(
           pw.Text(
-            'Bulk Food Meals (${bulkMealCount})',
+            'Bulk Food Meals ($bulkMealCount)',
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
           ),
         );
@@ -1711,7 +1571,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       if (todayMeetingTotals != null && todayMeetingTotals.totalCount > 0) {
         contentWidgets.add(
           pw.Text(
-            'Meeting Food Requirements (${meetingFoodCount})',
+            'Meeting Food Requirements ($meetingFoodCount)',
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold),
           ),
         );
@@ -1827,14 +1687,13 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       }
 
       // Build pages with automatic page breaks
-      int pageNumber = 1;
       pdf.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(20),
           header: (pw.Context context) {
             return context.pageNumber == 1
-                ? _buildHeader()
+                ? buildHeader()
                 : pw.Container(
                     margin: const pw.EdgeInsets.only(bottom: 20),
                     child: pw.Text(

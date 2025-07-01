@@ -7,7 +7,6 @@ import 'dart:convert';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
-import 'package:hira_plus/constants/color_class.dart';
 
 class UserMeetingProvider extends ChangeNotifier {
   final Logger _logger = Logger();
@@ -127,19 +126,15 @@ class UserMeetingProvider extends ChangeNotifier {
           newMeeting = MeetingModel.fromJson(responseData);
         }
 
-        if (newMeeting != null) {
-          _logger.i('✅ [API] Successfully created meeting: ${newMeeting.id}');
-          developer.log('✅ Successfully created meeting: ${newMeeting.id}',
-              name: 'UserMeetingProvider');
+        _logger.i('✅ [API] Successfully created meeting: ${newMeeting.id}');
+        developer.log('✅ Successfully created meeting: ${newMeeting.id}',
+            name: 'UserMeetingProvider');
 
-          _isLoading = false;
-          notifyListeners();
+        _isLoading = false;
+        notifyListeners();
 
-          return newMeeting;
-        } else {
-          throw Exception('Failed to parse created meeting data');
-        }
-      } else {
+        return newMeeting;
+            } else {
         throw Exception('Empty response from server');
       }
     } catch (e) {

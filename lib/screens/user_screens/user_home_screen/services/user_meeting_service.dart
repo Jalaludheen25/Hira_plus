@@ -227,22 +227,6 @@ class MeetingService {
     }
   }
 
-  /// Helper method to verify auth token validity
-  Future<bool> _verifyAuthToken() async {
-    try {
-      final token = await SharedUtils.getString('auth_token');
-      if (token.isEmpty) {
-        return false;
-      }
-      
-      // You could add a simple API call here to verify the token
-      // For now, just check if it exists and looks valid
-      return token.length > 10; // Basic check
-    } catch (e) {
-      log('❌ Error verifying auth token: $e');
-      return false;
-    }
-  }
 
   /// Fetches meetings for a specific date range
   /// Returns a list of MeetingModel filtered by date

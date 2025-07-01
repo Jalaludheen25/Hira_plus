@@ -451,9 +451,5 @@ class MeetingListProvider extends ChangeNotifier {
     _lastFetchTime = DateTime(2000);
     notifyListeners();
   }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
+  
 }
