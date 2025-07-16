@@ -228,4 +228,31 @@ class ApiUrls {
   static String departmentsApi() {
     return '$baseUrl/admin/departments';
   }
+
+  // ################## MESS STAFF MENU (TODAY) ##################
+  static String getMessStaffMenuToday() {
+    return '$baseUrl/mess-staff/menu/today';
+  }
+  static String postMessStaffMenuToday() {
+    return '$baseUrl/mess-staff/menu/today';
+  }
+  static String putMessStaffMenuToday() {
+    return '$baseUrl/mess-staff/menu/today';
+  }
+  static String deleteMessStaffMenuToday() {
+    return '$baseUrl/mess-staff/menu/today';
+  }
+  // ################## MESS STAFF MENU (DATE-BASED, NEW) ##################
+  static String getAllMessStaffMenus() {
+    return '$baseUrl/mess-staff/menu/date';
+  }
+  static String postMessStaffMenuByDate() {
+    return '$baseUrl/mess-staff/menu/date';
+  }
+  static String putMessStaffMenuByDate() {
+    return '$baseUrl/mess-staff/menu/date';
+  }
+  static String deleteMessStaffMenuByDate() {
+    return '$baseUrl/mess-staff/menu/date';
+  }
 }

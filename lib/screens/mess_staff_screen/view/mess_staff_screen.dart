@@ -31,6 +31,9 @@ import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/mess_staff_screen/models/meeting_food_model.dart';
 import 'package:hira_plus/constants/global_variables.dart';
+import 'package:hira_plus/screens/mess_staff_screen/provider/menu_provider.dart';
+import 'package:hira_plus/screens/mess_staff_screen/models/menu_model.dart';
+import 'food_menu_list_screen.dart';
 
 class MessStaffScreen extends StatefulWidget {
   const MessStaffScreen({super.key});
@@ -291,10 +294,12 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
-  // Define the pages for the bottom navigation - back to 2 tabs
+  // Define the pages for the bottom navigation - now 3 tabs
   List<Widget> _pages(BuildContext context) => [
         // Home tab (Meal Summary + Meeting Food if available)
         _buildHomeTab(context),
+        // Add Food Menu tab (now single-day menu management)
+        const FoodMenuListScreen(),
         // Settings tab
         _buildSettingsTab(context),
       ];
@@ -411,10 +416,10 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
 
   // Method to refresh all data
   Future<void> _refreshData() async {
-    try {
-      _logger.i('🔄 [REFRESH] User initiated data refresh');
-      developer.log('🔄 User initiated data refresh', name: 'MessStaffScreen');
+    _logger.i('🔄 [REFRESH] User initiated data refresh');
+    developer.log('🔄 User initiated data refresh', name: 'MessStaffScreen');
 
+    try {
       // Fetch meal data
       final mealProvider =
           Provider.of<MessStaffMealProvider>(context, listen: false);
@@ -632,10 +637,12 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   Widget _buildHomeTab(BuildContext context) {
+    _logger.i('[UI] Building Home Tab');
     return Consumer3<MessStaffMealProvider, MessBulkMealProvider,
         MeetingFoodProvider>(
       builder: (context, mealProvider, messBulkMealProvider,
           meetingFoodProvider, _) {
+        _logger.i('[Provider] Home Tab Consumer build, isLoading:  [33m${mealProvider.isLoading} [0m, isLoading:  [33m${messBulkMealProvider.isLoading} [0m, isLoading:  [33m${meetingFoodProvider.isLoading} [0m');
         final mealCounts = mealProvider.getTodayMealCounts();
         final List<Map<String, dynamic>> mealSummary = [
           {
@@ -762,6 +769,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   // --- Refactored Guest Food Booking Section ---
   Widget _buildGuestFoodBookingSection(
       BuildContext context, MessBulkMealProvider messBulkMealProvider) {
+    _logger.i('[UI] Building Guest Food Booking Section');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
@@ -965,6 +973,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   // --- Refactored Food For Meeting Section ---
   Widget _buildFoodForMeetingSection(
       BuildContext context, MeetingFoodProvider meetingFoodProvider) {
+    _logger.i('[UI] Building Food For Meeting Section');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
@@ -1150,6 +1159,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   Widget _buildSettingsTab(BuildContext context) {
+    _logger.i('[UI] Building Settings Tab');
     final profileProvider = Provider.of<ProfileScreenProvider>(context);
 
     return SafeArea(
@@ -1857,7 +1867,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         name: 'MessStaffScreen');
 
     final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = ['Home', 'Settings']; // Back to 2 tabs
+    final tabTitles = ['Home', 'Add Food Menu', 'Settings']; // Now 3 tabs
 
     return WillPopScope(
       onWillPop: () async {
@@ -1865,19 +1875,21 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: ColorClass.brandDarkGreen,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            tabTitles[navProvider.selectedIndex],
-            style: TextStyleClass.poppinsSemiBold(
-              fontSize: 20,
-              color: ColorClass.white,
-            ),
-          ),
-          centerTitle: false,
-          elevation: 0,
-        ),
+        appBar: navProvider.selectedIndex == 1
+            ? null
+            : AppBar(
+                backgroundColor: ColorClass.brandDarkGreen,
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  tabTitles[navProvider.selectedIndex],
+                  style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 20,
+                    color: ColorClass.white,
+                  ),
+                ),
+                centerTitle: false,
+                elevation: 0,
+              ),
         body: Stack(
           children: [
             GestureDetector(
@@ -1885,7 +1897,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               onTap: _togglePrintShareBar,
               child: _pages(context)[navProvider.selectedIndex],
             ),
-            _buildAnimatedPrintShareBar(context),
+            if (navProvider.selectedIndex == 0) _buildAnimatedPrintShareBar(context),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -1899,17 +1911,17 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
           onTap: navProvider.setIndex,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.home,
-                  size: 22, color: ColorClass.neutral400),
-              activeIcon: Icon(
-                LucideIcons.home,
-                size: 28,
-              ),
+              icon: Icon(LucideIcons.home, size: 22, color: ColorClass.neutral400),
+              activeIcon: Icon(LucideIcons.home, size: 28),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.settings,
-                  size: 22, color: ColorClass.neutral400),
+              icon: Icon(LucideIcons.plusCircle, size: 22, color: ColorClass.neutral400),
+              activeIcon: Icon(LucideIcons.plusCircle, size: 28),
+              label: 'Add Food Menu',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.settings, size: 22, color: ColorClass.neutral400),
               activeIcon: Icon(LucideIcons.settings, size: 28),
               label: 'Settings',
             ),
