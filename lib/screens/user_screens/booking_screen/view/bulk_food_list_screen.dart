@@ -239,29 +239,19 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        formattedDate,
+                        formattedDate,overflow: TextOverflow.ellipsis,
                         style: TextStyleClass.poppinsSemiBold(
                           fontSize: 16,
                           color: ColorClass.brandDarkGreen,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            LucideIcons.building,
-                            size: 14,
-                            color: ColorClass.neutral400,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            guestMeal.department,
-                            style: TextStyleClass.poppinsRegular(
-                              fontSize: 14,
-                              color: ColorClass.neutral500,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        guestMeal.department,overflow: TextOverflow.ellipsis,maxLines: 1,
+                        style: TextStyleClass.poppinsRegular(
+                          fontSize: 14,
+                          color: ColorClass.neutral500,
+                        ),
                       ),
                     ],
                   ),
