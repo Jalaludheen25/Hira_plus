@@ -216,6 +216,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       };
     }
   }
+  // ################## Build Section ##################
 
   @override
   Widget build(BuildContext context) {
@@ -422,6 +423,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ],
     );
   }
+
+  // ################## MARK MEAL WIDGET ##################
 
   Widget _buildMarkMealWidget(
       BuildContext context, CanteenHomeProvider canteenProvider) {
@@ -1380,6 +1383,178 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
     });
   }
 
+  // Meal Menu Bottom Sheet
+  void _showMealMenuBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            // Sample menu data
+            final List<Map<String, dynamic>> menuList =
+                List.generate(7, (index) {
+              final date = DateTime.now().add(Duration(days: index));
+              final dayName = [
+                'Sunday',
+                'Monday',
+                'Tuesday',
+                'Wednesday',
+                'Thursday',
+                'Friday',
+                'Saturday'
+              ][date.weekday % 7];
+              return {
+                'date': date,
+                'day': dayName,
+                'breakfast': 'Chappathi, Chicken Curry',
+                'lunch': 'Rice, Mutton Curry, Chicken Fry',
+                'dinner': 'Chappathi, Chicken Curry',
+              };
+            });
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Food Menu',
+                          style: TextStyleClass.poppinsSemiBold(
+                            fontSize: 18,
+                            color: ColorClass.brandDarkGreen,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.close, size: 28),
+                          onPressed: () => Navigator.pop(context),
+                          color: ColorClass.brandDarkGreen,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: menuList.length,
+                      itemBuilder: (context, index) {
+                        final menu = menuList[index];
+                        final date = menu['date'] as DateTime;
+                        return Container(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: ColorClass.brandLightGreen.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                                color: ColorClass.brandLightGreen, width: 1),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
+                                    style: TextStyleClass.poppinsSemiBold(
+                                        fontSize: 15,
+                                        color: ColorClass.brandDarkGreen),
+                                  ),
+                                  Text(
+                                    menu['day'],
+                                    style: TextStyleClass.poppinsRegular(
+                                        fontSize: 14,
+                                        color: ColorClass.neutral500),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Breakfast:',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorClass.brandDarkGreen,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' ${menu['breakfast']}',
+                                    style: TextStyleClass.poppinsRegular(
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Lunch:',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorClass.brandDarkGreen,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' ${menu['lunch']}',
+                                    style: TextStyleClass.poppinsRegular(
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Text(
+                                    'Dinner:',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: ColorClass.brandDarkGreen,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    ' ${menu['dinner']}',
+                                    style: TextStyleClass.poppinsRegular(
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _localScrollController.dispose();
@@ -1420,6 +1595,37 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
                   ),
                 ],
               ),
+
+              //Meal Menu Button
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: ColorClass.brandLightGreen,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.all(10),
+                child: GestureDetector(
+                  onTap: () => _showMealMenuBottomSheet(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.restaurant_menu,
+                          size: 24, color: ColorClass.brandDarkGreen),
+                      SizedBox(width: 10),
+                      Text(
+                        'Meal Menu',
+                        style: TextStyleClass.poppinsMedium(
+                          fontSize: 15,
+                          color: ColorClass.brandDarkGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // Toggle between list and calendar view
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
