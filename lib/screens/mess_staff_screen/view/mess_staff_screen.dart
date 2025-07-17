@@ -31,6 +31,7 @@ import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/mess_staff_screen/models/meeting_food_model.dart';
 import 'package:hira_plus/constants/global_variables.dart';
+import 'food_menu_list_screen.dart';
 
 class MessStaffScreen extends StatefulWidget {
   const MessStaffScreen({super.key});
@@ -291,10 +292,12 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
-  // Define the pages for the bottom navigation - back to 2 tabs
+  // Define the pages for the bottom navigation - now 3 tabs
   List<Widget> _pages(BuildContext context) => [
         // Home tab (Meal Summary + Meeting Food if available)
         _buildHomeTab(context),
+        // Add Food Menu tab (now single-day menu management)
+        const FoodMenuListScreen(),
         // Settings tab
         _buildSettingsTab(context),
       ];
@@ -411,10 +414,10 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
 
   // Method to refresh all data
   Future<void> _refreshData() async {
-    try {
-      _logger.i('🔄 [REFRESH] User initiated data refresh');
-      developer.log('🔄 User initiated data refresh', name: 'MessStaffScreen');
+    _logger.i('🔄 [REFRESH] User initiated data refresh');
+    developer.log('🔄 User initiated data refresh', name: 'MessStaffScreen');
 
+    try {
       // Fetch meal data
       final mealProvider =
           Provider.of<MessStaffMealProvider>(context, listen: false);
@@ -632,10 +635,12 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   Widget _buildHomeTab(BuildContext context) {
+    _logger.i('[UI] Building Home Tab');
     return Consumer3<MessStaffMealProvider, MessBulkMealProvider,
         MeetingFoodProvider>(
       builder: (context, mealProvider, messBulkMealProvider,
           meetingFoodProvider, _) {
+        _logger.i('[Provider] Home Tab Consumer build, isLoading:  [33m${mealProvider.isLoading} [0m, isLoading:  [33m${messBulkMealProvider.isLoading} [0m, isLoading:  [33m${meetingFoodProvider.isLoading} [0m');
         final mealCounts = mealProvider.getTodayMealCounts();
         final List<Map<String, dynamic>> mealSummary = [
           {
@@ -762,6 +767,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   // --- Refactored Guest Food Booking Section ---
   Widget _buildGuestFoodBookingSection(
       BuildContext context, MessBulkMealProvider messBulkMealProvider) {
+    _logger.i('[UI] Building Guest Food Booking Section');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
@@ -867,11 +873,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(guestMeal.departmentNames,
-                                          style: TextStyleClass.poppinsSemiBold(
-                                              fontSize: 15,
-                                              color:
-                                                  ColorClass.brandDarkGreen)),
+                                      _buildDepartmentNamesWidget(guestMeal.departmentNames),
                                       const SizedBox(height: 4),
                                       Text(
                                         'Total: $totalMealCount meals',
@@ -894,7 +896,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                           ),
                         ),
 
-                        // Expandable content - Meal breakdown
+                        // Expandable content - Department-wise breakdown
                         if (isExpanded) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -907,17 +909,94 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                 bottomRight: Radius.circular(14),
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            child: Column(
                               children: [
-                                _buildGuestMealCountCard(
-                                    'BREAKFAST',
-                                    LucideIcons.sunMedium,
-                                    guestMeal.breakfastCount),
-                                _buildGuestMealCountCard('LUNCH',
-                                    LucideIcons.sun, guestMeal.lunchCount),
-                                _buildGuestMealCountCard('DINNER',
-                                    LucideIcons.moon, guestMeal.dinnerCount),
+                                // Total counts row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildGuestMealCountCard(
+                                        'BREAKFAST',
+                                        LucideIcons.sunMedium,
+                                        guestMeal.breakfastCount),
+                                    _buildGuestMealCountCard('LUNCH',
+                                        LucideIcons.sun, guestMeal.lunchCount),
+                                    _buildGuestMealCountCard('DINNER',
+                                        LucideIcons.moon, guestMeal.dinnerCount),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                // Department breakdown
+                                ...guestMeal.departments.entries.map((entry) {
+                                  final departmentName = entry.key;
+                                  final departmentMeal = entry.value;
+                                  final departmentTotal = departmentMeal.totalMeals;
+                                  
+                                  if (departmentTotal == 0) return const SizedBox.shrink();
+                                  
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: ColorClass.neutral200,
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          departmentName,
+                                          style: TextStyleClass.poppinsSemiBold(
+                                            fontSize: 13,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          children: [
+                                            _buildDepartmentMealCountCard(
+                                              'B',
+                                              LucideIcons.sunMedium,
+                                              departmentMeal.breakfast,
+                                            ),
+                                            _buildDepartmentMealCountCard(
+                                              'L',
+                                              LucideIcons.sun,
+                                              departmentMeal.lunch,
+                                            ),
+                                            _buildDepartmentMealCountCard(
+                                              'D',
+                                              LucideIcons.moon,
+                                              departmentMeal.dinner,
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: ColorClass.brandDarkGreen,
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                'Total: $departmentTotal',
+                                                style: TextStyleClass.poppinsBold(
+                                                  fontSize: 11,
+                                                  color: ColorClass.brandWhite,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
                               ],
                             ),
                           ),
@@ -962,9 +1041,99 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
     );
   }
 
+  Widget _buildDepartmentMealCountCard(String label, IconData icon, int count) {
+    return Column(
+      children: [
+        Icon(icon,
+            size: 16,
+            color: count > 0
+                ? ColorClass.brandDarkGreen
+                : ColorClass.neutral300),
+        const SizedBox(height: 2),
+        Text(label,
+            style: TextStyleClass.poppinsRegular(
+                fontSize: 9,
+                color: count > 0
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400)),
+        const SizedBox(height: 1),
+        Text(count.toString(),
+            style: TextStyleClass.poppinsBold(
+                fontSize: 12,
+                color: count > 0
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400)),
+      ],
+    );
+  }
+
+  Widget _buildDepartmentNamesWidget(String departmentNames) {
+    final departments = departmentNames.split(', ');
+    
+    if (departments.length <= 2) {
+      // For 1-2 departments, show in a single line
+      return Text(
+        departmentNames,
+        style: TextStyleClass.poppinsSemiBold(
+          fontSize: 15,
+          color: ColorClass.brandDarkGreen,
+        ),
+      );
+    } else if (departments.length <= 4) {
+      // For 3-4 departments, show in two lines
+      final firstLine = departments.take(2).join(', ');
+      final secondLine = departments.skip(2).join(', ');
+      
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            firstLine,
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 15,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+          Text(
+            secondLine,
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 15,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+        ],
+      );
+    } else {
+      // For 5+ departments, show first 3 + "and X more"
+      final firstThree = departments.take(3).join(', ');
+      final remainingCount = departments.length - 3;
+      
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            firstThree,
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 15,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+          Text(
+            'and $remainingCount more',
+            style: TextStyleClass.poppinsMedium(
+              fontSize: 13,
+              color: ColorClass.neutral600,
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   // --- Refactored Food For Meeting Section ---
   Widget _buildFoodForMeetingSection(
       BuildContext context, MeetingFoodProvider meetingFoodProvider) {
+    _logger.i('[UI] Building Food For Meeting Section');
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
       child: Column(
@@ -1150,6 +1319,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
   }
 
   Widget _buildSettingsTab(BuildContext context) {
+    _logger.i('[UI] Building Settings Tab');
     final profileProvider = Provider.of<ProfileScreenProvider>(context);
 
     return SafeArea(
@@ -1857,7 +2027,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         name: 'MessStaffScreen');
 
     final navProvider = Provider.of<BottomNavProvider>(context);
-    final tabTitles = ['Home', 'Settings']; // Back to 2 tabs
+    final tabTitles = ['Home', 'Add Food Menu', 'Settings']; // Now 3 tabs
 
     return WillPopScope(
       onWillPop: () async {
@@ -1865,19 +2035,21 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
       },
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: ColorClass.brandDarkGreen,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            tabTitles[navProvider.selectedIndex],
-            style: TextStyleClass.poppinsSemiBold(
-              fontSize: 20,
-              color: ColorClass.white,
-            ),
-          ),
-          centerTitle: false,
-          elevation: 0,
-        ),
+        appBar: navProvider.selectedIndex == 1
+            ? null
+            : AppBar(
+                backgroundColor: ColorClass.brandDarkGreen,
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: Text(
+                  tabTitles[navProvider.selectedIndex],
+                  style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 20,
+                    color: ColorClass.white,
+                  ),
+                ),
+                centerTitle: false,
+                elevation: 0,
+              ),
         body: Stack(
           children: [
             GestureDetector(
@@ -1885,7 +2057,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
               onTap: _togglePrintShareBar,
               child: _pages(context)[navProvider.selectedIndex],
             ),
-            _buildAnimatedPrintShareBar(context),
+            if (navProvider.selectedIndex == 0) _buildAnimatedPrintShareBar(context),
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -1899,17 +2071,17 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
           onTap: navProvider.setIndex,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.home,
-                  size: 22, color: ColorClass.neutral400),
-              activeIcon: Icon(
-                LucideIcons.home,
-                size: 28,
-              ),
+              icon: Icon(LucideIcons.home, size: 22, color: ColorClass.neutral400),
+              activeIcon: Icon(LucideIcons.home, size: 28),
               label: 'Home',
             ),
             BottomNavigationBarItem(
-              icon: Icon(LucideIcons.settings,
-                  size: 22, color: ColorClass.neutral400),
+              icon: Icon(LucideIcons.plusCircle, size: 22, color: ColorClass.neutral400),
+              activeIcon: Icon(LucideIcons.plusCircle, size: 28),
+              label: 'Add Food Menu',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(LucideIcons.settings, size: 22, color: ColorClass.neutral400),
               activeIcon: Icon(LucideIcons.settings, size: 28),
               label: 'Settings',
             ),

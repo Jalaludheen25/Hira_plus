@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
-import 'package:hira_plus/screens/user_screens/booking_screen/view/bulk_food_marking_screen.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/bulk_food_booking_screen.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/provider/bulk_food_provider.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/model/guest_meal_model.dart';
 import 'package:provider/provider.dart';
@@ -239,29 +239,19 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        formattedDate,
+                        formattedDate,overflow: TextOverflow.ellipsis,
                         style: TextStyleClass.poppinsSemiBold(
                           fontSize: 16,
                           color: ColorClass.brandDarkGreen,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            LucideIcons.building,
-                            size: 14,
-                            color: ColorClass.neutral400,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            guestMeal.department,
-                            style: TextStyleClass.poppinsRegular(
-                              fontSize: 14,
-                              color: ColorClass.neutral500,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        guestMeal.department,overflow: TextOverflow.ellipsis,maxLines: 1,
+                        style: TextStyleClass.poppinsRegular(
+                          fontSize: 14,
+                          color: ColorClass.neutral500,
+                        ),
                       ),
                     ],
                   ),
