@@ -31,8 +31,6 @@ import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:logger/logger.dart';
 import 'package:hira_plus/screens/mess_staff_screen/models/meeting_food_model.dart';
 import 'package:hira_plus/constants/global_variables.dart';
-import 'package:hira_plus/screens/mess_staff_screen/provider/menu_provider.dart';
-import 'package:hira_plus/screens/mess_staff_screen/models/menu_model.dart';
 import 'food_menu_list_screen.dart';
 
 class MessStaffScreen extends StatefulWidget {
@@ -875,11 +873,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(guestMeal.departmentNames,
-                                          style: TextStyleClass.poppinsSemiBold(
-                                              fontSize: 15,
-                                              color:
-                                                  ColorClass.brandDarkGreen)),
+                                      _buildDepartmentNamesWidget(guestMeal.departmentNames),
                                       const SizedBox(height: 4),
                                       Text(
                                         'Total: $totalMealCount meals',
@@ -902,7 +896,7 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                           ),
                         ),
 
-                        // Expandable content - Meal breakdown
+                        // Expandable content - Department-wise breakdown
                         if (isExpanded) ...[
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -915,17 +909,94 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                 bottomRight: Radius.circular(14),
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            child: Column(
                               children: [
-                                _buildGuestMealCountCard(
-                                    'BREAKFAST',
-                                    LucideIcons.sunMedium,
-                                    guestMeal.breakfastCount),
-                                _buildGuestMealCountCard('LUNCH',
-                                    LucideIcons.sun, guestMeal.lunchCount),
-                                _buildGuestMealCountCard('DINNER',
-                                    LucideIcons.moon, guestMeal.dinnerCount),
+                                // Total counts row
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    _buildGuestMealCountCard(
+                                        'BREAKFAST',
+                                        LucideIcons.sunMedium,
+                                        guestMeal.breakfastCount),
+                                    _buildGuestMealCountCard('LUNCH',
+                                        LucideIcons.sun, guestMeal.lunchCount),
+                                    _buildGuestMealCountCard('DINNER',
+                                        LucideIcons.moon, guestMeal.dinnerCount),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                // Department breakdown
+                                ...guestMeal.departments.entries.map((entry) {
+                                  final departmentName = entry.key;
+                                  final departmentMeal = entry.value;
+                                  final departmentTotal = departmentMeal.totalMeals;
+                                  
+                                  if (departmentTotal == 0) return const SizedBox.shrink();
+                                  
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: ColorClass.neutral200,
+                                        width: 0.5,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          departmentName,
+                                          style: TextStyleClass.poppinsSemiBold(
+                                            fontSize: 13,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                          children: [
+                                            _buildDepartmentMealCountCard(
+                                              'B',
+                                              LucideIcons.sunMedium,
+                                              departmentMeal.breakfast,
+                                            ),
+                                            _buildDepartmentMealCountCard(
+                                              'L',
+                                              LucideIcons.sun,
+                                              departmentMeal.lunch,
+                                            ),
+                                            _buildDepartmentMealCountCard(
+                                              'D',
+                                              LucideIcons.moon,
+                                              departmentMeal.dinner,
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: ColorClass.brandDarkGreen,
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Text(
+                                                'Total: $departmentTotal',
+                                                style: TextStyleClass.poppinsBold(
+                                                  fontSize: 11,
+                                                  color: ColorClass.brandWhite,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
                               ],
                             ),
                           ),
@@ -968,6 +1039,95 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildDepartmentMealCountCard(String label, IconData icon, int count) {
+    return Column(
+      children: [
+        Icon(icon,
+            size: 16,
+            color: count > 0
+                ? ColorClass.brandDarkGreen
+                : ColorClass.neutral300),
+        const SizedBox(height: 2),
+        Text(label,
+            style: TextStyleClass.poppinsRegular(
+                fontSize: 9,
+                color: count > 0
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400)),
+        const SizedBox(height: 1),
+        Text(count.toString(),
+            style: TextStyleClass.poppinsBold(
+                fontSize: 12,
+                color: count > 0
+                    ? ColorClass.brandDarkGreen
+                    : ColorClass.neutral400)),
+      ],
+    );
+  }
+
+  Widget _buildDepartmentNamesWidget(String departmentNames) {
+    final departments = departmentNames.split(', ');
+    
+    if (departments.length <= 2) {
+      // For 1-2 departments, show in a single line
+      return Text(
+        departmentNames,
+        style: TextStyleClass.poppinsSemiBold(
+          fontSize: 15,
+          color: ColorClass.brandDarkGreen,
+        ),
+      );
+    } else if (departments.length <= 4) {
+      // For 3-4 departments, show in two lines
+      final firstLine = departments.take(2).join(', ');
+      final secondLine = departments.skip(2).join(', ');
+      
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            firstLine,
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 15,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+          Text(
+            secondLine,
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 15,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+        ],
+      );
+    } else {
+      // For 5+ departments, show first 3 + "and X more"
+      final firstThree = departments.take(3).join(', ');
+      final remainingCount = departments.length - 3;
+      
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            firstThree,
+            style: TextStyleClass.poppinsSemiBold(
+              fontSize: 15,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+          Text(
+            'and $remainingCount more',
+            style: TextStyleClass.poppinsMedium(
+              fontSize: 13,
+              color: ColorClass.neutral600,
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   // --- Refactored Food For Meeting Section ---

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
-import 'package:hira_plus/screens/user_screens/booking_screen/view/bulk_food_marking_screen.dart';
+import 'package:hira_plus/screens/user_screens/booking_screen/view/bulk_food_booking_screen.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/provider/bulk_food_provider.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/model/guest_meal_model.dart';
 import 'package:provider/provider.dart';

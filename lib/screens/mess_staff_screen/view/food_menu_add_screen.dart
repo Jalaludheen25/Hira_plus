@@ -21,7 +21,6 @@ class _FoodMenuAddScreenState extends State<FoodMenuAddScreen> {
   final TextEditingController _lunchController = TextEditingController();
   final TextEditingController _dinnerController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
-  bool _isSubmitting = false;
   bool _isEditing = false;
   String? _editingId;
 
@@ -47,32 +46,6 @@ class _FoodMenuAddScreenState extends State<FoodMenuAddScreen> {
     super.dispose();
   }
 
-  Future<void> _selectDate() async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2022),
-      lastDate: DateTime(2030),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: ColorClass.brandDarkGreen,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: ColorClass.brandDarkGreen,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (pickedDate != null && pickedDate != _selectedDate) {
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    }
-  }
 
   void _submitMenu(BuildContext context, MenuProvider provider) async {
     final breakfast = _breakfastController.text.trim();
