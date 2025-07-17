@@ -13,6 +13,8 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:logger/logger.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
 import 'dart:developer' as developer;
+import 'package:hira_plus/constants/global_variables.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -759,12 +761,40 @@ class _LoginScreenState extends State<LoginScreen> {
                                       .withOpacity(0.8),
                                 ),
                                 const SizedBox(width: 8),
-                                Text(
-                                  'Need help? Contact Hira Manager',
-                                  style: TextStyle(
-                                    color: ColorClass.brandLightGreen
-                                        .withOpacity(0.8),
-                                    fontSize: 12,
+                                GestureDetector(
+                                  onTap: () async {
+                                    final Uri phoneUri = Uri(
+                                      scheme: 'tel',
+                                      path: GlobalVariables.managerPhoneNumber,
+                                    );
+                                    try {
+                                      if (await canLaunchUrl(phoneUri)) {
+                                        await launchUrl(phoneUri);
+                                      } else {
+                                        toastification.show(
+                                          context: context,
+                                          title: const Text('Could not launch phone app'),
+                                          type: ToastificationType.error,
+                                          autoCloseDuration: Duration(seconds: 2),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      toastification.show(
+                                        context: context,
+                                        title: Text('Error: ${e.toString()}'),
+                                        type: ToastificationType.error,
+                                        autoCloseDuration: Duration(seconds: 2),
+                                      );
+                                    }
+                                  },
+                                  child: Text(
+                                    'Need help? Contact Hira Manager',
+                                    style: TextStyle(
+                                      color: ColorClass.brandLightGreen
+                                          .withOpacity(0.8),
+                                      fontSize: 12,
+                                     
+                                    ),
                                   ),
                                 ),
                               ],
