@@ -65,6 +65,10 @@ class ApiUrls {
     return '$baseUrl/meals/mark';
   }
 
+  static String mealsMenu(String date) {
+    return '$baseUrl/mess-staff/menu/date?date=$date';
+  }
+
   // ################## MESS STAFF SCREEN ##################
   static String getMessStaffMeals() {
     return '$baseUrl/mess-staff/meals';
