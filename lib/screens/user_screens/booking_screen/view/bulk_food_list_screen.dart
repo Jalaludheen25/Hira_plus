@@ -252,7 +252,7 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        guestMeal.department,
+                        guestMeal.department.title,
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                         style: TextStyleClass.poppinsRegular(
