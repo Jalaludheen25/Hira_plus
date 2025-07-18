@@ -266,16 +266,34 @@ class _MessStaffScreenState extends State<MessStaffScreen> {
                                       style: TextStyleClass.poppinsMedium(
                                           fontSize: 16),
                                     ),
-                                    if (item['room']?.isNotEmpty == true) ...[
-                                      const SizedBox(height: 1),
-                                      Text(
-                                        item['room']!,
-                                        style: TextStyleClass.poppinsRegular(
-                                          fontSize: 13,
-                                          color: ColorClass.neutral400,
+                                    Row(
+                                      children: [
+                                        if (item['type']?.isNotEmpty == true)
+                                          Text(
+                                            item['type'] ?? '',
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        Text(
+                                          ' | ',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                        if (item['room']?.isNotEmpty ==
+                                            true) ...[
+                                          const SizedBox(height: 1),
+                                          Text(
+                                            item['room']!,
+                                            style:
+                                                TextStyleClass.poppinsRegular(
+                                              fontSize: 13,
+                                              color: ColorClass.neutral400,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
                                   ],
                                 ),
                               );
