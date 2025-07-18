@@ -18,6 +18,7 @@ import 'package:intl/intl.dart';
 import 'dart:async';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:hira_plus/screens/user_screens/booking_screen/view/user_meeting_screen.dart';
+import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meal_menu_provider.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -216,6 +217,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       };
     }
   }
+  // ################## Build Section ##################
 
   @override
   Widget build(BuildContext context) {
@@ -422,6 +424,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ],
     );
   }
+
+  // ################## MARK MEAL WIDGET ##################
 
   Widget _buildMarkMealWidget(
       BuildContext context, CanteenHomeProvider canteenProvider) {
@@ -1380,6 +1384,285 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
     });
   }
 
+  // Meal Menu Bottom Sheet
+  void _showMealMenuBottomSheet(BuildContext context) {
+    // Create a provider instance for this bottom sheet
+    final mealMenuProvider = MealMenuProvider();
+
+    showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) {
+            return ChangeNotifierProvider.value(
+              value: mealMenuProvider,
+              child: Consumer<MealMenuProvider>(
+                builder: (context, provider, child) {
+                  // Fetch data when bottom sheet opens
+                  if (provider.mealMenuData == null && !provider.isLoading) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      provider.fetchMealMenu(context);
+                    });
+                  }
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Food Menu',
+                                style: TextStyleClass.poppinsSemiBold(
+                                  fontSize: 18,
+                                  color: ColorClass.brandDarkGreen,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  if (provider.isLoading)
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: ColorClass.brandDarkGreen,
+                                        ),
+                                      ),
+                                    ),
+                                  IconButton(
+                                    icon: Icon(Icons.refresh, size: 24),
+                                    onPressed: () =>
+                                        provider.fetchMealMenu(context),
+                                    color: ColorClass.brandDarkGreen,
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.close, size: 28),
+                                    onPressed: () => Navigator.pop(context),
+                                    color: ColorClass.brandDarkGreen,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child:
+                              _buildMealMenuContent(provider, scrollController),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildMealMenuContent(
+      MealMenuProvider provider, ScrollController scrollController) {
+    if (provider.isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text("Loading menu data..."),
+          ],
+        ),
+      );
+    }
+
+    if (provider.errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 48,
+              color: Colors.red,
+            ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0),
+              child: Text(
+                provider.errorMessage,
+                textAlign: TextAlign.center,
+                style: TextStyleClass.poppinsMedium(
+                  fontSize: 16,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorClass.brandDarkGreen,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => provider.fetchMealMenu(context),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final menus = provider.mealMenuData?.menus ?? [];
+    if (menus.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.restaurant_menu,
+              size: 48,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No menu data available',
+              style: TextStyleClass.poppinsMedium(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Menu data will appear here when available',
+              style: TextStyleClass.poppinsRegular(
+                fontSize: 14,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: menus.length,
+      itemBuilder: (context, index) {
+        final menu = menus[index];
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: ColorClass.brandLightGreen.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: ColorClass.brandLightGreen, width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${menu.date.day.toString().padLeft(2, '0')}/${menu.date.month.toString().padLeft(2, '0')}/${menu.date.year}',
+                    style: TextStyleClass.poppinsSemiBold(
+                        fontSize: 15, color: ColorClass.brandDarkGreen),
+                  ),
+                  Text(
+                    menu.capitalizedDay,
+                    style: TextStyleClass.poppinsRegular(
+                        fontSize: 14, color: ColorClass.neutral500),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  Text(
+                    'Breakfast:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ColorClass.brandDarkGreen,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      ' ${menu.breakfast}',
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  Text(
+                    'Lunch:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ColorClass.brandDarkGreen,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      ' ${menu.lunch}',
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  Text(
+                    'Dinner:',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ColorClass.brandDarkGreen,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      ' ${menu.dinner}',
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _localScrollController.dispose();
@@ -1420,6 +1703,37 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
                   ),
                 ],
               ),
+
+              //Meal Menu Button
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: ColorClass.brandLightGreen,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.all(10),
+                child: GestureDetector(
+                  onTap: () => _showMealMenuBottomSheet(context),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.restaurant_menu,
+                          size: 24, color: ColorClass.brandDarkGreen),
+                      SizedBox(width: 10),
+                      Text(
+                        'Meal Menu',
+                        style: TextStyleClass.poppinsMedium(
+                          fontSize: 15,
+                          color: ColorClass.brandDarkGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               // Toggle between list and calendar view
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
