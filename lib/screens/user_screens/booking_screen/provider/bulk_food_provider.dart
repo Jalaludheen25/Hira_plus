@@ -246,7 +246,7 @@ class BulkFoodProvider extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final url = ApiUrls.editGuestMeals(id);
+       final url = ApiUrls.deleteGuestMeal(id);
       _logger.d('🌐 [API] URL: $url');
       developer.log('🌐 API URL: $url', name: 'BulkFoodProvider');
 
