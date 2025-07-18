@@ -7,6 +7,8 @@ class GlobalVariables {
 
   static const String oneSignalKey = '42aa1f20-2596-43b5-89d5-397105852524';
 
+  static const String managerPhoneNumber = '+91 9747422308';
+
   // External Links
   static const String aboutUsUrl = 'https://d4dx.co/about-us/';
   static const String privacyPolicyUrl = 'https://d4dx.co/privacy-policy/';

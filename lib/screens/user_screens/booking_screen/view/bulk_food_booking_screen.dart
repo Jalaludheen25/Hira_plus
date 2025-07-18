@@ -28,6 +28,16 @@ class _BulkFoodBookingScreenState extends State<BulkFoodBookingScreen> {
   DateTime _selectedDate = DateTime.now();
   bool _isEditing = false;
 
+  // Restriction: After 6:00 AM today, cannot book bulk food for today
+  bool _isBookingRestricted() {
+    final now = DateTime.now();
+    final isToday = _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+    final restrictionTime = DateTime(now.year, now.month, now.day, 6, 0, 0);
+    return isToday && now.isAfter(restrictionTime);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -191,6 +201,7 @@ class _BulkFoodBookingScreenState extends State<BulkFoodBookingScreen> {
       create: (_) => BulkFoodProvider(),
       child: Consumer<BulkFoodProvider>(
         builder: (context, provider, _) {
+          final bookingRestricted = _isBookingRestricted();
           return Scaffold(
             backgroundColor: ColorClass.brandWhite,
             appBar: AppBar(
@@ -251,8 +262,7 @@ class _BulkFoodBookingScreenState extends State<BulkFoodBookingScreen> {
                       ),
                     ),
                   ),
-
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
 
                   // Meal Counts Section
                   _buildSectionTitle('Meal Counts'),
@@ -319,15 +329,48 @@ class _BulkFoodBookingScreenState extends State<BulkFoodBookingScreen> {
 
                   const SizedBox(height: 32),
 
+                  // Restriction message
+                  if (bookingRestricted)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error, color: Colors.red, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              "Can't book bulk food for today after 6:00 AM.",
+                              style: TextStyleClass.poppinsRegular(
+                                fontSize: 14,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Submit Button
                   SizedBox(
                     width: double.infinity,
-                    child: AppUtils.agreeButton(
-                      onTap: _submitBooking,
-                      title: _isEditing ? 'Update Booking' : 'Submit Booking',
-                      width: double.infinity,
-                      isLoading: provider.isLoading,
-                      isDisabled: provider.isLoading,
+                    child: ElevatedButton(
+                      onPressed: bookingRestricted || provider.isLoading ? null : _submitBooking,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ColorClass.brandDarkGreen,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: provider.isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              _isEditing ? 'Update Booking' : 'Submit Booking',
+                              style: TextStyleClass.poppinsSemiBold(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
                 ],
