@@ -127,12 +127,31 @@ class BulkFoodProvider extends ChangeNotifier {
         _logger.i('✅ [SUCCESS] Guest meals fetched successfully');
         developer.log('✅ Guest meals fetched successfully', name: 'BulkFoodProvider');
         
-        // Handle both array response and object with guestMeals array
+        // Handle the new API response structure with success and guestMeals
         List<dynamic> mealsData;
-        if (response is Map<String, dynamic> && response.containsKey('guestMeals')) {
-          mealsData = response['guestMeals'] as List<dynamic>;
+        if (response is Map<String, dynamic>) {
+          if (response.containsKey('success') && response.containsKey('guestMeals')) {
+            // New API response format
+            mealsData = response['guestMeals'] as List<dynamic>;
+            _logger.d('📋 [API] Using new API response format with success field');
+            developer.log('📋 Using new API response format with success field', name: 'BulkFoodProvider');
+          } else if (response.containsKey('guestMeals')) {
+            // Legacy format with guestMeals array
+            mealsData = response['guestMeals'] as List<dynamic>;
+            _logger.d('📋 [API] Using legacy API response format');
+            developer.log('📋 Using legacy API response format', name: 'BulkFoodProvider');
+          } else if (response is List<dynamic>) {
+            // Direct array response
+            mealsData = response as List<dynamic>;
+            _logger.d('📋 [API] Using direct array response format');
+            developer.log('📋 Using direct array response format', name: 'BulkFoodProvider');
+          } else {
+            throw Exception('Unexpected response format');
+          }
         } else if (response is List<dynamic>) {
           mealsData = response;
+          _logger.d('📋 [API] Using direct array response format');
+          developer.log('📋 Using direct array response format', name: 'BulkFoodProvider');
         } else {
           throw Exception('Unexpected response format');
         }
@@ -246,7 +265,7 @@ class BulkFoodProvider extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      final url = ApiUrls.editGuestMeals(id);
+       final url = ApiUrls.deleteGuestMeal(id);
       _logger.d('🌐 [API] URL: $url');
       developer.log('🌐 API URL: $url', name: 'BulkFoodProvider');
 

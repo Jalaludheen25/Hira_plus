@@ -1,7 +1,7 @@
 class GuestMealModel {
   final String id;
   final DateTime date;
-  final String department;
+  final DepartmentModel department;
   final String addedBy;
   final int breakfastCount;
   final int lunchCount;
@@ -25,7 +25,7 @@ class GuestMealModel {
     return GuestMealModel(
       id: json['_id'] ?? json['id'] ?? '',
       date: DateTime.parse(json['date'] ?? DateTime.now().toIso8601String()),
-      department: json['department'] ?? '',
+      department: DepartmentModel.fromJson(json['department'] ?? {}),
       addedBy: json['addedBy'] ?? '',
       breakfastCount: json['breakfastCount'] ?? 0,
       lunchCount: json['lunchCount'] ?? 0,
@@ -39,7 +39,7 @@ class GuestMealModel {
     return {
       'id': id,
       'date': date.toIso8601String(),
-      'department': department,
+      'department': department.toJson(),
       'addedBy': addedBy,
       'breakfastCount': breakfastCount,
       'lunchCount': lunchCount,
@@ -51,7 +51,7 @@ class GuestMealModel {
 
   @override
   String toString() {
-    return 'GuestMealModel(id: $id, date: $date, department: $department, breakfastCount: $breakfastCount, lunchCount: $lunchCount, dinnerCount: $dinnerCount)';
+    return 'GuestMealModel(id: $id, date: $date, department: ${department.title}, breakfastCount: $breakfastCount, lunchCount: $lunchCount, dinnerCount: $dinnerCount)';
   }
 
   /// Get total meal count for the day
@@ -64,7 +64,7 @@ class GuestMealModel {
   GuestMealModel copyWith({
     String? id,
     DateTime? date,
-    String? department,
+    DepartmentModel? department,
     String? addedBy,
     int? breakfastCount,
     int? lunchCount,
@@ -83,5 +83,34 @@ class GuestMealModel {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
+  }
+}
+
+class DepartmentModel {
+  final String id;
+  final String title;
+
+  DepartmentModel({
+    required this.id,
+    required this.title,
+  });
+
+  factory DepartmentModel.fromJson(Map<String, dynamic> json) {
+    return DepartmentModel(
+      id: json['_id'] ?? json['id'] ?? '',
+      title: json['title'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+    };
+  }
+
+  @override
+  String toString() {
+    return 'DepartmentModel(id: $id, title: $title)';
   }
 }

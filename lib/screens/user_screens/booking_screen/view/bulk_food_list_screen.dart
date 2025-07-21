@@ -26,14 +26,16 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
   void initState() {
     super.initState();
     _logger.i('📋 [BULK_LIST] Initializing Bulk Food List screen');
-    developer.log('📋 Initializing Bulk Food List screen', name: 'BulkFoodList');
-    
+    developer.log('📋 Initializing Bulk Food List screen',
+        name: 'BulkFoodList');
+
     // Initialize provider and fetch data immediately
     _provider = BulkFoodProvider();
-    
+
     _logger.i('🔄 [INIT] Auto-fetching guest meals on screen load');
-    developer.log('🔄 Auto-fetching guest meals on screen load', name: 'BulkFoodList');
-    
+    developer.log('🔄 Auto-fetching guest meals on screen load',
+        name: 'BulkFoodList');
+
     // Fetch data immediately without waiting for post frame callback
     Future.microtask(() => _provider.fetchGuestMeals(context));
   }
@@ -46,8 +48,9 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
 
   void _navigateToBookingScreen() {
     _logger.i('🚀 [NAVIGATION] Navigating to bulk food booking screen');
-    developer.log('🚀 Navigating to bulk food booking screen', name: 'BulkFoodList');
-    
+    developer.log('🚀 Navigating to bulk food booking screen',
+        name: 'BulkFoodList');
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -59,7 +62,7 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
   void _editBooking(GuestMealModel guestMeal) {
     _logger.i('✏️ [EDIT] Editing booking: ${guestMeal.id}');
     developer.log('✏️ Editing booking: ${guestMeal.id}', name: 'BulkFoodList');
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -206,7 +209,8 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
   }
 
   Widget _buildBookingCard(GuestMealModel guestMeal) {
-    final formattedDate = DateFormat('EEEE, MMMM d, yyyy').format(guestMeal.date);
+    final formattedDate =
+        DateFormat('EEEE, MMMM d, yyyy').format(guestMeal.date);
     final totalMeals = guestMeal.totalMealCount;
 
     return Container(
@@ -239,7 +243,8 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        formattedDate,overflow: TextOverflow.ellipsis,
+                        formattedDate,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyleClass.poppinsSemiBold(
                           fontSize: 16,
                           color: ColorClass.brandDarkGreen,
@@ -247,7 +252,9 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        guestMeal.department,overflow: TextOverflow.ellipsis,maxLines: 1,
+                        guestMeal.department.title,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                         style: TextStyleClass.poppinsRegular(
                           fontSize: 14,
                           color: ColorClass.neutral500,
@@ -258,7 +265,8 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                 ),
                 // Total meals badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: ColorClass.brandLightGreen.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -326,7 +334,8 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
                     ),
                   ),
                 ),
@@ -351,7 +360,8 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
                     ),
                   ),
                 ),
@@ -388,7 +398,7 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
 
   Widget _buildMealInfo(String label, int count, IconData icon) {
     final hasCount = count > 0;
-    
+
     return Container(
       width: 80, // Fixed width to prevent overflow
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
@@ -405,7 +415,8 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
             label,
             style: TextStyleClass.poppinsRegular(
               fontSize: 10,
-              color: hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
+              color:
+                  hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
             ),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
@@ -415,7 +426,8 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
             count.toString(),
             style: TextStyleClass.poppinsBold(
               fontSize: 14,
-              color: hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
+              color:
+                  hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
             ),
             textAlign: TextAlign.center,
           ),
@@ -426,11 +438,12 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
 
   void _showDeleteDialog(GuestMealModel guestMeal) {
     _logger.i('🗑️ [DELETE] Confirmation dialog for: ${guestMeal.id}');
-    developer.log('🗑️ Delete confirmation for: ${guestMeal.id}', name: 'BulkFoodList');
+    developer.log('🗑️ Delete confirmation for: ${guestMeal.id}',
+        name: 'BulkFoodList');
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text(
             'Delete Booking',
@@ -449,7 +462,7 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(dialogContext).pop();
                 _logger.d('❌ [DELETE] Deletion cancelled');
                 developer.log('❌ Deletion cancelled', name: 'BulkFoodList');
               },
@@ -463,28 +476,61 @@ class _BulkFoodListScreenState extends State<BulkFoodListScreen> {
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop();
-                
+                // Close dialog first
+                Navigator.of(dialogContext).pop();
+
                 _logger.i('🗑️ [DELETE] Deleting booking: ${guestMeal.id}');
-                developer.log('🗑️ Deleting booking: ${guestMeal.id}', name: 'BulkFoodList');
-                
-                final provider = Provider.of<BulkFoodProvider>(context, listen: false);
-                final success = await provider.deleteGuestMeal(context, guestMeal.id);
-                
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Booking deleted successfully'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to delete booking'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+                developer.log('🗑️ Deleting booking: ${guestMeal.id}',
+                    name: 'BulkFoodList');
+
+                // Store the context reference before async operation
+                final scaffoldContext = context;
+
+                try {
+                  final provider =
+                      Provider.of<BulkFoodProvider>(context, listen: false);
+                  final success =
+                      await provider.deleteGuestMeal(context, guestMeal.id);
+
+                  // Double check if the widget is still mounted and context is still valid
+                  if (mounted && scaffoldContext.mounted) {
+                    if (success) {
+                      ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                        const SnackBar(
+                          content: Text('Booking deleted successfully'),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                        SnackBar(
+                          content: Text(provider.errorMessage.isNotEmpty
+                              ? provider.errorMessage
+                              : 'Failed to delete booking'),
+                          backgroundColor: Colors.red,
+                          duration: const Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  // Log the error but don't try to show SnackBar if widget is disposed
+                  _logger.e('💥 [DELETE] Error during deletion: $e');
+                  developer.log('💥 Error during deletion: $e',
+                      name: 'BulkFoodList');
+
+                  // Only show SnackBar if widget is still mounted
+                  if (mounted && scaffoldContext.mounted) {
+                    ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text('Failed to delete booking: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
                 }
               },
               child: Text(
