@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:hira_plus/providers/multi_provider.dart';
 import 'package:hira_plus/routes/app_pages.dart';
 import 'package:hira_plus/routes/app_routes.dart';
@@ -31,7 +32,7 @@ void main() async {
     debugPrint('⚠️ Failed to initialize OneSignal: $e');
     debugPrint('StackTrace: $stackTrace');
   }
-
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   runApp(const MyApp());
 }
 
