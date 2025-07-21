@@ -69,6 +69,7 @@ class MealMenuProvider extends ChangeNotifier {
 
         _mealMenuData = MealMenuResponse.fromJson(jsonData);
         _isLoading = false;
+        notifyListeners();
 
         developer.log('✅ Meal menu data loaded successfully',
             name: 'MealMenuProvider');

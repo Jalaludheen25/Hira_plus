@@ -1433,19 +1433,6 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
                               ),
                               Row(
                                 children: [
-                                  if (provider.isLoading)
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 8.0),
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: ColorClass.brandDarkGreen,
-                                        ),
-                                      ),
-                                    ),
                                   IconButton(
                                     icon: Icon(Icons.refresh, size: 24),
                                     onPressed: () =>
@@ -1480,57 +1467,8 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
 
   Widget _buildMealMenuContent(
       MealMenuProvider provider, ScrollController scrollController) {
-    if (provider.isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text("Loading menu data..."),
-          ],
-        ),
-      );
-    }
-
-    if (provider.errorMessage.isNotEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: Colors.red,
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Text(
-                provider.errorMessage,
-                textAlign: TextAlign.center,
-                style: TextStyleClass.poppinsMedium(
-                  fontSize: 16,
-                  color: Colors.red,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorClass.brandDarkGreen,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () => provider.fetchMealMenu(context),
-            ),
-          ],
-        ),
-      );
-    }
-
     final menus = provider.mealMenuData?.menus ?? [];
+
     if (menus.isEmpty) {
       return Center(
         child: Column(
@@ -1562,105 +1500,110 @@ class _MealMarkingSheetState extends State<MealMarkingSheet> {
       );
     }
 
-    return ListView.builder(
-      controller: scrollController,
-      itemCount: menus.length,
-      itemBuilder: (context, index) {
-        final menu = menus[index];
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: ColorClass.brandLightGreen.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: ColorClass.brandLightGreen, width: 1),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${menu.date.day.toString().padLeft(2, '0')}/${menu.date.month.toString().padLeft(2, '0')}/${menu.date.year}',
-                    style: TextStyleClass.poppinsSemiBold(
-                        fontSize: 15, color: ColorClass.brandDarkGreen),
-                  ),
-                  Text(
-                    menu.capitalizedDay,
-                    style: TextStyleClass.poppinsRegular(
-                        fontSize: 14, color: ColorClass.neutral500),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Row(
-                children: [
-                  Text(
-                    'Breakfast:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: ColorClass.brandDarkGreen,
-                      fontWeight: FontWeight.bold,
+    return provider.isLoading
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : ListView.builder(
+            controller: scrollController,
+            itemCount: menus.length,
+            itemBuilder: (context, index) {
+              final menu = menus[index];
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: ColorClass.brandLightGreen.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(16),
+                  border:
+                      Border.all(color: ColorClass.brandLightGreen, width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${menu.date.day.toString().padLeft(2, '0')}/${menu.date.month.toString().padLeft(2, '0')}/${menu.date.year}',
+                          style: TextStyleClass.poppinsSemiBold(
+                              fontSize: 15, color: ColorClass.brandDarkGreen),
+                        ),
+                        Text(
+                          menu.capitalizedDay,
+                          style: TextStyleClass.poppinsRegular(
+                              fontSize: 14, color: ColorClass.neutral500),
+                        ),
+                      ],
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      ' ${menu.breakfast}',
-                      style: TextStyleClass.poppinsRegular(
-                        fontSize: 14,
-                      ),
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Text(
+                          'Breakfast:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: ColorClass.brandDarkGreen,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            ' ${menu.breakfast}',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Text(
-                    'Lunch:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: ColorClass.brandDarkGreen,
-                      fontWeight: FontWeight.bold,
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Text(
+                          'Lunch:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: ColorClass.brandDarkGreen,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            ' ${menu.lunch}',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      ' ${menu.lunch}',
-                      style: TextStyleClass.poppinsRegular(
-                        fontSize: 14,
-                      ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Text(
+                          'Dinner:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: ColorClass.brandDarkGreen,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            ' ${menu.dinner}',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 5),
-              Row(
-                children: [
-                  Text(
-                    'Dinner:',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: ColorClass.brandDarkGreen,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      ' ${menu.dinner}',
-                      style: TextStyleClass.poppinsRegular(
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
+                  ],
+                ),
+              );
+            },
+          );
   }
 
   @override
