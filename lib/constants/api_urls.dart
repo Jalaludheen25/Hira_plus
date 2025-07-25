@@ -270,4 +270,22 @@ class ApiUrls {
   static String deleteMessStaffMenuByDate() {
     return '$baseUrl/mess-staff/menu/date';
   }
+
+  // ################## Food Menu from Manager ##################
+
+  static String postManagerMenuByDate() {
+    return '$baseUrl/admin/menu/date';
+  }
+
+  static String getAllManagerMenus() {
+    return '$baseUrl/admin/menu/date';
+  }
+
+  static String deleteManagerMenuByDate() {
+    return '$baseUrl/admin/menu/date';
+  }
+
+  static String putManagerMenuByDate() {
+    return '$baseUrl/admin/menu/date';
+  }
 }

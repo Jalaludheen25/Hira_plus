@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
+import 'package:hira_plus/screens/manager_screen/provider/menu_provider.dart';
 import 'package:hira_plus/screens/manager_screen/provider/users_by_meals_provider.dart';
 import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
+import 'package:hira_plus/screens/manager_screen/view/food_menu_list_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
@@ -693,6 +695,96 @@ class ManagerScreen extends StatelessWidget {
                                               const SizedBox(height: 4),
                                               Text(
                                                 'Schedule & manage meetings',
+                                                style: TextStyleClass
+                                                    .poppinsRegular(
+                                                  fontSize: 14,
+                                                  color: ColorClass.neutral500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Icon(
+                                          LucideIcons.chevronRight,
+                                          color: ColorClass.brandDarkGreen,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // NEW: Add Food Menu
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ChangeNotifierProvider(
+                                              create: (_) => MenuProvider(),
+                                              child: const FoodMenuListScreen(),
+                                            ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: ColorClass.brandLightGreen,
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: ColorClass.brandLightGreen
+                                              .withOpacity(0.1),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: ColorClass.brandLightGreen
+                                                .withOpacity(0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Icon(
+                                            LucideIcons.plus,
+                                            size: 28,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Add Food Menu',
+                                                style: TextStyleClass
+                                                    .poppinsSemiBold(
+                                                  fontSize: 18,
+                                                  color:
+                                                      ColorClass.brandDarkGreen,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Edit & Update food menu',
                                                 style: TextStyleClass
                                                     .poppinsRegular(
                                                   fontSize: 14,
