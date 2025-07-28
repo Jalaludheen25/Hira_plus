@@ -113,13 +113,14 @@ class MeetingProvider extends ChangeNotifier {
     required int noOfPersons,
     required bool foodRequired,
     required int breakfast,
-    required int midmorningSnacks,
+    required int morningSnacksCount,
     required int morningTeaCount,
     required int lunch,
-    required int eveningsnacks,
+    required int eveningSnacksCount,
     required int eveningTeaCount,
     required int dinner,
     required String department,
+    required int rent,
   }) async {
     try {
       _isLoading = true;
@@ -138,13 +139,14 @@ class MeetingProvider extends ChangeNotifier {
         noOfPersons: noOfPersons,
         foodRequired: foodRequired,
         breakfast: breakfast,
-        midmorningSnacks: midmorningSnacks,
+        morningSnacksCount: morningSnacksCount,
         morningTeaCount: morningTeaCount,
         lunch: lunch,
-        eveningsnacks: eveningsnacks,
+        eveningSnacksCount: eveningSnacksCount,
         eveningTeaCount: eveningTeaCount,
         dinner: dinner,
         department: department,
+        rent: rent,
       );
 
       // Add new meeting to local list and sort by meeting date
@@ -199,10 +201,10 @@ class MeetingProvider extends ChangeNotifier {
         noOfPersons: originalMeeting.noOfPersons,
         foodRequired: originalMeeting.foodRequired,
         breakfast: originalMeeting.breakfast,
-        midmorningSnacks: originalMeeting.midmorningSnacks,
+        morningSnacksCount: originalMeeting.morningSnacksCount,
         morningTeaCount: originalMeeting.morningTeaCount,
         lunch: originalMeeting.lunch,
-        eveningsnacks: originalMeeting.eveningsnacks,
+        eveningSnacksCount: originalMeeting.eveningSnacksCount,
         eveningTeaCount: originalMeeting.eveningTeaCount,
         dinner: originalMeeting.dinner,
         department: originalMeeting.department,
@@ -211,8 +213,7 @@ class MeetingProvider extends ChangeNotifier {
         createdAt: originalMeeting.createdAt,
         updatedAt: DateTime.now(),
         rent: originalMeeting.rent,
-        morningSnacksCount: originalMeeting.morningSnacksCount,
-        eveningSnacksCount: originalMeeting.eveningSnacksCount,
+        v: originalMeeting.v,
       );
 
       // Update UI immediately (optimistic update)
@@ -314,13 +315,14 @@ class MeetingProvider extends ChangeNotifier {
     required int noOfPersons,
     required bool foodRequired,
     required int breakfast,
-    required int midmorningSnacks,
+    required int morningSnacksCount,
     required int morningTeaCount,
     required int lunch,
-    required int eveningsnacks,
+    required int eveningSnacksCount,
     required int eveningTeaCount,
     required int dinner,
     required String department,
+    required int rent,
   }) async {
     try {
       _isLoading = true;
@@ -340,13 +342,14 @@ class MeetingProvider extends ChangeNotifier {
         noOfPersons: noOfPersons,
         foodRequired: foodRequired,
         breakfast: breakfast,
-        midmorningSnacks: midmorningSnacks,
+        morningSnacksCount: morningSnacksCount,
         morningTeaCount: morningTeaCount,
         lunch: lunch,
-        eveningsnacks: eveningsnacks,
+        eveningSnacksCount: eveningSnacksCount,
         eveningTeaCount: eveningTeaCount,
         dinner: dinner,
         department: department,
+        rent: rent,
       );
 
       // Update the meeting in the local list and re-sort by meeting date

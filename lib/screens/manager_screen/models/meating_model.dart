@@ -8,9 +8,11 @@ class MeetingModel {
   final int noOfPersons;
   final bool foodRequired;
   final int breakfast;
-  final int midmorningSnacks;
+  final int morningSnacksCount;
+  final int morningTeaCount;
   final int lunch;
-  final int eveningsnacks;
+  final int eveningSnacksCount;
+  final int eveningTeaCount;
   final int dinner;
   final String department;
   final String status;
@@ -18,10 +20,7 @@ class MeetingModel {
   final DateTime createdAt;
   final DateTime updatedAt;
   final int rent;
-  final int morningSnacksCount;
-  final int morningTeaCount;
-  final int eveningSnacksCount;
-  final int eveningTeaCount;
+  final int? v; // MongoDB version field
 
   MeetingModel({
     required this.id,
@@ -33,9 +32,11 @@ class MeetingModel {
     required this.noOfPersons,
     required this.foodRequired,
     required this.breakfast,
-    required this.midmorningSnacks,
+    required this.morningSnacksCount,
+    required this.morningTeaCount,
     required this.lunch,
-    required this.eveningsnacks,
+    required this.eveningSnacksCount,
+    required this.eveningTeaCount,
     required this.dinner,
     required this.department,
     required this.status,
@@ -43,15 +44,12 @@ class MeetingModel {
     required this.createdAt,
     required this.updatedAt,
     required this.rent,
-    required this.morningSnacksCount,
-    required this.morningTeaCount,
-    required this.eveningSnacksCount,
-    required this.eveningTeaCount,
+    this.v,
   });
 
   factory MeetingModel.fromJson(Map<String, dynamic> json) {
     return MeetingModel(
-      id: json['_id'] ?? '',
+      id: json['_id'] ?? json['id'] ?? '',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       startDatetime:
@@ -62,10 +60,11 @@ class MeetingModel {
       noOfPersons: json['noOfPersons'] ?? 0,
       foodRequired: json['foodRequired'] ?? false,
       breakfast: json['breakfast'] ?? 0,
-      midmorningSnacks:
-          json['midmorningSnacks'] ?? json['morningSnacksCount'] ?? 0,
+      morningSnacksCount: json['morningSnacksCount'] ?? 0,
+      morningTeaCount: json['morningTeaCount'] ?? 0,
       lunch: json['lunch'] ?? 0,
-      eveningsnacks: json['eveningsnacks'] ?? json['eveningSnacksCount'] ?? 0,
+      eveningSnacksCount: json['eveningSnacksCount'] ?? 0,
+      eveningTeaCount: json['eveningTeaCount'] ?? 0,
       dinner: json['dinner'] ?? 0,
       department: (json['department'] is Map)
           ? (json['department']['title'] ?? '')
@@ -75,12 +74,7 @@ class MeetingModel {
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       rent: json['rent'] ?? 0,
-      morningSnacksCount:
-          json['morningSnacksCount'] ?? json['midmorningSnacks'] ?? 0,
-      morningTeaCount: json['morningTeaCount'] ?? 0,
-      eveningSnacksCount:
-          json['eveningSnacksCount'] ?? json['eveningsnacks'] ?? 0,
-      eveningTeaCount: json['eveningTeaCount'] ?? 0,
+      v: json['__v'] ?? json['v'],
     );
   }
 
@@ -94,13 +88,14 @@ class MeetingModel {
       'noOfPersons': noOfPersons,
       'foodRequired': foodRequired,
       'breakfast': breakfast,
-      'morningSnacksCount': midmorningSnacks,
+      'morningSnacksCount': morningSnacksCount,
       'morningTeaCount': morningTeaCount,
       'lunch': lunch,
-      'eveningSnacksCount': eveningsnacks,
+      'eveningSnacksCount': eveningSnacksCount,
       'eveningTeaCount': eveningTeaCount,
       'dinner': dinner,
       'department': department,
+      'rent': rent,
     };
   }
 

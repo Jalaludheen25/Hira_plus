@@ -71,9 +71,8 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
     if (meeting.breakfast > 0) {
       foodItems.add('Breakfast (${meeting.breakfast})');
     }
-    if (meeting.midmorningSnacks > 0 || meeting.morningSnacksCount > 0) {
-      foodItems.add(
-          'Morning Snacks (${meeting.midmorningSnacks > 0 ? meeting.midmorningSnacks : meeting.morningSnacksCount})');
+    if (meeting.morningSnacksCount > 0) {
+      foodItems.add('Morning Snacks (${meeting.morningSnacksCount})');
     }
     if (meeting.morningTeaCount > 0) {
       foodItems.add('Morning Tea (${meeting.morningTeaCount})');
@@ -81,9 +80,8 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
     if (meeting.lunch > 0) {
       foodItems.add('Lunch (${meeting.lunch})');
     }
-    if (meeting.eveningsnacks > 0 || meeting.eveningSnacksCount > 0) {
-      foodItems.add(
-          'Evening Snacks (${meeting.eveningsnacks > 0 ? meeting.eveningsnacks : meeting.eveningSnacksCount})');
+    if (meeting.eveningSnacksCount > 0) {
+      foodItems.add('Evening Snacks (${meeting.eveningSnacksCount})');
     }
     if (meeting.eveningTeaCount > 0) {
       foodItems.add('Evening Tea (${meeting.eveningTeaCount})');
@@ -574,7 +572,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                 Navigator.of(dialogContext).pop();
 
                 _logger.i(
-                    '🗑️ [API] Attempting to delete meeting with id: [4m${meeting.id}[24m');
+                    '🗑️ [API] Attempting to delete meeting with id: ${meeting.id}');
                 developer.log(
                     '🗑️ Attempting to delete meeting with id: ${meeting.id}',
                     name: 'MeetingManagementScreen');
@@ -670,6 +668,8 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
   final _eveningsnacksController = TextEditingController(text: '0');
   final _eveningTeaController = TextEditingController(text: '0');
   final _dinnerController = TextEditingController(text: '0');
+  final _rentController =
+      TextEditingController(text: '0'); // Add rent controller
 
   DateTime _startDatetime = DateTime.now().add(const Duration(hours: 1));
   DateTime _endDatetime = DateTime.now().add(const Duration(hours: 3));
@@ -714,13 +714,16 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
     if (_foodRequired) {
       _breakfastController.text = meeting.breakfast.toString();
-      _midmorningSnacksController.text = meeting.midmorningSnacks.toString();
+      _midmorningSnacksController.text = meeting.morningSnacksCount.toString();
       _morningTeaController.text = meeting.morningTeaCount.toString();
       _lunchController.text = meeting.lunch.toString();
-      _eveningsnacksController.text = meeting.eveningsnacks.toString();
+      _eveningsnacksController.text = meeting.eveningSnacksCount.toString();
       _eveningTeaController.text = meeting.eveningTeaCount.toString();
       _dinnerController.text = meeting.dinner.toString();
     }
+
+    // Set rent value
+    _rentController.text = meeting.rent.toString();
 
     // Ensure the hall from the meeting exists in the halls list to avoid dropdown assertion errors
     if (meeting.hall.isNotEmpty && !_halls.contains(meeting.hall)) {
@@ -832,6 +835,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     _eveningsnacksController.dispose();
     _eveningTeaController.dispose();
     _dinnerController.dispose();
+    _rentController.dispose(); // Add rent controller disposal
     super.dispose();
   }
 
@@ -946,6 +950,25 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
 
               // Department Dropdown
               _buildDepartmentDropdown(),
+              const SizedBox(height: 16),
+
+              // Rent Field
+              _buildTextField(
+                controller: _rentController,
+                label: 'Rent Amount (₹)',
+                icon: LucideIcons.dollarSign,
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter rent amount';
+                  }
+                  final number = int.tryParse(value);
+                  if (number == null || number < 0) {
+                    return 'Please enter a valid amount';
+                  }
+                  return null;
+                },
+              ),
               const SizedBox(height: 24),
 
               // Food Required Section
@@ -1381,13 +1404,14 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
         noOfPersons: int.parse(_noOfPersonsController.text),
         foodRequired: _foodRequired,
         breakfast: int.parse(_breakfastController.text),
-        midmorningSnacks: int.parse(_midmorningSnacksController.text),
+        morningSnacksCount: int.parse(_midmorningSnacksController.text),
         morningTeaCount: int.parse(_morningTeaController.text),
         lunch: int.parse(_lunchController.text),
-        eveningsnacks: int.parse(_eveningsnacksController.text),
+        eveningSnacksCount: int.parse(_eveningsnacksController.text),
         eveningTeaCount: int.parse(_eveningTeaController.text),
         dinner: int.parse(_dinnerController.text),
         department: _selectedDepartment ?? 'IT',
+        rent: int.parse(_rentController.text),
       );
     } else {
       meeting = await provider.createMeeting(
@@ -1400,13 +1424,14 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
         noOfPersons: int.parse(_noOfPersonsController.text),
         foodRequired: _foodRequired,
         breakfast: int.parse(_breakfastController.text),
-        midmorningSnacks: int.parse(_midmorningSnacksController.text),
+        morningSnacksCount: int.parse(_midmorningSnacksController.text),
         morningTeaCount: int.parse(_morningTeaController.text),
         lunch: int.parse(_lunchController.text),
-        eveningsnacks: int.parse(_eveningsnacksController.text),
+        eveningSnacksCount: int.parse(_eveningsnacksController.text),
         eveningTeaCount: int.parse(_eveningTeaController.text),
         dinner: int.parse(_dinnerController.text),
         department: _selectedDepartment ?? 'IT',
+        rent: int.parse(_rentController.text),
       );
     }
 

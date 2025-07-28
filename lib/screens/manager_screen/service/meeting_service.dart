@@ -17,6 +17,7 @@ class MeetingService {
       // Make API request
       final response = await HttpServiceUtils.fetchData(url, true);
       log('Response type: ${response.runtimeType}', name: 'MeetingService');
+      debugPrint('Response: $response');
 
       // Check for empty response
       if (response == null) {
@@ -30,6 +31,14 @@ class MeetingService {
       final List<dynamic> meetingsList = responseData['meetings'] ?? [];
       log('Number of meetings received: ${meetingsList.length}',
           name: 'MeetingService');
+
+      // Log the first meeting structure for debugging
+      if (meetingsList.isNotEmpty) {
+        log('📋 First meeting structure: ${meetingsList.first}',
+            name: 'MeetingService');
+        log('📋 First meeting keys: ${meetingsList.first.keys.toList()}',
+            name: 'MeetingService');
+      }
 
       // Convert each JSON object to MeetingModel
       final meetings = meetingsList
@@ -62,59 +71,70 @@ class MeetingService {
     required int noOfPersons,
     required bool foodRequired,
     required int breakfast,
-    required int midmorningSnacks,
+    required int morningSnacksCount,
     required int morningTeaCount,
     required int lunch,
-    required int eveningsnacks,
+    required int eveningSnacksCount,
     required int eveningTeaCount,
     required int dinner,
     required String department,
+    required int rent,
   }) async {
     try {
       log('🏢 Creating new meeting', name: 'MeetingService');
       final url = '${ApiUrls.baseUrl}/admin/meetings';
       log('API URL: $url', name: 'MeetingService');
 
-      // Prepare request body
+      // Prepare request body - ensure all values are properly formatted
       final requestBody = {
-        'title': title,
-        'description': description,
+        'title': title.trim(),
+        'description': description.trim(),
         'startDatetime': startDatetime.toIso8601String(),
         'endDatetime': endDatetime.toIso8601String(),
-        'hall': hall,
+        'hall': hall.trim(),
+        'department': department, // <-- ADDED BACK
         'noOfPersons': noOfPersons,
         'foodRequired': foodRequired,
         'breakfast': breakfast,
-        'morningSnacksCount': midmorningSnacks,
+        'morningSnacksCount': morningSnacksCount,
         'morningTeaCount': morningTeaCount,
         'lunch': lunch,
-        'eveningSnacksCount': eveningsnacks,
+        'eveningSnacksCount': eveningSnacksCount,
         'eveningTeaCount': eveningTeaCount,
         'dinner': dinner,
-        'department': department,
+        'rent': rent,
       };
 
       log('Request body: $requestBody', name: 'MeetingService');
+      print('📤 Sending request to: $url');
+      print('📤 Request body: $requestBody');
 
       // Make API request
       log('Sending POST request to server...', name: 'MeetingService');
       final response =
           await HttpServiceUtils.postData(url, requestBody, context);
       log('Response received from server', name: 'MeetingService');
+      print('📥 Response received: ${response.runtimeType}');
 
       if (response == null) {
         log('❌ Error: Empty response from meetings API',
             name: 'MeetingService');
+        print('❌ Empty response from server');
         throw HttpException('Failed to create meeting: Empty response');
       }
+
+      print('📥 Response data: $response');
 
       // Parse response
       log('Parsing response data', name: 'MeetingService');
       final responseData = response is String ? jsonDecode(response) : response;
+      print('📥 Parsed response: $responseData');
 
       if (responseData['success'] != true) {
-        throw HttpException(
-            responseData['message'] ?? 'Failed to create meeting');
+        final errorMsg = responseData['message'] ?? 'Failed to create meeting';
+        print('❌ API Error: $errorMsg');
+        print('❌ Full error response: $responseData');
+        throw HttpException(errorMsg);
       }
 
       final meeting = MeetingModel.fromJson(responseData['meeting']);
@@ -207,13 +227,14 @@ class MeetingService {
     required int noOfPersons,
     required bool foodRequired,
     required int breakfast,
-    required int midmorningSnacks,
+    required int morningSnacksCount,
     required int morningTeaCount,
     required int lunch,
-    required int eveningsnacks,
+    required int eveningSnacksCount,
     required int eveningTeaCount,
     required int dinner,
     required String department,
+    required int rent,
   }) async {
     try {
       log('📝 Updating meeting', name: 'MeetingService');
@@ -226,16 +247,17 @@ class MeetingService {
         'startDatetime': startDatetime.toIso8601String(),
         'endDatetime': endDatetime.toIso8601String(),
         'hall': hall,
+        'department': department, // <-- ADDED BACK
         'noOfPersons': noOfPersons,
         'foodRequired': foodRequired,
         'breakfast': breakfast,
-        'morningSnacksCount': midmorningSnacks,
+        'morningSnacksCount': morningSnacksCount,
         'morningTeaCount': morningTeaCount,
         'lunch': lunch,
-        'eveningSnacksCount': eveningsnacks,
+        'eveningSnacksCount': eveningSnacksCount,
         'eveningTeaCount': eveningTeaCount,
         'dinner': dinner,
-        'department': department,
+        'rent': rent,
       };
 
       log('Request body: $requestBody', name: 'MeetingService');
@@ -257,7 +279,7 @@ class MeetingService {
       }
 
       final meeting = MeetingModel.fromJson(responseData['meeting']);
-      log('✅ Meeting updated successfully: [4m${meeting.id}[24m',
+      log('✅ Meeting updated successfully: ${meeting.id}',
           name: 'MeetingService');
       return meeting;
     } on HttpException catch (e) {
