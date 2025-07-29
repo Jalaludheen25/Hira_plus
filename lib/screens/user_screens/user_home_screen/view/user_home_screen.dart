@@ -497,7 +497,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) {
+      builder: (bottomSheetContext) {
         return DraggableScrollableSheet(
           initialChildSize: 0.8,
           minChildSize: 0.6,
@@ -536,7 +536,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.close, size: 30),
-                                  onPressed: () => Navigator.pop(context),
+                                  onPressed: () =>
+                                      Navigator.pop(bottomSheetContext),
                                   color: ColorClass.brandDarkGreen,
                                 ),
                               ],
@@ -546,8 +547,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ),
                       // Content
                       Expanded(
-                        child:
-                            _buildMeetingsContent(provider, scrollController),
+                        child: _buildMeetingsContent(
+                            provider, scrollController, bottomSheetContext),
                       ),
                     ],
                   );
@@ -560,8 +561,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _buildMeetingsContent(
-      MeetingListProvider provider, ScrollController scrollController) {
+  Widget _buildMeetingsContent(MeetingListProvider provider,
+      ScrollController scrollController, BuildContext bottomSheetContext) {
     if (provider.isLoading) {
       return const Center(
         child: Column(
@@ -655,12 +656,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final meeting = sortedMeetings[index];
-        return _buildMeetingCard(meeting);
+        return _buildMeetingCard(meeting, bottomSheetContext);
       },
     );
   }
 
-  Widget _buildMeetingCard(UserMeeting.MeetingModel meeting) {
+  Widget _buildMeetingCard(
+      UserMeeting.MeetingModel meeting, BuildContext bottomSheetContext) {
     final formattedStartDate =
         DateFormat('EEEE, MMMM d, yyyy').format(meeting.startDatetime);
     final formattedStartTime =
@@ -798,8 +800,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () async {
-                        await _handleEditMeeting(
-                            context, meeting, meetingProvider);
+                        await _handleEditMeeting(context, meeting,
+                            meetingProvider, bottomSheetContext);
                       },
                       icon: Icon(LucideIcons.edit,
                           size: 14, color: ColorClass.brandDarkGreen),
@@ -881,8 +883,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   Future<void> _handleEditMeeting(
       BuildContext context,
       UserMeeting.MeetingModel meeting,
-      MeetingListProvider meetingProvider) async {
+      MeetingListProvider meetingProvider,
+      BuildContext bottomSheetContext) async {
     try {
+      // Close the bottom sheet immediately when edit is pressed
+      Navigator.pop(bottomSheetContext);
+
       // Additional validation before navigating to edit
       if (!meeting.isPending) {
         ScaffoldMessenger.of(context).showSnackBar(
