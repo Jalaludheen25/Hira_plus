@@ -19,6 +19,7 @@ class MeetingModel {
   final String createdBy;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int rent;
   final int? v; // for __v
 
   MeetingModel({
@@ -42,6 +43,7 @@ class MeetingModel {
     required this.createdBy,
     required this.createdAt,
     required this.updatedAt,
+    required this.rent,
     this.v,
   });
 
@@ -64,15 +66,31 @@ class MeetingModel {
       eveningSnacksCount: json['eveningSnacksCount'] ?? 0,
       eveningTeaCount: json['eveningTeaCount'] ?? 0,
       dinner: json['dinner'] ?? 0,
-      department: (json['department'] is Map)
-          ? (json['department']['title'] ?? '').toString()
-          : json['department']?.toString() ?? '',
-      status: json['status'] ?? '',
+      department: _parseDepartment(json['department']),
+      status: json['status'] ?? 'pending',
       createdBy: json['createdBy']?.toString() ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
+      rent: json['rent'] ?? 0,
       v: json['__v'] ?? json['v'],
     );
+  }
+
+  // Helper method to parse department from various formats
+  static String _parseDepartment(dynamic department) {
+    if (department == null) return '';
+
+    if (department is String) {
+      return department;
+    } else if (department is Map) {
+      // Handle department as object with title field
+      return department['title']?.toString() ??
+          department['name']?.toString() ??
+          department['_id']?.toString() ??
+          '';
+    } else {
+      return department.toString();
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -97,6 +115,7 @@ class MeetingModel {
       'createdBy': createdBy,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'rent': rent,
       '__v': v,
     };
   }

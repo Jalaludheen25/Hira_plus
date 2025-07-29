@@ -90,6 +90,14 @@ class _SplashScreenState extends State<SplashScreen>
         _logger.i(
             '🔑 [AUTH] User is logged in, user type: ${authProvider.userType}');
 
+        // Ensure department is loaded for department heads
+        if (authProvider.isDeptHead) {
+          _logger.d(
+              '🔍 [AUTH] Ensuring department is loaded for department head...');
+          await authProvider.ensureDepartmentLoaded();
+          _logger.d('🔍 [AUTH] Department loaded: ${authProvider.department}');
+        }
+
         // Navigate to appropriate screen based on user type
         if (!mounted) return;
 

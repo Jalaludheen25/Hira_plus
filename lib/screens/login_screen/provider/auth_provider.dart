@@ -180,6 +180,19 @@ class AuthProvider extends ChangeNotifier {
       final userId = await SharedUtils.getString('user_id'); // Load user ID
       final userName =
           await SharedUtils.getString('user_name'); // Load user name
+      final department =
+          await SharedUtils.getString('user_department'); // Load department
+      final designation =
+          await SharedUtils.getString('user_designation'); // Load designation
+
+      _logger.d('🔍 [AUTH] Loaded from SharedUtils:');
+      _logger.d('   - token: ${token?.isNotEmpty}');
+      _logger.d('   - userType: $userType');
+      _logger.d('   - isDeptHead: $isDeptHead');
+      _logger.d('   - userId: $userId');
+      _logger.d('   - userName: $userName');
+      _logger.d('   - department: $department');
+      _logger.d('   - designation: $designation');
 
       // Check for specific user type tokens
       String? specificToken;
@@ -204,20 +217,23 @@ class AuthProvider extends ChangeNotifier {
           specificToken?.isNotEmpty == true ? specificToken : token;
 
       _isLoggedIn = effectiveToken?.isNotEmpty == true;
-      _userType = userType;
-      _isDeptHead = isDeptHead;
+      _userType = userType ?? '';
+      _isDeptHead = isDeptHead ?? false;
       _userId = userId ?? ''; // Set user ID
       _userName = userName ?? ''; // Set user name
+      _department = department ?? ''; // Set department
+      _designation = designation ?? ''; // Set designation
 
       _logger.i('🔹 [AUTH] Login status check results:');
       _logger.i('   - isLoggedIn: $_isLoggedIn');
       _logger.i('   - userType: $_userType');
       _logger.i('   - isDeptHead: $_isDeptHead');
       _logger.i('   - userId: $_userId');
+      _logger.i('   - department: $_department');
       _logger.i('   - effectiveToken: ${effectiveToken?.isNotEmpty}');
 
       developer.log(
-          '🔹 Login status: isLoggedIn=$_isLoggedIn, userType=$_userType, isDeptHead=$_isDeptHead',
+          '🔹 Login status: isLoggedIn=$_isLoggedIn, userType=$_userType, isDeptHead=$_isDeptHead, department=$_department',
           name: 'AuthProvider');
 
       // ADDED: Additional validation for Reception users
@@ -238,6 +254,87 @@ class AuthProvider extends ChangeNotifier {
       _isLoggedIn = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  // Helper method to get department from SharedUtils
+  Future<String> getDepartment() async {
+    if (_department.isNotEmpty) {
+      return _department;
+    }
+    final department = await SharedUtils.getString('user_department');
+    if (department != null && department.isNotEmpty) {
+      _department = department;
+      notifyListeners();
+      return department;
+    }
+    return '';
+  }
+
+  // Method to ensure department is loaded
+  Future<void> ensureDepartmentLoaded() async {
+    if (_department.isEmpty) {
+      final department = await SharedUtils.getString('user_department');
+      if (department != null && department.isNotEmpty) {
+        _department = department;
+        _logger.d('🔍 [AUTH] Department loaded from SharedUtils: $department');
+        notifyListeners();
+      }
+    }
+  }
+
+  // Method to refresh user data from server
+  Future<void> refreshUserData(BuildContext context) async {
+    try {
+      _logger.d('🔄 [AUTH] Refreshing user data from server...');
+
+      final token = await getAuthToken();
+      if (token == null || token.isEmpty) {
+        _logger.w('⚠️ [AUTH] No token available for user data refresh');
+        return;
+      }
+
+      // Call the profile API to get fresh user data
+      final url = ApiUrls.getProfileMe();
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final user = data['user'];
+
+        if (user != null) {
+          // Update department and other user info
+          final newDepartment = user['department']?.toString() ?? '';
+          if (newDepartment.isNotEmpty) {
+            _department = newDepartment;
+            await SharedUtils.setString('user_department', newDepartment);
+            _logger
+                .d('✅ [AUTH] Department refreshed from server: $newDepartment');
+          }
+
+          // Update other user info if needed
+          if (user['name'] != null) {
+            _userName = user['name'];
+            await SharedUtils.setString('user_name', user['name']);
+          }
+
+          if (user['isDeptHead'] != null) {
+            _isDeptHead = user['isDeptHead'] == true;
+            await SharedUtils.setBoolean('is_dept_head', _isDeptHead);
+          }
+
+          notifyListeners();
+          _logger.d('✅ [AUTH] User data refreshed successfully');
+        }
+      } else {
+        _logger
+            .w('⚠️ [AUTH] Failed to refresh user data: ${response.statusCode}');
+      }
+    } catch (e) {
+      _logger.e('❌ [AUTH] Error refreshing user data: $e');
     }
   }
 

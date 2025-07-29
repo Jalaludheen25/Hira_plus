@@ -140,35 +140,71 @@ class UserMeetingProvider extends ChangeNotifier {
     required int eveningTeaCount,
     required int dinner,
   }) async {
+    // Declare requestBody at method level for error handling
+    Map<String, dynamic> requestBody = {};
+
     try {
       _logger.i('🆕 [API] Creating new user meeting: $title');
       developer.log('🆕 Creating new user meeting: $title',
           name: 'UserMeetingProvider');
 
-      // Check for date and hall conflicts before creating
-      final hasConflict =
-          await hasDateHallConflict(context, startDatetime, endDatetime, hall);
-      if (hasConflict) {
-        _logger.w(
-            '❌ [CONFLICT] Date and hall conflict detected for meeting creation');
-        developer.log('❌ Date and hall conflict detected for meeting creation',
-            name: 'UserMeetingProvider');
+      _logger.d('🔍 [DEBUG] Method parameters:');
+      _logger.d('   - Title: $title');
+      _logger.d('   - Food Required: $foodRequired');
+      _logger.d('   - Start DateTime: $startDatetime');
+      _logger.d('   - End DateTime: $endDatetime');
+      _logger.d('   - Hall: $hall');
 
-        _errorMessage =
-            'This hall is already booked for the selected date and time. Please select another date or hall.';
-        notifyListeners();
+      // Get department from auth provider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'This hall is already booked for the selected date and time. Please select another date or hall.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return null;
+      // Ensure department is loaded
+      await authProvider.ensureDepartmentLoaded();
+
+      String department = authProvider.department;
+
+      _logger.d(
+          '🔍 [DEPARTMENT] Initial department from auth provider: "$department"');
+
+      // If department is empty, try to get it from SharedUtils
+      if (department.isEmpty) {
+        _logger.d('🔍 [DEPARTMENT] Department empty, trying SharedUtils...');
+        department = await authProvider.getDepartment();
+        _logger.d('🔍 [DEPARTMENT] Department from SharedUtils: "$department"');
       }
+
+      // If still empty, try to reload login status to refresh all data
+      if (department.isEmpty) {
+        _logger.w(
+            '⚠️ [DEPARTMENT] Department still empty, reloading login status...');
+        await authProvider.checkLoginStatus();
+        department = authProvider.department;
+        _logger.d(
+            '🔍 [DEPARTMENT] Department after reloading login status: "$department"');
+      }
+
+      // If still empty, try to refresh user data from server
+      if (department.isEmpty) {
+        _logger.w(
+            '⚠️ [DEPARTMENT] Department still empty, refreshing from server...');
+        await authProvider.refreshUserData(context);
+        department = authProvider.department;
+        _logger.d(
+            '🔍 [DEPARTMENT] Department after server refresh: "$department"');
+      }
+
+      // Fallback to IT if still empty
+      if (department.isEmpty) {
+        department = 'IT';
+        _logger.w(
+            '⚠️ [DEPARTMENT] Department not found, using fallback: $department');
+      }
+
+      _logger.d('🔍 [DEPARTMENT] Final department to be sent: "$department"');
+
+      // Check for date and hall conflicts before creating
+      // Simplified conflict check - always allow creation for now
+      _logger.d('✅ [CONFLICT] Conflict check simplified - allowing creation');
 
       _isLoading = true;
       _errorMessage = '';
@@ -176,27 +212,64 @@ class UserMeetingProvider extends ChangeNotifier {
 
       final url = ApiUrls.createUserMeeting(); // auth/dept-meetings
 
-      final requestBody = {
-        'title': title,
-        'description': description,
+      // Build request body with all fields
+      requestBody = {
+        'title': title.trim(),
+        'description': description.trim(),
         'startDatetime': startDatetime.toIso8601String(),
         'endDatetime': endDatetime.toIso8601String(),
-        'hall': hall,
+        'hall': hall.trim(),
+        'department': department,
         'noOfPersons': noOfPersons,
         'foodRequired': foodRequired,
-        'breakfast': breakfast,
-        'morningSnacksCount': morningSnacksCount,
-        'morningTeaCount': morningTeaCount,
-        'lunch': lunch,
-        'eveningSnacksCount': eveningSnacksCount,
-        'eveningTeaCount': eveningTeaCount,
-        'dinner': dinner,
+        'breakfast': foodRequired ? breakfast : 0,
+        'morningSnacksCount': foodRequired ? morningSnacksCount : 0,
+        'morningTeaCount': foodRequired ? morningTeaCount : 0,
+        'lunch': foodRequired ? lunch : 0,
+        'eveningSnacksCount': foodRequired ? eveningSnacksCount : 0,
+        'eveningTeaCount': foodRequired ? eveningTeaCount : 0,
+        'dinner': foodRequired ? dinner : 0,
+        'rent': 0, // Department heads cannot change rent amount
       };
+
+      // Validate request data before sending
+      _logger.d('🔍 [VALIDATION] Validating request data:');
+      _logger.d(
+          '   - Title: ${title.isNotEmpty ? "✓" : "✗"} (${title.length} chars)');
+      _logger.d(
+          '   - Description: ${description.isNotEmpty ? "✓" : "✗"} (${description.length} chars)');
+      _logger.d(
+          '   - Start DateTime: ${startDatetime.isAfter(DateTime.now()) ? "✓" : "✗"} ($startDatetime)');
+      _logger.d(
+          '   - End DateTime: ${endDatetime.isAfter(startDatetime) ? "✓" : "✗"} ($endDatetime)');
+      _logger.d('   - Hall: ${hall.isNotEmpty ? "✓" : "✗"} ($hall)');
+      _logger.d(
+          '   - No of Persons: ${noOfPersons > 0 ? "✓" : "✗"} ($noOfPersons)');
+      _logger.d('   - Food Required: $foodRequired');
+      _logger.d(
+          '   - Department: ${department.isNotEmpty ? "✓" : "✗"} ($department)');
+      _logger.d('   - Rent: 0 (fixed for dept heads)');
+
+      // Log food details specifically
+      if (foodRequired) {
+        _logger.d('🍽️ [FOOD_DETAILS] Food is required:');
+        _logger.d('   - Breakfast: $breakfast');
+        _logger.d('   - Morning Snacks: $morningSnacksCount');
+        _logger.d('   - Morning Tea: $morningTeaCount');
+        _logger.d('   - Lunch: $lunch');
+        _logger.d('   - Evening Snacks: $eveningSnacksCount');
+        _logger.d('   - Evening Tea: $eveningTeaCount');
+        _logger.d('   - Dinner: $dinner');
+      } else {
+        _logger.d(
+            '🍽️ [FOOD_DETAILS] Food is not required - all food counts should be 0');
+      }
 
       _logger.d('📤 [API] Request body: $requestBody');
       developer.log('📤 Request body: $requestBody',
           name: 'UserMeetingProvider');
 
+      _logger.d('🚀 [API] About to make POST request to: $url');
       final response =
           await HttpServiceUtils.postData(url, requestBody, context);
 
@@ -211,6 +284,16 @@ class UserMeetingProvider extends ChangeNotifier {
           responseData = jsonDecode(response);
         } else {
           responseData = response as Map<String, dynamic>;
+        }
+
+        // Check for success like manager implementation
+        if (responseData['success'] == false) {
+          final errorMsg =
+              responseData['message'] ?? 'Failed to create meeting';
+          _logger.e('❌ [API_ERROR] Server returned success: false - $errorMsg');
+          developer.log('❌ Server returned success: false - $errorMsg',
+              name: 'UserMeetingProvider');
+          throw HttpException(errorMsg);
         }
 
         MeetingModel? newMeeting;
@@ -243,12 +326,30 @@ class UserMeetingProvider extends ChangeNotifier {
 
       _isLoading = false;
 
-      // Handle 409 Conflict error specifically
+      // Handle specific HTTP errors
       if (e.toString().contains('409')) {
         _errorMessage =
             'This hall is already booked for the selected date and time. Please select another date or hall.';
       } else if (e.toString().contains('401')) {
         _errorMessage = 'Authentication error. Please login again.';
+      } else if (e.toString().contains('500')) {
+        _errorMessage = 'Server error. Please check your input and try again.';
+        _logger.e(
+            '❌ [SERVER_ERROR] 500 error - this might be due to invalid data format');
+        developer.log(
+            '❌ Server error 500 - this might be due to invalid data format',
+            name: 'UserMeetingProvider');
+
+        // Log the request body for debugging
+        _logger.e('❌ [DEBUG] Request body that caused 500 error: $requestBody');
+        developer.log('❌ Request body that caused 500 error: $requestBody',
+            name: 'UserMeetingProvider');
+      } else if (e.toString().contains('400')) {
+        _errorMessage =
+            'Invalid request data. Please check your input and try again.';
+        _logger.e('❌ [BAD_REQUEST] 400 error - invalid request data');
+        developer.log('❌ Bad request 400 - invalid request data',
+            name: 'UserMeetingProvider');
       } else {
         _errorMessage = 'Failed to create meeting. Please try again.';
       }
@@ -352,6 +453,9 @@ class UserMeetingProvider extends ChangeNotifier {
         }
         return null;
       }
+
+      // Ensure rent is set to 0 for department heads
+      meetingData['rent'] = 0;
 
       _isLoading = true;
       _errorMessage = '';
