@@ -1392,6 +1392,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
     final provider = Provider.of<MeetingProvider>(context, listen: false);
     final isEditing = widget.editingMeeting != null;
     MeetingModel? meeting;
+
     if (isEditing) {
       meeting = await provider.updateMeeting(
         context,
@@ -1445,6 +1446,14 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
       );
       // Navigate back to the list screen
       navigateBack(context);
+    } else if (mounted && provider.errorMessage.isNotEmpty) {
+      // Show error message from provider (including conflict messages)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.errorMessage),
+          backgroundColor: ColorClass.redBase,
+        ),
+      );
     }
   }
 }

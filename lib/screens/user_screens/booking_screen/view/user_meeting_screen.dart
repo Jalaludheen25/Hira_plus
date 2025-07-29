@@ -678,6 +678,14 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
           ),
         );
         Navigator.pop(context, true);
+      } else if (mounted && provider.errorMessage.isNotEmpty) {
+        // Show error message from provider (including conflict messages)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(provider.errorMessage),
+            backgroundColor: ColorClass.redBase,
+          ),
+        );
       }
       return;
     }
@@ -709,6 +717,14 @@ class _UserMeetingScreenState extends State<UserMeetingScreen> {
         ),
       );
       Navigator.pop(context, true);
+    } else if (mounted && provider.errorMessage.isNotEmpty) {
+      // Show error message from provider (including conflict messages)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(provider.errorMessage),
+          backgroundColor: ColorClass.redBase,
+        ),
+      );
     }
   }
 }

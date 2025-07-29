@@ -102,6 +102,43 @@ class MeetingProvider extends ChangeNotifier {
     }
   }
 
+  /// Check if there's a conflict with existing meetings for the same date and hall
+  bool hasDateHallConflict(
+      DateTime startDatetime, DateTime endDatetime, String hall,
+      {String? excludeMeetingId}) {
+    // Normalize dates to compare only the date part
+    final startDate =
+        DateTime(startDatetime.year, startDatetime.month, startDatetime.day);
+    final endDate =
+        DateTime(endDatetime.year, endDatetime.month, endDatetime.day);
+
+    for (final meeting in _meetings) {
+      // Skip the meeting being edited (if any)
+      if (excludeMeetingId != null && meeting.id == excludeMeetingId) {
+        continue;
+      }
+
+      // Check if it's the same hall
+      if (meeting.hall != hall) {
+        continue;
+      }
+
+      // Normalize meeting dates
+      final meetingStartDate = DateTime(meeting.startDatetime.year,
+          meeting.startDatetime.month, meeting.startDatetime.day);
+      final meetingEndDate = DateTime(meeting.endDatetime.year,
+          meeting.endDatetime.month, meeting.endDatetime.day);
+
+      // Check for date overlap
+      if (startDate.isBefore(meetingEndDate) &&
+          endDate.isAfter(meetingStartDate)) {
+        return true; // Conflict found
+      }
+    }
+
+    return false; // No conflict
+  }
+
   /// Creates a new meeting
   Future<MeetingModel?> createMeeting(
     BuildContext context, {
@@ -123,6 +160,16 @@ class MeetingProvider extends ChangeNotifier {
     required int rent,
   }) async {
     try {
+      // Check for date and hall conflicts before creating
+      if (hasDateHallConflict(startDatetime, endDatetime, hall)) {
+        log('❌ Date and hall conflict detected for meeting creation',
+            name: 'MeetingProvider');
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+        notifyListeners();
+        return null;
+      }
+
       _isLoading = true;
       _errorMessage = '';
       notifyListeners();
@@ -159,6 +206,22 @@ class MeetingProvider extends ChangeNotifier {
       notifyListeners();
 
       return meeting;
+    } on HttpException catch (e) {
+      log('❌ HTTP Error creating meeting: $e', name: 'MeetingProvider');
+      _isLoading = false;
+
+      // Handle 409 Conflict error specifically
+      if (e.toString().contains('409')) {
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+      } else if (e.toString().contains('401')) {
+        _errorMessage = 'Authentication error. Please login again.';
+      } else {
+        _errorMessage = 'Failed to create meeting. Please try again.';
+      }
+
+      notifyListeners();
+      return null;
     } catch (e) {
       log('❌ Error creating meeting: $e', name: 'MeetingProvider');
       _isLoading = false;
@@ -325,6 +388,17 @@ class MeetingProvider extends ChangeNotifier {
     required int rent,
   }) async {
     try {
+      // Check for date and hall conflicts before updating (excluding current meeting)
+      if (hasDateHallConflict(startDatetime, endDatetime, hall,
+          excludeMeetingId: meetingId)) {
+        log('❌ Date and hall conflict detected for meeting update',
+            name: 'MeetingProvider');
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+        notifyListeners();
+        return null;
+      }
+
       _isLoading = true;
       _errorMessage = '';
       notifyListeners();
@@ -361,6 +435,22 @@ class MeetingProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return updatedMeeting;
+    } on HttpException catch (e) {
+      log('❌ HTTP Error updating meeting: $e', name: 'MeetingProvider');
+      _isLoading = false;
+
+      // Handle 409 Conflict error specifically
+      if (e.toString().contains('409')) {
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+      } else if (e.toString().contains('401')) {
+        _errorMessage = 'Authentication error. Please login again.';
+      } else {
+        _errorMessage = 'Failed to update meeting. Please try again.';
+      }
+
+      notifyListeners();
+      return null;
     } catch (e) {
       log('❌ Error updating meeting: $e', name: 'MeetingProvider');
       _isLoading = false;

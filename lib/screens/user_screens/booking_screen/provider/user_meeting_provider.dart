@@ -4,6 +4,7 @@ import 'package:hira_plus/screens/user_screens/user_home_screen/models/user_meet
 import 'package:hira_plus/utils/service_utils.dart';
 import 'dart:developer' as developer;
 import 'dart:convert';
+import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
@@ -17,6 +18,79 @@ class UserMeetingProvider extends ChangeNotifier {
   // Getters
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
+
+  /// Check if there's a conflict with existing meetings for the same date and hall
+  Future<bool> hasDateHallConflict(BuildContext context, DateTime startDatetime,
+      DateTime endDatetime, String hall,
+      {String? excludeMeetingId}) async {
+    try {
+      _logger.d('🔍 [CONFLICT] Checking for date/hall conflicts');
+      developer.log('🔍 Checking for date/hall conflicts',
+          name: 'UserMeetingProvider');
+
+      // Fetch all meetings to check for conflicts
+      final url = ApiUrls.getUserMeetings(); // auth/meetings
+      final response = await HttpServiceUtils.fetchData(url, true);
+
+      if (response == null) {
+        _logger.w('⚠️ [CONFLICT] Could not fetch meetings for conflict check');
+        return false; // Allow creation if we can't check
+      }
+
+      List<dynamic> meetingsData;
+      if (response is String) {
+        meetingsData = jsonDecode(response);
+      } else {
+        meetingsData = response as List<dynamic>;
+      }
+
+      // Normalize dates to compare only the date part
+      final startDate =
+          DateTime(startDatetime.year, startDatetime.month, startDatetime.day);
+      final endDate =
+          DateTime(endDatetime.year, endDatetime.month, endDatetime.day);
+
+      for (final meetingJson in meetingsData) {
+        final meeting = MeetingModel.fromJson(meetingJson);
+
+        // Skip the meeting being edited (if any)
+        if (excludeMeetingId != null && meeting.id == excludeMeetingId) {
+          continue;
+        }
+
+        // Check if it's the same hall
+        if (meeting.hall != hall) {
+          continue;
+        }
+
+        // Normalize meeting dates
+        final meetingStartDate = DateTime(meeting.startDatetime.year,
+            meeting.startDatetime.month, meeting.startDatetime.day);
+        final meetingEndDate = DateTime(meeting.endDatetime.year,
+            meeting.endDatetime.month, meeting.endDatetime.day);
+
+        // Check for date overlap
+        if (startDate.isBefore(meetingEndDate) &&
+            endDate.isAfter(meetingStartDate)) {
+          _logger.w(
+              '❌ [CONFLICT] Date/hall conflict found with meeting: ${meeting.id}');
+          developer.log(
+              '❌ Date/hall conflict found with meeting: ${meeting.id}',
+              name: 'UserMeetingProvider');
+          return true; // Conflict found
+        }
+      }
+
+      _logger.d('✅ [CONFLICT] No conflicts found');
+      developer.log('✅ No conflicts found', name: 'UserMeetingProvider');
+      return false; // No conflict
+    } catch (e) {
+      _logger.e('❌ [CONFLICT] Error checking for conflicts: $e');
+      developer.log('❌ Error checking for conflicts: $e',
+          name: 'UserMeetingProvider');
+      return false; // Allow creation if we can't check
+    }
+  }
 
   /// Helper method to check if current user can modify a meeting
   bool _canModifyMeeting(BuildContext context, String meetingCreatorId) {
@@ -70,6 +144,31 @@ class UserMeetingProvider extends ChangeNotifier {
       _logger.i('🆕 [API] Creating new user meeting: $title');
       developer.log('🆕 Creating new user meeting: $title',
           name: 'UserMeetingProvider');
+
+      // Check for date and hall conflicts before creating
+      final hasConflict =
+          await hasDateHallConflict(context, startDatetime, endDatetime, hall);
+      if (hasConflict) {
+        _logger.w(
+            '❌ [CONFLICT] Date and hall conflict detected for meeting creation');
+        developer.log('❌ Date and hall conflict detected for meeting creation',
+            name: 'UserMeetingProvider');
+
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+        notifyListeners();
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'This hall is already booked for the selected date and time. Please select another date or hall.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return null;
+      }
 
       _isLoading = true;
       _errorMessage = '';
@@ -134,9 +233,39 @@ class UserMeetingProvider extends ChangeNotifier {
         notifyListeners();
 
         return newMeeting;
-            } else {
+      } else {
         throw Exception('Empty response from server');
       }
+    } on HttpException catch (e) {
+      _logger.e('❌ [HTTP_ERROR] Failed to create meeting: $e');
+      developer.log('❌ HTTP Error creating meeting: $e',
+          name: 'UserMeetingProvider');
+
+      _isLoading = false;
+
+      // Handle 409 Conflict error specifically
+      if (e.toString().contains('409')) {
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+      } else if (e.toString().contains('401')) {
+        _errorMessage = 'Authentication error. Please login again.';
+      } else {
+        _errorMessage = 'Failed to create meeting. Please try again.';
+      }
+
+      notifyListeners();
+
+      // Show error to user
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
+      return null;
     } catch (e) {
       _logger.e('❌ [ERROR] Failed to create meeting: $e');
       developer.log('❌ Failed to create meeting: $e',
@@ -194,6 +323,36 @@ class UserMeetingProvider extends ChangeNotifier {
         return null;
       }
 
+      // Check for date and hall conflicts before updating (excluding current meeting)
+      final startDatetime = DateTime.parse(meetingData['startDatetime']);
+      final endDatetime = DateTime.parse(meetingData['endDatetime']);
+      final hall = meetingData['hall'];
+
+      final hasConflict = await hasDateHallConflict(
+          context, startDatetime, endDatetime, hall,
+          excludeMeetingId: meetingId);
+      if (hasConflict) {
+        _logger.w(
+            '❌ [CONFLICT] Date and hall conflict detected for meeting update');
+        developer.log('❌ Date and hall conflict detected for meeting update',
+            name: 'UserMeetingProvider');
+
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+        notifyListeners();
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'This hall is already booked for the selected date and time. Please select another date or hall.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return null;
+      }
+
       _isLoading = true;
       _errorMessage = '';
       notifyListeners();
@@ -221,6 +380,32 @@ class UserMeetingProvider extends ChangeNotifier {
       } else {
         throw Exception('Empty response from server');
       }
+    } on HttpException catch (e) {
+      _logger.e('❌ [HTTP_ERROR] Failed to update meeting: $e');
+      developer.log('❌ HTTP Error updating meeting: $e',
+          name: 'UserMeetingProvider');
+      _isLoading = false;
+
+      // Handle 409 Conflict error specifically
+      if (e.toString().contains('409')) {
+        _errorMessage =
+            'This hall is already booked for the selected date and time. Please select another date or hall.';
+      } else if (e.toString().contains('401')) {
+        _errorMessage = 'Authentication error. Please login again.';
+      } else {
+        _errorMessage = 'Failed to update meeting. Please try again.';
+      }
+
+      notifyListeners();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return null;
     } catch (e) {
       _logger.e('❌ [ERROR] Failed to update meeting: $e');
       developer.log('❌ Failed to update meeting: $e',
