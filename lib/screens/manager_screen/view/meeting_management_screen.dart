@@ -362,7 +362,8 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
             // Show rent if it's greater than 0
             if (meeting.rent > 0) ...[
               const SizedBox(height: 6),
-              _buildDetailRow(LucideIcons.dollarSign, 'Rent: ₹${meeting.rent}'),
+              _buildDetailRow(
+                  LucideIcons.indianRupee, 'Rent: ₹${meeting.rent}'),
             ],
 
             if (meeting.foodRequired) ...[
@@ -956,7 +957,7 @@ class _CreateMeetingScreenState extends State<CreateMeetingScreen> {
               _buildTextField(
                 controller: _rentController,
                 label: 'Rent Amount (₹)',
-                icon: LucideIcons.dollarSign,
+                icon: LucideIcons.indianRupee,
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
