@@ -382,7 +382,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                   onPressed: () => _approveMeeting(meeting, provider),
                   icon: const Icon(LucideIcons.check, size: 16),
                   label: Text(
-                    'Approve Meeting',
+                    'Set Rent & Approve',
                     style: TextStyleClass.poppinsMedium(fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
@@ -492,6 +492,14 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
     developer.log('✅ Approving meeting: ${meeting.id}',
         name: 'MeetingManagementScreen');
 
+    // Show rent input dialog before approval
+    final rentAmount = await _showRentInputDialog(meeting);
+
+    // If user cancelled the dialog, don't proceed with approval
+    if (rentAmount == null) {
+      return;
+    }
+
     // Show loading indicator
     showDialog(
       context: context,
@@ -501,8 +509,34 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
       ),
     );
 
-    final success =
-        await provider.updateMeetingStatus(context, meeting.id, 'approved');
+    // First update the meeting with rent amount
+    final updatedMeeting = await provider.updateMeeting(
+      context,
+      meetingId: meeting.id,
+      title: meeting.title,
+      description: meeting.description,
+      startDatetime: meeting.startDatetime,
+      endDatetime: meeting.endDatetime,
+      hall: meeting.hall,
+      noOfPersons: meeting.noOfPersons,
+      foodRequired: meeting.foodRequired,
+      breakfast: meeting.breakfast,
+      morningSnacksCount: meeting.morningSnacksCount,
+      morningTeaCount: meeting.morningTeaCount,
+      lunch: meeting.lunch,
+      eveningSnacksCount: meeting.eveningSnacksCount,
+      eveningTeaCount: meeting.eveningTeaCount,
+      dinner: meeting.dinner,
+      department: meeting.department,
+      rent: rentAmount,
+    );
+
+    bool success = false;
+    if (updatedMeeting != null) {
+      // Then approve the meeting
+      success =
+          await provider.updateMeetingStatus(context, meeting.id, 'approved');
+    }
 
     // Hide loading indicator
     if (mounted) {
@@ -512,7 +546,8 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Meeting "${meeting.title}" approved successfully'),
+          content: Text(
+              'Meeting "${meeting.title}" approved with rent ₹$rentAmount'),
           backgroundColor: ColorClass.greenBase,
         ),
       );
@@ -618,6 +653,166 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                   fontSize: 14,
                   color: ColorClass.redDark,
                 ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Shows a dialog to input rent amount before approving meeting
+  Future<int?> _showRentInputDialog(MeetingModel meeting) async {
+    final TextEditingController rentController = TextEditingController(
+      text: meeting.rent > 0 ? meeting.rent.toString() : '',
+    );
+
+    return showDialog<int>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(
+                LucideIcons.dollarSign,
+                color: ColorClass.brandDarkGreen,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Set Rent Amount',
+                  style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 18,
+                    color: ColorClass.brandDarkGreen,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Meeting: ${meeting.title}',
+                style: TextStyleClass.poppinsMedium(
+                  fontSize: 14,
+                  color: ColorClass.neutral600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Hall: ${meeting.hall}',
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 13,
+                  color: ColorClass.neutral500,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Enter rent amount to approve this meeting:',
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 14,
+                  color: ColorClass.neutral600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: rentController,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                decoration: InputDecoration(
+                  labelText: 'Rent Amount (₹)',
+                  prefixIcon: Icon(
+                    LucideIcons.dollarSign,
+                    color: ColorClass.brandDarkGreen,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: ColorClass.neutral300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: ColorClass.neutral300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide:
+                        BorderSide(color: ColorClass.brandDarkGreen, width: 2),
+                  ),
+                  filled: true,
+                  fillColor: ColorClass.neutral100,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter rent amount';
+                  }
+                  final number = int.tryParse(value);
+                  if (number == null || number < 0) {
+                    return 'Please enter a valid amount';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _logger.d('❌ [ACTION] Rent input cancelled');
+                developer.log('❌ Rent input cancelled',
+                    name: 'MeetingManagementScreen');
+                Navigator.of(dialogContext).pop(null);
+              },
+              child: Text(
+                'Cancel',
+                style: TextStyleClass.poppinsMedium(
+                  fontSize: 14,
+                  color: ColorClass.neutral500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final rentText = rentController.text.trim();
+                if (rentText.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter rent amount'),
+                      backgroundColor: ColorClass.redBase,
+                    ),
+                  );
+                  return;
+                }
+
+                final rentAmount = int.tryParse(rentText);
+                if (rentAmount == null || rentAmount < 0) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter a valid rent amount'),
+                      backgroundColor: ColorClass.redBase,
+                    ),
+                  );
+                  return;
+                }
+
+                _logger.i('✅ [ACTION] Rent amount set: ₹$rentAmount');
+                developer.log('✅ Rent amount set: ₹$rentAmount',
+                    name: 'MeetingManagementScreen');
+                Navigator.of(dialogContext).pop(rentAmount);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ColorClass.brandDarkGreen,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Approve with Rent',
+                style: TextStyleClass.poppinsMedium(fontSize: 14),
               ),
             ),
           ],
