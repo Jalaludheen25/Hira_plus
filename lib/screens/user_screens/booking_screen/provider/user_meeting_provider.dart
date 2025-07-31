@@ -8,6 +8,8 @@ import 'dart:io';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
+import 'package:hira_plus/utils/shared_utils.dart';
+import 'dart:math' as math;
 
 class UserMeetingProvider extends ChangeNotifier {
   final Logger _logger = Logger();
@@ -264,6 +266,55 @@ class UserMeetingProvider extends ChangeNotifier {
         _logger.d(
             '🍽️ [FOOD_DETAILS] Food is not required - all food counts should be 0');
       }
+
+      // Additional debugging for auth token
+      final token = await SharedUtils.getString('auth_token');
+      _logger.d(
+          '🔑 [AUTH] Current auth token: ${token.isNotEmpty ? "✓ Present" : "✗ Missing"}');
+      if (token.isNotEmpty) {
+        _logger.d('🔑 [AUTH] Token length: ${token.length}');
+        _logger.d(
+            '🔑 [AUTH] Token starts with: ${token.substring(0, math.min<int>(20, token.length))}...');
+      }
+
+      // Additional debugging for user type and department head status
+      final userType = await SharedUtils.getString('user_type');
+      final isDeptHead = await SharedUtils.getBoolean('is_dept_head');
+      _logger.d('👤 [USER] User type: $userType');
+      _logger.d('👤 [USER] Is department head: $isDeptHead');
+      _logger.d('👤 [USER] Department: $department');
+
+      // Validate that user is actually a department head
+      if (!isDeptHead) {
+        _logger.e(
+            '❌ [AUTH] User is not a department head but trying to create meeting');
+        throw Exception('Only department heads can create meetings');
+      }
+
+      // Validate all required fields are present
+      if (title.trim().isEmpty) {
+        throw Exception('Meeting title is required');
+      }
+      if (description.trim().isEmpty) {
+        throw Exception('Meeting description is required');
+      }
+      if (hall.trim().isEmpty) {
+        throw Exception('Meeting hall is required');
+      }
+      if (noOfPersons <= 0) {
+        throw Exception('Number of persons must be greater than 0');
+      }
+      if (startDatetime.isBefore(DateTime.now())) {
+        throw Exception('Start date must be in the future');
+      }
+      if (endDatetime.isBefore(startDatetime)) {
+        throw Exception('End date must be after start date');
+      }
+      if (department.trim().isEmpty) {
+        throw Exception('Department is required');
+      }
+
+      _logger.d('✅ [VALIDATION] All required fields are present and valid');
 
       _logger.d('📤 [API] Request body: $requestBody');
       developer.log('📤 Request body: $requestBody',
