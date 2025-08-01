@@ -675,7 +675,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
           title: Row(
             children: [
               Icon(
-                LucideIcons.dollarSign,
+                LucideIcons.indianRupee,
                 color: ColorClass.brandDarkGreen,
                 size: 24,
               ),
@@ -726,7 +726,7 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
                 decoration: InputDecoration(
                   labelText: 'Rent Amount (₹)',
                   prefixIcon: Icon(
-                    LucideIcons.dollarSign,
+                    LucideIcons.indianRupee,
                     color: ColorClass.brandDarkGreen,
                   ),
                   border: OutlineInputBorder(
