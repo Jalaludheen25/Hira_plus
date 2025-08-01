@@ -671,151 +671,303 @@ class _MeetingManagementScreenState extends State<MeetingManagementScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              Icon(
-                LucideIcons.indianRupee,
-                color: ColorClass.brandDarkGreen,
-                size: 24,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Set Rent Amount',
-                  style: TextStyleClass.poppinsSemiBold(
-                    fontSize: 18,
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          elevation: 8,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: ColorClass.brandWhite,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: ColorClass.brandDarkGreen.withOpacity(0.1),
+                  spreadRadius: 2,
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with icon and title
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: ColorClass.brandLightGreen.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        LucideIcons.indianRupee,
+                        color: ColorClass.brandDarkGreen,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Set Rent Amount',
+                            style: TextStyleClass.poppinsSemiBold(
+                              fontSize: 20,
+                              color: ColorClass.brandDarkGreen,
+                            ),
+                          ),
+                          Text(
+                            'Required for meeting approval',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 12,
+                              color: ColorClass.neutral500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // Meeting details card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: ColorClass.brandLightGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ColorClass.brandLightGreen.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.calendar,
+                            size: 16,
+                            color: ColorClass.brandDarkGreen,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              meeting.title,
+                              style: TextStyleClass.poppinsSemiBold(
+                                fontSize: 14,
+                                color: ColorClass.brandDarkGreen,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.mapPin,
+                            size: 14,
+                            color: ColorClass.neutral500,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            meeting.hall,
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 13,
+                              color: ColorClass.neutral600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(
+                            LucideIcons.users,
+                            size: 14,
+                            color: ColorClass.neutral500,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '${meeting.noOfPersons} attendees',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 13,
+                              color: ColorClass.neutral600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Rent input field
+                Text(
+                  'Rent Amount',
+                  style: TextStyleClass.poppinsMedium(
+                    fontSize: 14,
                     color: ColorClass.brandDarkGreen,
                   ),
                 ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Meeting: ${meeting.title}',
-                style: TextStyleClass.poppinsMedium(
-                  fontSize: 14,
-                  color: ColorClass.neutral600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Hall: ${meeting.hall}',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 13,
-                  color: ColorClass.neutral500,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Enter rent amount to approve this meeting:',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 14,
-                  color: ColorClass.neutral600,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: rentController,
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                decoration: InputDecoration(
-                  labelText: 'Rent Amount (₹)',
-                  prefixIcon: Icon(
-                    LucideIcons.indianRupee,
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: rentController,
+                  keyboardType: TextInputType.number,
+                  autofocus: true,
+                  style: TextStyleClass.poppinsMedium(
+                    fontSize: 16,
                     color: ColorClass.brandDarkGreen,
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: ColorClass.neutral300),
+                  decoration: InputDecoration(
+                    hintText: 'Enter amount in ₹',
+                    hintStyle: TextStyleClass.poppinsRegular(
+                      fontSize: 14,
+                      color: ColorClass.neutral400,
+                    ),
+                    prefixIcon: Container(
+                      margin: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: ColorClass.brandLightGreen.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        LucideIcons.indianRupee,
+                        color: ColorClass.brandDarkGreen,
+                        size: 18,
+                      ),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: ColorClass.neutral300),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: ColorClass.brandLightGreen.withOpacity(0.5)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                          color: ColorClass.brandDarkGreen, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: ColorClass.brandWhite,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: ColorClass.neutral300),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide:
-                        BorderSide(color: ColorClass.brandDarkGreen, width: 2),
-                  ),
-                  filled: true,
-                  fillColor: ColorClass.neutral100,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter rent amount';
+                    }
+                    final number = int.tryParse(value);
+                    if (number == null || number < 0) {
+                      return 'Please enter a valid amount';
+                    }
+                    return null;
+                  },
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter rent amount';
-                  }
-                  final number = int.tryParse(value);
-                  if (number == null || number < 0) {
-                    return 'Please enter a valid amount';
-                  }
-                  return null;
-                },
-              ),
-            ],
+                const SizedBox(height: 24),
+
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          _logger.d('❌ [ACTION] Rent input cancelled');
+                          developer.log('❌ Rent input cancelled',
+                              name: 'MeetingManagementScreen');
+                          Navigator.of(dialogContext).pop(null);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: ColorClass.neutral300),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyleClass.poppinsMedium(
+                            fontSize: 14,
+                            color: ColorClass.neutral600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          final rentText = rentController.text.trim();
+                          if (rentText.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text('Please enter rent amount'),
+                                backgroundColor: ColorClass.redBase,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final rentAmount = int.tryParse(rentText);
+                          if (rentAmount == null || rentAmount < 0) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                    'Please enter a valid rent amount'),
+                                backgroundColor: ColorClass.redBase,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+
+                          _logger.i('✅ [ACTION] Rent amount set: ₹$rentAmount');
+                          developer.log('✅ Rent amount set: ₹$rentAmount',
+                              name: 'MeetingManagementScreen');
+                          Navigator.of(dialogContext).pop(rentAmount);
+                        },
+                        icon: const Icon(LucideIcons.check, size: 18),
+                        label: Text(
+                          'Approve Meeting',
+                          style: TextStyleClass.poppinsSemiBold(fontSize: 14),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorClass.brandDarkGreen,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 2,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _logger.d('❌ [ACTION] Rent input cancelled');
-                developer.log('❌ Rent input cancelled',
-                    name: 'MeetingManagementScreen');
-                Navigator.of(dialogContext).pop(null);
-              },
-              child: Text(
-                'Cancel',
-                style: TextStyleClass.poppinsMedium(
-                  fontSize: 14,
-                  color: ColorClass.neutral500,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final rentText = rentController.text.trim();
-                if (rentText.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter rent amount'),
-                      backgroundColor: ColorClass.redBase,
-                    ),
-                  );
-                  return;
-                }
-
-                final rentAmount = int.tryParse(rentText);
-                if (rentAmount == null || rentAmount < 0) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter a valid rent amount'),
-                      backgroundColor: ColorClass.redBase,
-                    ),
-                  );
-                  return;
-                }
-
-                _logger.i('✅ [ACTION] Rent amount set: ₹$rentAmount');
-                developer.log('✅ Rent amount set: ₹$rentAmount',
-                    name: 'MeetingManagementScreen');
-                Navigator.of(dialogContext).pop(rentAmount);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: ColorClass.brandDarkGreen,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text(
-                'Approve with Rent',
-                style: TextStyleClass.poppinsMedium(fontSize: 14),
-              ),
-            ),
-          ],
         );
       },
     );
