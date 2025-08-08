@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/driver_screen/provider/driver_provider.dart';
 import 'package:hira_plus/screens/driver_screen/vehicles/provider/vehicle_provider.dart';
 import 'package:hira_plus/screens/driver_screen/vehicles/model/vehicle_model.dart'
-    as VehicleModel;
+    as vehicle_model;
 import 'package:hira_plus/screens/driver_screen/model/driver_route_model.dart';
 import 'package:intl/intl.dart';
 import 'package:hira_plus/utils/shared_utils.dart';
@@ -33,7 +33,7 @@ class _DriverRideReportState extends State<DriverRideReport>
   DateTime? _selectedDate;
   TimeOfDay? _selectedStartTime;
   TimeOfDay? _selectedEndTime;
-  VehicleModel.Vehicle? _selectedVehicle;
+  vehicle_model.Vehicle? _selectedVehicle;
 
   @override
   void initState() {
@@ -542,7 +542,7 @@ class _DriverRideReportState extends State<DriverRideReport>
                         ],
                       ),
                     )
-                  : DropdownButtonFormField<VehicleModel.Vehicle>(
+                  : DropdownButtonFormField<vehicle_model.Vehicle>(
                       value: _selectedVehicle,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
@@ -559,8 +559,8 @@ class _DriverRideReportState extends State<DriverRideReport>
                         ),
                       ),
                       items: vehicleProvider.vehicles
-                          .map((VehicleModel.Vehicle vehicle) {
-                        return DropdownMenuItem<VehicleModel.Vehicle>(
+                          .map((vehicle_model.Vehicle vehicle) {
+                        return DropdownMenuItem<vehicle_model.Vehicle>(
                           value: vehicle,
                           child: Text(
                             vehicle.displayName,
@@ -573,7 +573,7 @@ class _DriverRideReportState extends State<DriverRideReport>
                       }).toList(),
                       onChanged: vehicleProvider.vehicles.isEmpty
                           ? null
-                          : (VehicleModel.Vehicle? value) {
+                          : (vehicle_model.Vehicle? value) {
                               setState(() {
                                 _selectedVehicle = value;
                               });
