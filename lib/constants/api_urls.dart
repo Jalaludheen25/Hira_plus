@@ -288,4 +288,16 @@ class ApiUrls {
   static String putManagerMenuByDate() {
     return '$baseUrl/admin/menu/date';
   }
+
+  static String getTrips(String userId) {
+    return '$baseUrl/auth/user/$userId';
+  }
+
+  static String createTrip() {
+    return '$baseUrl/auth/travels';
+  }
+
+  static String getVehicles(){
+    return '$baseUrl/admin/vehicles';
+  }
 }

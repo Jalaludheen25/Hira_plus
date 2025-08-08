@@ -3,6 +3,10 @@
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:flutter/material.dart';
+import 'package:hira_plus/screens/driver_screen/driver_ride_report.dart';
+import 'package:hira_plus/screens/driver_screen/provider/driver_provider.dart';
+import 'package:hira_plus/screens/driver_screen/vehicles/provider/vehicle_provider.dart';
+// import 'package:hira_plus/screens/mark_routes/mark_routes.dart';
 import 'package:provider/provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/canteen_home_page_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meeting_list_provider.dart';
@@ -254,6 +258,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             const SizedBox(height: 16),
             // 5. All Users Widget
             _buildAllUsersWidget(context, canteenProvider),
+            const SizedBox(height: 16),
+            _driverRouteReport(context),
             const SizedBox(height: 24),
           ],
         ),
@@ -403,6 +409,49 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _driverRouteReport(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showDriverRideReportBottomSheet(context),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: ColorClass.brandDarkGreen,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.directions_car, color: ColorClass.white, size: 32),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Transportation',
+                style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 16, color: ColorClass.white),
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, color: ColorClass.white, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showDriverRideReportBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => DriverProvider()),
+          ChangeNotifierProvider(create: (_) => VehicleProvider()),
+        ],
+        child: const DriverRideReport(),
       ),
     );
   }

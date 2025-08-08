@@ -1,3 +1,5 @@
+import 'package:hira_plus/screens/driver_screen/provider/driver_provider.dart';
+import 'package:hira_plus/screens/driver_screen/vehicles/provider/vehicle_provider.dart';
 import 'package:hira_plus/screens/login_screen/provider/auth_provider.dart';
 import 'package:hira_plus/screens/manager_screen/provider/department_provider.dart';
 import 'package:hira_plus/screens/manager_screen/provider/meeting_provider.dart';
@@ -41,5 +43,7 @@ List<SingleChildWidget> getProviders() {
     ChangeNotifierProvider(create: (context) => MenuProvider()),
     ChangeNotifierProvider(create: (context) => MealMenuProvider()),
     ChangeNotifierProvider(create: (context) => MealMenuProvider()),
+    ChangeNotifierProvider(create: (context) => DriverProvider()),
+    ChangeNotifierProvider(create: (context) => VehicleProvider()),
   ];
 }
