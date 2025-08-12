@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/screens/manager_screen/models/user_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
@@ -31,11 +32,27 @@ class UsersService {
   // Get all users
   static Future<List<UserModel>> getUsers() async {
     try {
+      log('UsersService: Fetching users from ${ApiUrls.getUsers()}');
       final response =
           await HttpServiceUtils.fetchData(ApiUrls.getUsers(), true);
+      log('UsersService: Raw response: $response');
+
       final List<dynamic> usersJson = response is List ? response : [];
-      return usersJson.map((json) => UserModel.fromJson(json)).toList();
+      log('UsersService: Found ${usersJson.length} users in response');
+
+      final users = usersJson.map((json) {
+        log('UsersService: Processing user: $json');
+        return UserModel.fromJson(json);
+      }).toList();
+
+      log('UsersService: Parsed ${users.length} users');
+      for (var user in users) {
+        log('User: ${user.name} - Role: ${user.role} - isDriver: ${user.role == 'driver'}');
+      }
+
+      return users;
     } catch (e) {
+      log('UsersService: Error fetching users: $e');
       throw Exception('Error fetching users: $e');
     }
   }

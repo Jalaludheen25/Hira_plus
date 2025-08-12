@@ -31,7 +31,8 @@ class VehicleModel {
       capacity: json['capacity'] != null
           ? int.tryParse(json['capacity'].toString())
           : null,
-      status: json['status']?.toString() ?? 'available',
+      status: json['status']?.toString() ??
+          'available', // Default to available since API doesn't provide status
       createdAt:
           json['createdAt']?.toString() ?? json['created_at']?.toString(),
       updatedAt:

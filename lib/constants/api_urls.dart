@@ -298,6 +298,8 @@ class ApiUrls {
   }
 
   // ################## TRANSPORTATION APIs ##################
+  
+  // Vehicle Management APIs
   static String getVehicles() {
     return '$baseUrl/admin/vehicles';
   }
@@ -312,6 +314,11 @@ class ApiUrls {
 
   static String deleteVehicle(String vehicleId) {
     return '$baseUrl/admin/vehicles/$vehicleId';
+  }
+
+  // Travel Management APIs
+  static String getAllTravels() {
+    return '$baseUrl/admin/travel/all';
   }
 
   static String getTravels() {
@@ -330,6 +337,7 @@ class ApiUrls {
     return '$baseUrl/admin/travels/$travelId';
   }
 
+  // User Travel APIs
   static String getUserTravels(String userId) {
     return '$baseUrl/auth/user/$userId';
   }
@@ -341,4 +349,6 @@ class ApiUrls {
   static String createTrip() {
     return '$baseUrl/auth/travels';
   }
+
+  
 }
