@@ -726,9 +726,9 @@ class ManagerScreen extends StatelessWidget {
                                       MaterialPageRoute(
                                         builder: (context) =>
                                             ChangeNotifierProvider(
-                                              create: (_) => MenuProvider(),
-                                              child: const FoodMenuListScreen(),
-                                            ),
+                                          create: (_) => MenuProvider(),
+                                          child: const FoodMenuListScreen(),
+                                        ),
                                       ),
                                     );
                                   },
@@ -785,6 +785,90 @@ class ManagerScreen extends StatelessWidget {
                                               const SizedBox(height: 4),
                                               Text(
                                                 'Edit & Update food menu',
+                                                style: TextStyleClass
+                                                    .poppinsRegular(
+                                                  fontSize: 14,
+                                                  color: ColorClass.neutral500,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Icon(
+                                          LucideIcons.chevronRight,
+                                          color: ColorClass.brandDarkGreen,
+                                          size: 20,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // NEW: Transportation Management Card
+                              Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/transportation',
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandWhite,
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: ColorClass.brandLightGreen,
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: ColorClass.brandLightGreen
+                                              .withOpacity(0.1),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: ColorClass.brandLightGreen
+                                                .withOpacity(0.2),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Icon(
+                                            LucideIcons.car,
+                                            size: 28,
+                                            color: ColorClass.brandDarkGreen,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Transportation',
+                                                style: TextStyleClass
+                                                    .poppinsSemiBold(
+                                                  fontSize: 18,
+                                                  color:
+                                                      ColorClass.brandDarkGreen,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Manage vehicles, drivers & routes',
                                                 style: TextStyleClass
                                                     .poppinsRegular(
                                                   fontSize: 14,

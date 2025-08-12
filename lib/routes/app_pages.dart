@@ -16,6 +16,10 @@ import 'package:hira_plus/screens/user_screens/user_home_screen/view/user_home_s
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/user_screens/notifications/view/user_notifications_screen.dart';
 import 'package:hira_plus/screens/reception_screen/view/reception_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/transportation_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/add_user_screen.dart';
+import 'package:hira_plus/screens/manager_screen/provider/transportation_provider.dart';
+import 'package:provider/provider.dart';
 
 Map<String, WidgetBuilder> getRoutes() {
   return {
@@ -35,7 +39,13 @@ Map<String, WidgetBuilder> getRoutes() {
     Routes.bookings: (context) => const BookingScreen(),
     Routes.bulkFoodBooking: (context) => const BulkFoodBookingScreen(),
     Routes.reception: (context) => const ReceptionScreen(),
+    Routes.transportation: (context) => ChangeNotifierProvider(
+          create: (_) => TransportationProvider(),
+          child: const TransportationScreen(),
+        ),
+    Routes.addUser: (context) => ChangeNotifierProvider(
+          create: (_) => TransportationProvider(),
+          child: const AddUserScreen(),
+        ),
   };
 }
-
-

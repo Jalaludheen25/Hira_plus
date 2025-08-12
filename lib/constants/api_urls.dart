@@ -25,6 +25,14 @@ class ApiUrls {
     return '$baseUrl/admin/meals/$mealType?date=$date';
   }
 
+  static String updateUserRole(String userId) {
+    return '$baseUrl/admin/users/$userId';
+  }
+
+  static String createUser() {
+    return '$baseUrl/admin/users';
+  }
+
   // ################## AUTHENTICATION APIs ##################
   static String getVerifyOtp() {
     return '$baseUrl/auth/verify-otp';
@@ -287,5 +295,42 @@ class ApiUrls {
 
   static String putManagerMenuByDate() {
     return '$baseUrl/admin/menu/date';
+  }
+
+  // ################## TRANSPORTATION APIs ##################
+  static String getVehicles() {
+    return '$baseUrl/admin/vehicles';
+  }
+
+  static String addVehicle() {
+    return '$baseUrl/admin/vehicles';
+  }
+
+  static String editVehicle(String vehicleId) {
+    return '$baseUrl/admin/vehicles/$vehicleId';
+  }
+
+  static String deleteVehicle(String vehicleId) {
+    return '$baseUrl/admin/vehicles/$vehicleId';
+  }
+
+  static String getTravels() {
+    return '$baseUrl/admin/travels';
+  }
+
+  static String addTravel() {
+    return '$baseUrl/admin/travels';
+  }
+
+  static String editTravel(String travelId) {
+    return '$baseUrl/admin/travels/$travelId';
+  }
+
+  static String deleteTravel(String travelId) {
+    return '$baseUrl/admin/travels/$travelId';
+  }
+
+  static String getUserTravels(String userId) {
+    return '$baseUrl/auth/user/$userId';
   }
 }

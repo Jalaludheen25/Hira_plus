@@ -15,8 +15,8 @@ import 'package:hira_plus/screens/manager_screen/provider/users_provider.dart';
 import 'package:hira_plus/screens/mess_staff_screen/provider/mess_staff_meal_provider.dart';
 import 'package:hira_plus/screens/forced_update_screen/provider/version_check_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meal_menu_provider.dart';
-import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meal_menu_provider.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/provider/meeting_list_provider.dart';
+import 'package:hira_plus/screens/manager_screen/provider/transportation_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
@@ -40,6 +40,6 @@ List<SingleChildWidget> getProviders() {
     ChangeNotifierProvider(create: (context) => DepartmentProvider()),
     ChangeNotifierProvider(create: (context) => MenuProvider()),
     ChangeNotifierProvider(create: (context) => MealMenuProvider()),
-    ChangeNotifierProvider(create: (context) => MealMenuProvider()),
+    ChangeNotifierProvider(create: (context) => TransportationProvider()),
   ];
 }
