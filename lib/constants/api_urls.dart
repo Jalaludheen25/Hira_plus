@@ -341,8 +341,4 @@ class ApiUrls {
   static String createTrip() {
     return '$baseUrl/auth/travels';
   }
-
-  static String getVehicles(){
-    return '$baseUrl/admin/vehicles';
-  }
 }
