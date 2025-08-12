@@ -227,16 +227,6 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
               fillColor: ColorClass.neutral100,
             ),
             items: [
-              DropdownMenuItem<UserRole?>(
-                value: null,
-                child: Text(
-                  'No Role',
-                  style: TextStyleClass.poppinsRegular(
-                    fontSize: 14,
-                    color: ColorClass.neutral400,
-                  ),
-                ),
-              ),
               ...UserRole.allRoles.map((role) => DropdownMenuItem<UserRole?>(
                     value: role,
                     child: Text(

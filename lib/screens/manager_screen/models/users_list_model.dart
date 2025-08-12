@@ -52,9 +52,7 @@ class UsersListModel {
             ? null
             : DateTime.parse(json["createdAt"]),
         isDeptHead: json["isDeptHead"],
-        role: json["isDriver"] == true
-            ? UserRole.driver
-            : (json["role"] != null ? UserRole.fromString(json["role"]) : null),
+        role: UserRole.fromString(json["role"]),
       );
 
   Map<String, dynamic> toJson() => {
@@ -67,6 +65,6 @@ class UsersListModel {
         "isVerified": isVerified,
         "createdAt": createdAt?.toIso8601String(),
         "isDeptHead": isDeptHead,
-        "role": role?.value,
+        "role": role?.toApiString(),
       };
 }

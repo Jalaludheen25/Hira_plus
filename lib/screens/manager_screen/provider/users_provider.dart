@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/constants/user_role_enum.dart';
@@ -121,7 +120,7 @@ class UsersProvider extends ChangeNotifier {
         "name": name,
         "department": department,
         "designation": designation,
-        "isDriver": role == UserRole.driver, // Backend uses isDriver boolean
+        "role": role?.toApiString() ?? 'member',
         "isDeptHead": isDeptHead,
         "status": "active", // Required field
         "isFreeFood": false, // Required field
@@ -168,7 +167,7 @@ class UsersProvider extends ChangeNotifier {
         "name": name,
         "department": department,
         "designation": designation,
-        "isDriver": true, // Backend uses isDriver boolean
+        "role": role?.toApiString() ?? 'member',
         "isDeptHead": isDeptHead,
         "status": "active", // Required field
         "isFreeFood": false, // Required field

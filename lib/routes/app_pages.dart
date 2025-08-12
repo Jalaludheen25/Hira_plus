@@ -9,15 +9,15 @@ import 'package:hira_plus/screens/user_screens/contact_us/contact_us_screen.dart
 import 'package:hira_plus/screens/mess_staff_screen/view/mess_staff_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/manager_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/user_list_screem/users_list_screen.dart';
 import 'package:hira_plus/screens/forced_update_screen/view/force_update_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/user_screens/user_home_screen/view/user_home_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/messages_screen.dart';
 import 'package:hira_plus/screens/user_screens/notifications/view/user_notifications_screen.dart';
 import 'package:hira_plus/screens/reception_screen/view/reception_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/transportation_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/add_user_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/transportation_screen/transportation_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/user_list_screem/add_user_screen.dart';
 import 'package:hira_plus/screens/manager_screen/provider/transportation_provider.dart';
 import 'package:provider/provider.dart';
 
