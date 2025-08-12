@@ -16,6 +16,9 @@ class UserEditBottomSheet extends StatefulWidget {
   final bool initialIsVerified;
   final bool initialIsDeptHead;
   final UserRole? initialRole;
+  final String? initialStatus;
+  final bool initialIsFreeFood;
+  final bool initialIsIntern;
   final Function(
       String name,
       String phoneNumber,
@@ -23,7 +26,10 @@ class UserEditBottomSheet extends StatefulWidget {
       String designation,
       bool isVerified,
       bool isDeptHead,
-      UserRole? role) onSave;
+      UserRole? role,
+      String status,
+      bool isFreeFood,
+      bool isIntern) onSave;
 
   const UserEditBottomSheet({
     Key? key,
@@ -35,6 +41,9 @@ class UserEditBottomSheet extends StatefulWidget {
     required this.initialIsVerified,
     required this.initialIsDeptHead,
     required this.initialRole,
+    this.initialStatus,
+    required this.initialIsFreeFood,
+    required this.initialIsIntern,
     required this.onSave,
   }) : super(key: key);
 
@@ -50,6 +59,11 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
   bool _isSaving = false;
   bool _isDeptHead = false;
   UserRole? _selectedRole;
+  String _selectedStatus = 'active';
+  bool _isFreeFood = false;
+  bool _isIntern = false;
+
+  final List<String> _statusOptions = ['active', 'inactive'];
 
   @override
   void initState() {
@@ -63,6 +77,9 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
         TextEditingController(text: widget.initialDesignation);
     _isDeptHead = widget.initialIsDeptHead;
     _selectedRole = widget.initialRole;
+    _selectedStatus = widget.initialStatus ?? 'active';
+    _isFreeFood = widget.initialIsFreeFood;
+    _isIntern = widget.initialIsIntern;
 
     // Load departments after the first frame to ensure context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -100,6 +117,9 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
         context.read<UsersProvider>().tempIsVerified,
         _isDeptHead,
         _selectedRole,
+        _selectedStatus,
+        _isFreeFood,
+        _isIntern,
       );
       if (result is Future) {
         await result;
@@ -112,194 +132,535 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
     }
   }
 
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required String hint,
+    TextInputType? keyboardType,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: ColorClass.neutral100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ColorClass.neutral200),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          prefixIcon: Icon(icon, color: ColorClass.brandDarkGreen, size: 20),
+          labelStyle: TextStyleClass.poppinsMedium(
+            fontSize: 14,
+            color: ColorClass.textSub500,
+          ),
+          hintStyle: TextStyleClass.poppinsRegular(
+            fontSize: 14,
+            color: ColorClass.neutral400,
+          ),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown<T>({
+    required T? value,
+    required List<DropdownMenuItem<T>> items,
+    required Function(T?) onChanged,
+    required String label,
+    required IconData icon,
+    String? hint,
+    double? maxHeight,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: ColorClass.neutral100,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: ColorClass.neutral200),
+      ),
+      child: DropdownButtonFormField<T>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+          hintText: hint,
+          prefixIcon: Icon(icon, color: ColorClass.brandDarkGreen, size: 20),
+          labelStyle: TextStyleClass.poppinsMedium(
+            fontSize: 14,
+            color: ColorClass.textSub500,
+          ),
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          floatingLabelBehavior: FloatingLabelBehavior.always,
+        ),
+        menuMaxHeight: maxHeight,
+        items: items,
+        onChanged: onChanged,
+        dropdownColor: ColorClass.bgWhite0,
+        borderRadius: BorderRadius.circular(12),
+        style: TextStyleClass.poppinsRegular(
+          fontSize: 14,
+          color: ColorClass.textMain900,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16,
-        right: 16,
-        top: 16,
+    return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height *
+            0.85, // Limit to 85% of screen height
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            widget.title,
-            style: TextStyleClass.poppinsSemiBold(
-                fontSize: 20, color: ColorClass.textMain900),
+      decoration: const BoxDecoration(
+        color: ColorClass.bgWhite0,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: ColorClass.boxShadow,
+            blurRadius: 20,
+            offset: Offset(0, -5),
           ),
-          const SizedBox(height: 24),
-          TextField(
-            controller: _nameController,
-            decoration: InputDecoration(
-              labelText: 'Name',
-              labelStyle: TextStyleClass.poppinsRegular(
-                  fontSize: 14, color: ColorClass.neutral400),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 20,
+          right: 20,
+          top: 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Fixed header with handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: ColorClass.neutral300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _phoneNumberController,
-            decoration: InputDecoration(
-              labelText: 'Phone Number',
-              labelStyle: TextStyleClass.poppinsRegular(
-                  fontSize: 14, color: ColorClass.neutral400),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            keyboardType: TextInputType.phone,
-          ),
-          const SizedBox(height: 16),
-          Consumer<DepartmentProvider>(
-            builder: (context, deptProvider, _) {
-              if (deptProvider.isLoading) {
-                return Container(
-                  height: 56,
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: ColorClass.neutral300),
-                    borderRadius: BorderRadius.circular(8),
-                    color: ColorClass.neutral100,
-                  ),
-                  child: const Center(child: CupertinoActivityIndicator()),
-                );
-              }
-
-              if (deptProvider.error != null) {
-                return Text(
-                  deptProvider.error!,
-                  style: TextStyleClass.poppinsRegular(
-                      fontSize: 14, color: ColorClass.redBase),
-                );
-              }
-
-              final departments = deptProvider.departments;
-
-              return DropdownButtonFormField<String>(
-                value: _selectedDepartment ??
-                    (departments.isNotEmpty ? departments.first : null),
-                decoration: InputDecoration(
-                  labelText: 'Select Department',
-                  labelStyle: TextStyleClass.poppinsRegular(
-                      fontSize: 14, color: ColorClass.neutral400),
-                  border: OutlineInputBorder(
+                    color: ColorClass.brandDarkGreen.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  filled: true,
-                  fillColor: ColorClass.neutral100,
+                  child: Icon(
+                    Icons.edit,
+                    color: ColorClass.brandDarkGreen,
+                    size: 20,
+                  ),
                 ),
-                items: departments
-                    .map((dept) => DropdownMenuItem<String>(
-                          value: dept,
-                          child: Text(dept),
-                        ))
-                    .toList(),
-                onChanged: (val) {
-                  setState(() {
-                    _selectedDepartment = val;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please select a department';
-                  }
-                  return null;
-                },
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-          DropdownButtonFormField<UserRole?>(
-            value: _selectedRole,
-            decoration: InputDecoration(
-              labelText: 'User Role (Optional)',
-              labelStyle: TextStyleClass.poppinsRegular(
-                  fontSize: 14, color: ColorClass.neutral400),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              filled: true,
-              fillColor: ColorClass.neutral100,
+                const SizedBox(width: 12),
+                Text(
+                  widget.title,
+                  style: TextStyleClass.poppinsSemiBold(
+                      fontSize: 22, color: ColorClass.textMain900),
+                ),
+              ],
             ),
-            items: [
-              DropdownMenuItem<UserRole?>(
-                value: null,
-                child: Text(
-                  'No Role',
-                  style: TextStyleClass.poppinsRegular(
-                    fontSize: 14,
-                    color: ColorClass.neutral400,
-                  ),
-                ),
-              ),
-              ...UserRole.allRoles.map((role) => DropdownMenuItem<UserRole?>(
-                    value: role,
-                    child: Text(
-                      role.displayName,
-                      style: TextStyleClass.poppinsRegular(
-                        fontSize: 14,
-                        color: ColorClass.textMain900,
+            const SizedBox(height: 24),
+
+            // Scrollable content
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildTextField(
+                      controller: _nameController,
+                      label: 'Full Name',
+                      icon: Icons.person_outline,
+                      hint: 'Enter full name',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      controller: _phoneNumberController,
+                      label: 'Phone Number',
+                      icon: Icons.phone_outlined,
+                      hint: 'Enter phone number',
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    Consumer<DepartmentProvider>(
+                      builder: (context, deptProvider, _) {
+                        if (deptProvider.isLoading) {
+                          return Container(
+                            height: 56,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: ColorClass.neutral300),
+                              borderRadius: BorderRadius.circular(8),
+                              color: ColorClass.neutral100,
+                            ),
+                            child: const Center(
+                                child: CupertinoActivityIndicator()),
+                          );
+                        }
+
+                        if (deptProvider.error != null) {
+                          return Text(
+                            deptProvider.error!,
+                            style: TextStyleClass.poppinsRegular(
+                                fontSize: 14, color: ColorClass.redBase),
+                          );
+                        }
+
+                        final departments = deptProvider.departments;
+
+                        return DropdownButtonFormField<String>(
+                          value: _selectedDepartment ??
+                              (departments.isNotEmpty
+                                  ? departments.first
+                                  : null),
+                          decoration: InputDecoration(
+                            labelText: 'Select Department',
+                            labelStyle: TextStyleClass.poppinsRegular(
+                                fontSize: 14, color: ColorClass.neutral400),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            filled: true,
+                            fillColor: ColorClass.neutral100,
+                          ),
+                          menuMaxHeight: 200, // Limit dropdown height
+                          items: departments
+                              .map((dept) => DropdownMenuItem<String>(
+                                    value: dept,
+                                    child: Text(dept),
+                                  ))
+                              .toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedDepartment = val;
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please select a department';
+                            }
+                            return null;
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<UserRole?>(
+                      value: _selectedRole,
+                      decoration: InputDecoration(
+                        labelText: 'User Role (Optional)',
+                        labelStyle: TextStyleClass.poppinsRegular(
+                            fontSize: 14, color: ColorClass.neutral400),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: ColorClass.neutral100,
+                      ),
+                      items: [
+                        ...UserRole.allRoles
+                            .map((role) => DropdownMenuItem<UserRole?>(
+                                  value: role,
+                                  child: Text(
+                                    role.displayName,
+                                    style: TextStyleClass.poppinsRegular(
+                                      fontSize: 14,
+                                      color: ColorClass.textMain900,
+                                    ),
+                                  ),
+                                )),
+                      ],
+                      onChanged: (UserRole? newRole) {
+                        setState(() {
+                          _selectedRole = newRole;
+                        });
+                        debugPrint(
+                            '[UserEditBottomSheet] Role changed to: ${newRole?.displayName ?? 'No Role'}');
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTextField(
+                      controller: _designationController,
+                      label: 'Designation',
+                      icon: Icons.work_outline,
+                      hint: 'Enter designation',
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Status Dropdown
+                    _buildDropdown<String>(
+                      value: _selectedStatus,
+                      label: 'User Status',
+                      icon: Icons.check_circle_outline,
+                      hint: 'Select status',
+                      items: _statusOptions.map((status) {
+                        return DropdownMenuItem(
+                          value: status,
+                          child: Text(
+                            status.toUpperCase(),
+                            style: TextStyleClass.poppinsMedium(
+                              fontSize: 14,
+                              color: ColorClass.textMain900,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedStatus = value!;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Additional Options Section
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 3,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: ColorClass.brandDarkGreen,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Additional Options',
+                            style: TextStyleClass.poppinsSemiBold(
+                              fontSize: 16,
+                              color: ColorClass.brandDarkGreen,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  )),
-            ],
-            onChanged: (UserRole? newRole) {
-              setState(() {
-                _selectedRole = newRole;
-              });
-              debugPrint(
-                  '[UserEditBottomSheet] Role changed to: ${newRole?.displayName ?? 'No Role'}');
-            },
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _designationController,
-            decoration: InputDecoration(
-              labelText: 'Designation',
-              labelStyle: TextStyleClass.poppinsRegular(
-                  fontSize: 14, color: ColorClass.neutral400),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 12),
+                    // Department Head Switch
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ColorClass.bgWhite0,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: ColorClass.neutral200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorClass.neutral200.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Department Head',
+                                style:
+                                    TextStyleClass.poppinsMedium(fontSize: 14),
+                              ),
+                              Text(
+                                'Is this user a department head?',
+                                style: TextStyleClass.poppinsRegular(
+                                  fontSize: 12,
+                                  color: ColorClass.neutral500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: _isDeptHead,
+                            onChanged: (value) {
+                              setState(() {
+                                _isDeptHead = value;
+                              });
+                            },
+                            activeColor: ColorClass.brandDarkGreen,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Free Food Switch
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ColorClass.bgWhite0,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: ColorClass.neutral200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorClass.neutral200.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Free Food',
+                                style:
+                                    TextStyleClass.poppinsMedium(fontSize: 14),
+                              ),
+                              Text(
+                                'Does this user get free food?',
+                                style: TextStyleClass.poppinsRegular(
+                                  fontSize: 12,
+                                  color: ColorClass.neutral500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: _isFreeFood,
+                            onChanged: (value) {
+                              setState(() {
+                                _isFreeFood = value;
+                              });
+                            },
+                            activeColor: ColorClass.brandDarkGreen,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Intern Switch
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: ColorClass.bgWhite0,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: ColorClass.neutral200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: ColorClass.neutral200.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Intern',
+                                style:
+                                    TextStyleClass.poppinsMedium(fontSize: 14),
+                              ),
+                              Text(
+                                'Is this user an intern?',
+                                style: TextStyleClass.poppinsRegular(
+                                  fontSize: 12,
+                                  color: ColorClass.neutral500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: _isIntern,
+                            onChanged: (value) {
+                              setState(() {
+                                _isIntern = value;
+                              });
+                            },
+                            activeColor: ColorClass.brandDarkGreen,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 24),
-          CheckboxListTile(
-            value: _isDeptHead,
-            onChanged: (val) {
-              setState(() {
-                _isDeptHead = val ?? false;
-              });
-            },
-            title: Text('Department Head',
-                style: TextStyleClass.poppinsRegular(fontSize: 16)),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
-          ),
-          ElevatedButton(
-            onPressed: _isSaving ? null : _handleSave,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ColorClass.brandDarkGreen,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: _isSaving
-                ? const CupertinoActivityIndicator(color: Colors.white)
-                : Text(
-                    'Save',
-                    style: TextStyleClass.poppinsMedium(
-                        fontSize: 16, color: Colors.white),
+
+            // Fixed save button at bottom
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              height: 56,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    ColorClass.brandDarkGreen,
+                    ColorClass.brandGreen,
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorClass.brandDarkGreen.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-          ),
-          const SizedBox(height: 16),
-        ],
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _handleSave,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: _isSaving
+                    ? const CupertinoActivityIndicator(color: Colors.white)
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.save_outlined,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Save Changes',
+                            style: TextStyleClass.poppinsSemiBold(
+                                fontSize: 16, color: Colors.white),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

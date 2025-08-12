@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/user_role_enum.dart';
 
 import 'package:hira_plus/screens/manager_screen/models/users_list_model.dart';
 import 'package:hira_plus/routes/app_routes.dart';
@@ -28,6 +29,8 @@ class UsersListScreen extends StatefulWidget {
 class _UsersListScreenState extends State<UsersListScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchText = '';
+  final GlobalKey _filterIconKey = GlobalKey();
+  OverlayEntry? _overlayEntry;
 
   @override
   void initState() {
@@ -36,6 +39,158 @@ class _UsersListScreenState extends State<UsersListScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<UsersProvider>(context, listen: false).fetchUsers();
     });
+  }
+
+  @override
+  void dispose() {
+    _removeOverlay();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  void _showFilterDropdown(UsersProvider provider) {
+    if (_overlayEntry != null) {
+      _removeOverlay();
+      return;
+    }
+
+    final RenderBox renderBox =
+        _filterIconKey.currentContext!.findRenderObject() as RenderBox;
+    final position = renderBox.localToGlobal(Offset.zero);
+    final size = renderBox.size;
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) => GestureDetector(
+        onTap: _removeOverlay,
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            Positioned(
+              left: position.dx - 200 + size.width,
+              top: position.dy + size.height + 8,
+              child: Material(
+                elevation: 8,
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: 200,
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  decoration: BoxDecoration(
+                    color: ColorClass.bgWhite0,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: ColorClass.neutral300),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: ColorClass.brandDarkGreen.withOpacity(0.1),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              LucideIcons.filter,
+                              color: ColorClass.brandDarkGreen,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Filter by Department',
+                              style: TextStyleClass.poppinsMedium(
+                                fontSize: 14,
+                                color: ColorClass.brandDarkGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Flexible(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              _buildFilterOption(
+                                'All Departments',
+                                'All',
+                                provider.selectedDepartment,
+                                provider,
+                              ),
+                              ...provider.availableDepartments
+                                  .map((department) => _buildFilterOption(
+                                        department,
+                                        department,
+                                        provider.selectedDepartment,
+                                        provider,
+                                      )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  Widget _buildFilterOption(String title, String value, String? selectedValue,
+      UsersProvider provider) {
+    final isSelected = selectedValue == value;
+
+    return GestureDetector(
+      onTap: () {
+        provider.setSelectedDepartment(value);
+        _removeOverlay();
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? ColorClass.brandDarkGreen.withOpacity(0.1)
+              : Colors.transparent,
+        ),
+        child: Row(
+          children: [
+            if (isSelected)
+              Icon(
+                LucideIcons.check,
+                color: ColorClass.brandDarkGreen,
+                size: 16,
+              )
+            else
+              const SizedBox(width: 16),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyleClass.poppinsRegular(
+                  fontSize: 14,
+                  color: isSelected
+                      ? ColorClass.brandDarkGreen
+                      : ColorClass.textMain900,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _showEditUserSheet(
@@ -55,10 +210,23 @@ class _UsersListScreenState extends State<UsersListScreen> {
           initialIsVerified: user.isVerified == true,
           initialIsDeptHead: user.isDeptHead == true,
           initialRole: user.role,
+          initialStatus: user.status ?? 'active',
+          initialIsFreeFood: user.isFreeFood == true,
+          initialIsIntern: user.isIntern == true,
           onSave: (name, phoneNumber, department, designation, isVerified,
-              isDeptHead, role) {
-            provider.updateUser(user.id!, name, phoneNumber, department,
-                designation, isVerified, isDeptHead, role);
+              isDeptHead, role, status, isFreeFood, isIntern) {
+            provider.updateUser(
+                user.id!,
+                name,
+                phoneNumber,
+                department,
+                designation,
+                isVerified,
+                isDeptHead,
+                role,
+                status,
+                isFreeFood,
+                isIntern);
           },
         );
       },
@@ -78,6 +246,43 @@ class _UsersListScreenState extends State<UsersListScreen> {
           provider.deleteUser(id);
         },
       ),
+    );
+  }
+
+  void _showAddUserSheet(BuildContext context, UsersProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return UserEditBottomSheet(
+          title: 'Add User',
+          initialName: '',
+          initialPhoneNumber: '',
+          initialDepartment: '',
+          initialDesignation: '',
+          initialIsVerified: false,
+          initialIsDeptHead: false,
+          initialRole: null,
+          initialStatus: 'active',
+          initialIsFreeFood: false,
+          initialIsIntern: false,
+          onSave: (name, phoneNumber, department, designation, isVerified,
+              isDeptHead, role, status, isFreeFood, isIntern) {
+            provider.addUser(
+              name,
+              phoneNumber,
+              department,
+              designation,
+              isVerified,
+              isDeptHead,
+              role,
+            );
+          },
+        );
+      },
     );
   }
 
@@ -145,64 +350,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
 
           const SizedBox(height: 16),
 
-          // Department Filter Dropdown
-          Container(
-            height: 48,
-            decoration: BoxDecoration(
-              color: ColorClass.neutral100,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: ColorClass.neutral300),
-            ),
-            child: DropdownButtonFormField<String>(
-              value: provider.selectedDepartment,
-              decoration: InputDecoration(
-                hintText: 'Filter by Department',
-                hintStyle: TextStyleClass.poppinsRegular(
-                  fontSize: 14,
-                  color: ColorClass.neutral400,
-                ),
-                prefixIcon: Icon(
-                  LucideIcons.filter,
-                  color: ColorClass.brandDarkGreen,
-                  size: 18,
-                ),
-                border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              ),
-              items: [
-                DropdownMenuItem<String>(
-                  value: 'All',
-                  child: Text(
-                    'All Departments',
-                    style: TextStyleClass.poppinsRegular(
-                      fontSize: 14,
-                      color: ColorClass.textMain900,
-                    ),
-                  ),
-                ),
-                ...provider.availableDepartments.map((String department) {
-                  return DropdownMenuItem<String>(
-                    value: department,
-                    child: Text(
-                      department,
-                      style: TextStyleClass.poppinsRegular(
-                        fontSize: 14,
-                        color: ColorClass.textMain900,
-                      ),
-                    ),
-                  );
-                }),
-              ],
-              onChanged: (String? newValue) {
-                provider.setSelectedDepartment(newValue);
-              },
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Search Bar
+          // Search Bar with Filter Icon
           Container(
             decoration: BoxDecoration(
               color: ColorClass.neutral100,
@@ -218,6 +366,34 @@ class _UsersListScreenState extends State<UsersListScreen> {
                 border: InputBorder.none,
                 prefixIcon:
                     const Icon(Icons.search, color: ColorClass.neutral400),
+                suffixIcon: GestureDetector(
+                  key: _filterIconKey,
+                  onTap: () => _showFilterDropdown(provider),
+                  child: Container(
+                    margin: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: provider.selectedDepartment != null &&
+                              provider.selectedDepartment != 'All'
+                          ? ColorClass.brandDarkGreen.withOpacity(0.1)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: provider.selectedDepartment != null &&
+                              provider.selectedDepartment != 'All'
+                          ? Border.all(
+                              color: ColorClass.brandDarkGreen.withOpacity(0.3))
+                          : null,
+                    ),
+                    child: Icon(
+                      LucideIcons.filter,
+                      color: provider.selectedDepartment != null &&
+                              provider.selectedDepartment != 'All'
+                          ? ColorClass.brandDarkGreen
+                          : ColorClass.neutral400,
+                      size: 20,
+                    ),
+                  ),
+                ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
@@ -291,7 +467,8 @@ class _UsersListScreenState extends State<UsersListScreen> {
                             ),
                             Row(
                               children: [
-                                if (user.role != null) ...[
+                                if (user.role != null &&
+                                    user.role != UserRole.member) ...[
                                   Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 8, vertical: 2),
@@ -378,9 +555,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
           ),
           floatingActionButton: MediaQuery.of(context).viewInsets.bottom == 0
               ? FloatingActionButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.addUser);
-                  },
+                  onPressed: () => _showAddUserSheet(context, provider),
                   backgroundColor: ColorClass.brandDarkGreen,
                   child: const Icon(Icons.add, color: Colors.white),
                 )

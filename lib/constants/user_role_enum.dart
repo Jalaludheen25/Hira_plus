@@ -1,5 +1,7 @@
 enum UserRole {
-  driver('driver', 'Driver');
+  driver('driver', 'Driver'),
+  accountant('accountant', 'Accountant'),
+  member('member', 'Member');
 
   const UserRole(this.value, this.displayName);
 
@@ -11,6 +13,10 @@ enum UserRole {
     switch (value.toLowerCase()) {
       case 'driver':
         return UserRole.driver;
+      case 'accountant':
+        return UserRole.accountant;
+      case 'member':
+        return UserRole.member;
       default:
         return null; // Return null for unknown values
     }
@@ -20,4 +26,7 @@ enum UserRole {
 
   // Helper method to check if this role maps to isDriver
   bool get isDriverRole => this == UserRole.driver;
+
+  // Helper to convert enum to API string
+  String toApiString() => value;
 }

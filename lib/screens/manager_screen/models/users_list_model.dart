@@ -23,6 +23,9 @@ class UsersListModel {
   DateTime? createdAt;
   bool? isDeptHead;
   UserRole? role;
+  String? status;
+  bool? isFreeFood;
+  bool? isIntern;
 
   UsersListModel({
     this.id,
@@ -35,6 +38,9 @@ class UsersListModel {
     this.createdAt,
     this.isDeptHead,
     this.role,
+    this.status,
+    this.isFreeFood,
+    this.isIntern,
   });
 
   factory UsersListModel.fromJson(Map<String, dynamic> json) => UsersListModel(
@@ -52,9 +58,10 @@ class UsersListModel {
             ? null
             : DateTime.parse(json["createdAt"]),
         isDeptHead: json["isDeptHead"],
-        role: json["isDriver"] == true
-            ? UserRole.driver
-            : (json["role"] != null ? UserRole.fromString(json["role"]) : null),
+        role: UserRole.fromString(json["role"]),
+        status: json["status"],
+        isFreeFood: json["isFreeFood"],
+        isIntern: json["isIntern"],
       );
 
   Map<String, dynamic> toJson() => {
@@ -67,6 +74,9 @@ class UsersListModel {
         "isVerified": isVerified,
         "createdAt": createdAt?.toIso8601String(),
         "isDeptHead": isDeptHead,
-        "role": role?.value,
+        "role": role?.toApiString(),
+        "status": status,
+        "isFreeFood": isFreeFood,
+        "isIntern": isIntern,
       };
 }

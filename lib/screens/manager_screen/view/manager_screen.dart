@@ -8,7 +8,7 @@ import 'package:hira_plus/screens/bottom_nav/provider/bottom_nav_provider.dart';
 import 'package:hira_plus/screens/manager_screen/view/banner_dialog.dart';
 import 'package:hira_plus/screens/manager_screen/view/food_menu_list_screen.dart';
 import 'package:hira_plus/screens/manager_screen/view/marking_list_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/users_list_screen.dart';
+import 'package:hira_plus/screens/manager_screen/view/user_list_screem/users_list_screen.dart';
 import 'package:hira_plus/screens/profile_screen/provider/profile_screen_provider.dart';
 import 'package:hira_plus/screens/profile_screen/widgets/logout_confirmation_bottom_sheet.dart';
 import 'package:hira_plus/screens/profile_screen/widgets/powered_by_section.dart';
