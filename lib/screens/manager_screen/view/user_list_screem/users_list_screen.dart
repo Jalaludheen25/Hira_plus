@@ -95,6 +95,43 @@ class _UsersListScreenState extends State<UsersListScreen> {
     );
   }
 
+  void _showAddUserSheet(BuildContext context, UsersProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return UserEditBottomSheet(
+          title: 'Add User',
+          initialName: '',
+          initialPhoneNumber: '',
+          initialDepartment: '',
+          initialDesignation: '',
+          initialIsVerified: false,
+          initialIsDeptHead: false,
+          initialRole: null,
+          initialStatus: 'active',
+          initialIsFreeFood: false,
+          initialIsIntern: false,
+          onSave: (name, phoneNumber, department, designation, isVerified,
+              isDeptHead, role, status, isFreeFood, isIntern) {
+            provider.addUser(
+              name,
+              phoneNumber,
+              department,
+              designation,
+              isVerified,
+              isDeptHead,
+              role,
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildHeaderSection(UsersProvider provider) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
@@ -393,9 +430,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
           ),
           floatingActionButton: MediaQuery.of(context).viewInsets.bottom == 0
               ? FloatingActionButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, Routes.addUser);
-                  },
+                  onPressed: () => _showAddUserSheet(context, provider),
                   backgroundColor: ColorClass.brandDarkGreen,
                   child: const Icon(Icons.add, color: Colors.white),
                 )
