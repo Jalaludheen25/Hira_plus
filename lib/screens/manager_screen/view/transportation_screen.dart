@@ -17,6 +17,8 @@ class TransportationScreen extends StatefulWidget {
 }
 
 class _TransportationScreenState extends State<TransportationScreen> {
+  bool _showAllRecentRoutes = false;
+
   @override
   void initState() {
     super.initState();
@@ -230,37 +232,43 @@ class _TransportationScreenState extends State<TransportationScreen> {
             );
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Available Drivers Section
-                _buildSectionHeader('Available Drivers', LucideIcons.users),
-                const SizedBox(height: 12),
-                _buildDriversList(provider.availableDrivers),
+          return RefreshIndicator(
+            onRefresh: () async {
+              await provider.fetchAllData();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Available Drivers Section
+                  _buildSectionHeader('Available Drivers', LucideIcons.users),
+                  const SizedBox(height: 12),
+                  _buildDriversList(provider.availableDrivers),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Available Vehicles Section
-                _buildSectionHeader('Available Vehicles', LucideIcons.car),
-                const SizedBox(height: 12),
-                _buildVehiclesList(provider.vehicles),
+                  // Available Vehicles Section
+                  _buildSectionHeader('Available Vehicles', LucideIcons.car),
+                  const SizedBox(height: 12),
+                  _buildVehiclesList(provider.availableVehicles),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // In Route Section
-                _buildSectionHeader('In Route', LucideIcons.navigation),
-                const SizedBox(height: 12),
-                _buildInRouteList(provider.inRouteItems),
+                  // In Route Section
+                  _buildSectionHeader('In Route', LucideIcons.navigation),
+                  const SizedBox(height: 12),
+                  _buildInRouteList(provider.inRouteItems),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Recent Routes Section
-                _buildSectionHeader('Recent Routes', LucideIcons.clock),
-                const SizedBox(height: 12),
-                _buildRecentRoutesList(provider.recentRoutes),
-              ],
+                  // Recent Routes Section
+                  _buildSectionHeader('Recent Routes', LucideIcons.clock),
+                  const SizedBox(height: 12),
+                  _buildRecentRoutesList(provider.recentRoutes),
+                ],
+              ),
             ),
           );
         },
@@ -332,20 +340,6 @@ class _TransportationScreenState extends State<TransportationScreen> {
                 color: ColorClass.neutral500,
               ),
             ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: ColorClass.brandLightGreen.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'Available',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 12,
-                  color: ColorClass.brandDarkGreen,
-                ),
-              ),
-            ),
           );
         },
       ),
@@ -387,28 +381,10 @@ class _TransportationScreenState extends State<TransportationScreen> {
               style: TextStyleClass.poppinsMedium(fontSize: 16),
             ),
             subtitle: Text(
-              '${vehicle.vehicleNumber ?? 'No Number'} • ${vehicle.vehicleType ?? 'Unknown Type'}',
+              vehicle.vehicleNumber ?? 'No Number',
               style: TextStyleClass.poppinsRegular(
                 fontSize: 14,
                 color: ColorClass.neutral500,
-              ),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: vehicle.status == 'available'
-                    ? ColorClass.brandLightGreen.withOpacity(0.2)
-                    : Colors.orange.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                vehicle.status?.toUpperCase() ?? 'UNKNOWN',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 12,
-                  color: vehicle.status == 'available'
-                      ? ColorClass.brandDarkGreen
-                      : Colors.orange.shade700,
-                ),
               ),
             ),
           );
@@ -417,8 +393,8 @@ class _TransportationScreenState extends State<TransportationScreen> {
     );
   }
 
-  Widget _buildInRouteList(List routes) {
-    if (routes.isEmpty) {
+  Widget _buildInRouteList(List travels) {
+    if (travels.isEmpty) {
       return _buildEmptyState('No active routes', LucideIcons.navigation);
     }
 
@@ -431,13 +407,13 @@ class _TransportationScreenState extends State<TransportationScreen> {
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: routes.length,
+        itemCount: travels.length,
         separatorBuilder: (context, index) => Divider(
           height: 1,
           color: ColorClass.neutral200,
         ),
         itemBuilder: (context, index) {
-          final route = routes[index];
+          final travel = travels[index];
           return ExpansionTile(
             leading: CircleAvatar(
               backgroundColor: Colors.blue.withOpacity(0.2),
@@ -448,36 +424,63 @@ class _TransportationScreenState extends State<TransportationScreen> {
               ),
             ),
             title: Text(
-              '${route.vehicleName ?? 'Unknown Vehicle'} - ${route.driverName ?? 'Unknown Driver'}',
+              travel.user.name,
               style: TextStyleClass.poppinsMedium(fontSize: 16),
             ),
             subtitle: Text(
-              route.routeName ?? 'Unknown Route',
+              '${_getVehicleDetails(travel.vehicle.id)} • ${travel.fromLocation} to ${travel.toLocation}',
               style: TextStyleClass.poppinsRegular(
                 fontSize: 14,
                 color: ColorClass.neutral500,
               ),
             ),
             children: [
-              if (route.description?.isNotEmpty == true)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: ColorClass.neutral100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      route.description!,
-                      style: TextStyleClass.poppinsRegular(
-                        fontSize: 14,
-                        color: ColorClass.neutral600,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: ColorClass.neutral100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Time: ${travel.startTime} - ${travel.endTime}',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 14,
+                              color: ColorClass.neutral600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Distance: ${travel.startKm} - ${travel.endKm} km',
+                            style: TextStyleClass.poppinsRegular(
+                              fontSize: 14,
+                              color: ColorClass.neutral600,
+                            ),
+                          ),
+                          if (travel.description.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              'Description: ${travel.description}',
+                              style: TextStyleClass.poppinsRegular(
+                                fontSize: 14,
+                                color: ColorClass.neutral600,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
+              ),
             ],
           );
         },
@@ -485,10 +488,15 @@ class _TransportationScreenState extends State<TransportationScreen> {
     );
   }
 
-  Widget _buildRecentRoutesList(List routes) {
-    if (routes.isEmpty) {
+  Widget _buildRecentRoutesList(List travels) {
+    if (travels.isEmpty) {
       return _buildEmptyState('No recent routes', LucideIcons.clock);
     }
+
+    final displayCount = _showAllRecentRoutes
+        ? travels.length
+        : (travels.length > 3 ? 3 : travels.length);
+    final hasMore = travels.length > 3;
 
     return Container(
       decoration: BoxDecoration(
@@ -496,52 +504,102 @@ class _TransportationScreenState extends State<TransportationScreen> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: ColorClass.neutral200),
       ),
-      child: ListView.separated(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: routes.length > 5 ? 5 : routes.length, // Show only last 5
-        separatorBuilder: (context, index) => Divider(
-          height: 1,
-          color: ColorClass.neutral200,
-        ),
-        itemBuilder: (context, index) {
-          final route = routes[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: ColorClass.neutral300,
-              child: Icon(
-                LucideIcons.clock,
-                color: ColorClass.neutral600,
-                size: 20,
-              ),
+      child: Column(
+        children: [
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayCount,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: ColorClass.neutral200,
             ),
-            title: Text(
-              '${route.vehicleName ?? 'Unknown Vehicle'} - ${route.driverName ?? 'Unknown Driver'}',
-              style: TextStyleClass.poppinsMedium(fontSize: 16),
-            ),
-            subtitle: Text(
-              route.routeName ?? 'Unknown Route',
-              style: TextStyleClass.poppinsRegular(
-                fontSize: 14,
-                color: ColorClass.neutral500,
-              ),
-            ),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: ColorClass.neutral200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                route.status?.toUpperCase() ?? 'COMPLETED',
-                style: TextStyleClass.poppinsRegular(
-                  fontSize: 12,
-                  color: ColorClass.neutral600,
+            itemBuilder: (context, index) {
+              final travel = travels[index];
+              return ExpansionTile(
+                leading: CircleAvatar(
+                  backgroundColor: ColorClass.neutral300,
+                  child: Icon(
+                    LucideIcons.clock,
+                    color: ColorClass.neutral600,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  _getVehicleDetails(travel.vehicle.id),
+                  style: TextStyleClass.poppinsMedium(fontSize: 16),
+                ),
+                subtitle: Text(
+                  '${travel.user.name} • ${travel.fromLocation} to ${travel.toLocation}',
+                  style: TextStyleClass.poppinsRegular(
+                    fontSize: 14,
+                    color: ColorClass.neutral500,
+                  ),
+                ),
+                children: [
+                  if (travel.description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: ColorClass.neutral100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          travel.description,
+                          style: TextStyleClass.poppinsRegular(
+                            fontSize: 14,
+                            color: ColorClass.neutral600,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+          if (hasMore)
+            InkWell(
+              onTap: () {
+                setState(() {
+                  _showAllRecentRoutes = !_showAllRecentRoutes;
+                });
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: ColorClass.neutral200),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _showAllRecentRoutes
+                          ? 'Show Less'
+                          : 'Show More (${travels.length - 3} more)',
+                      style: TextStyleClass.poppinsMedium(
+                        fontSize: 14,
+                        color: ColorClass.brandDarkGreen,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      _showAllRecentRoutes
+                          ? LucideIcons.chevronUp
+                          : LucideIcons.chevronDown,
+                      color: ColorClass.brandDarkGreen,
+                      size: 16,
+                    ),
+                  ],
                 ),
               ),
             ),
-          );
-        },
+        ],
       ),
     );
   }
@@ -573,5 +631,18 @@ class _TransportationScreenState extends State<TransportationScreen> {
         ],
       ),
     );
+  }
+
+  String _getVehicleDetails(String vehicleId) {
+    final provider =
+        Provider.of<TransportationProvider>(context, listen: false);
+    try {
+      final vehicle = provider.vehicles.firstWhere(
+        (v) => v.id == vehicleId,
+      );
+      return '${vehicle.vehicleName ?? 'Unknown Vehicle'} (${vehicle.vehicleNumber ?? 'No Number'})';
+    } catch (e) {
+      return 'Vehicle $vehicleId';
+    }
   }
 }

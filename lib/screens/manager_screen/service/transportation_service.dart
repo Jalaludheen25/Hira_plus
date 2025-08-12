@@ -1,6 +1,8 @@
+import 'dart:developer';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/screens/manager_screen/models/vehicle_model.dart';
 import 'package:hira_plus/screens/manager_screen/models/route_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/travel_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 
 /// Transportation Service with Dummy Data Support
@@ -13,79 +15,36 @@ class TransportationService {
   // Vehicle Services
   static Future<List<VehicleModel>> getVehicles() async {
     try {
-      // Try to fetch from API first, fallback to dummy data if it fails
-      try {
-        final response =
-            await HttpServiceUtils.fetchData(ApiUrls.getVehicles(), true);
-        final List<dynamic> vehiclesJson = response is List
-            ? response
-            : (response['vehicles'] ?? response['data'] ?? []);
-        return vehiclesJson.map((json) => VehicleModel.fromJson(json)).toList();
-      } catch (apiError) {
-        // If API fails, use dummy data
-        print('API failed, using dummy vehicle data: $apiError');
-        await Future.delayed(
-            Duration(milliseconds: 300)); // Simulate network delay
-
-        final List<Map<String, dynamic>> dummyVehicles = [
-          {
-            '_id': 'vehicle1',
-            'vehicleName': 'Bus A1',
-            'vehicleNumber': 'KA-01-1234',
-            'vehicleType': 'Bus',
-            'capacity': 40,
-            'status': 'available'
-          },
-          {
-            '_id': 'vehicle2',
-            'vehicleName': 'Van B2',
-            'vehicleNumber': 'KA-02-5678',
-            'vehicleType': 'Van',
-            'capacity': 12,
-            'status': 'available'
-          },
-          {
-            '_id': 'vehicle3',
-            'vehicleName': 'Car C3',
-            'vehicleNumber': 'KA-03-9012',
-            'vehicleType': 'Car',
-            'capacity': 4,
-            'status': 'in_use'
-          },
-          {
-            '_id': 'vehicle4',
-            'vehicleName': 'Truck D4',
-            'vehicleNumber': 'KA-04-3456',
-            'vehicleType': 'Truck',
-            'capacity': 2,
-            'status': 'maintenance'
-          }
-        ];
-
-        return dummyVehicles
-            .map((json) => VehicleModel.fromJson(json))
-            .toList();
+      log('Fetching vehicles from API: ${ApiUrls.getVehicles()}');
+      final response = await HttpServiceUtils.fetchData(ApiUrls.getVehicles(), true);
+      
+      log('Vehicle API Response: $response');
+      
+      final List<dynamic> vehiclesJson = response['vehicles'] ?? [];
+      
+      if (vehiclesJson.isEmpty) {
+        log('No vehicles found in API response');
+        return [];
       }
+      
+      final vehicles = vehiclesJson.map((json) => VehicleModel.fromJson(json)).toList();
+      log('Successfully parsed ${vehicles.length} vehicles');
+      
+      return vehicles;
     } catch (e) {
+      log('Error fetching vehicles: $e');
       throw Exception('Error fetching vehicles: $e');
     }
   }
 
   static Future<bool> addVehicle(Map<String, dynamic> vehicleData) async {
     try {
-      // Try API first, fallback to dummy success
-      try {
-        await HttpServiceUtils.postData(ApiUrls.addVehicle(), vehicleData);
-        return true;
-      } catch (apiError) {
-        // If API fails, simulate successful addition
-        print('API failed, simulating vehicle addition: $apiError');
-        await Future.delayed(
-            Duration(milliseconds: 800)); // Simulate network delay
-        print('Dummy: Vehicle added successfully with data: $vehicleData');
-        return true;
-      }
+      log('Adding vehicle with data: $vehicleData');
+      await HttpServiceUtils.postData(ApiUrls.addVehicle(), vehicleData);
+      log('Vehicle added successfully');
+      return true;
     } catch (e) {
+      log('Error adding vehicle: $e');
       throw Exception('Error adding vehicle: $e');
     }
   }
@@ -111,101 +70,90 @@ class TransportationService {
   }
 
   // Travel/Route Services
+  static Future<List<TravelModel>> getAllTravels() async {
+    try {
+      log('Fetching all travels from API: ${ApiUrls.getAllTravels()}');
+      final response =
+          await HttpServiceUtils.fetchData(ApiUrls.getAllTravels(), true);
+
+      log('API Response: $response');
+
+      final List<dynamic> travelsJson = response is List ? response : [];
+
+      if (travelsJson.isEmpty) {
+        log('No travels found in API response');
+        return [];
+      }
+
+      final travels =
+          travelsJson.map((json) => TravelModel.fromJson(json)).toList();
+      log('Successfully parsed ${travels.length} travels');
+
+      return travels;
+    } catch (e) {
+      log('Error fetching travels: $e');
+      throw Exception('Error fetching travels: $e');
+    }
+  }
+
+  // Keep the old method for backward compatibility but use the new API
   static Future<List<RouteModel>> getTravels() async {
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // final response = await HttpServiceUtils.fetchData(ApiUrls.getTravels(), true);
+      // Get real travel data and convert to RouteModel for backward compatibility
+      final travels = await getAllTravels();
 
-      // Using dummy data for now
-      await Future.delayed(
-          Duration(milliseconds: 500)); // Simulate network delay
-
-      final List<Map<String, dynamic>> dummyTravels = [
-        {
-          '_id': '1',
-          'user': {
-            '_id': 'user1',
-            'name': 'John Driver',
-            'department': 'Transportation'
-          },
-          'vehicle': {
-            '_id': 'vehicle1',
-            'vehicleName': 'Bus A1',
-            'vehicleNumber': 'KA-01-1234'
-          },
-          'fromLocation': 'Main Campus',
-          'toLocation': 'City Center',
-          'startKm': 1000,
-          'endKm': 1025,
-          'startTime': '08:00',
-          'endTime': '09:00',
-          'date': '2025-01-07',
-          'description': 'Morning route to city center',
-          'status': 'active'
-        },
-        {
-          '_id': '2',
-          'user': {
-            '_id': 'user2',
-            'name': 'Mike Driver',
-            'department': 'Transportation'
-          },
-          'vehicle': {
-            '_id': 'vehicle2',
-            'vehicleName': 'Van B2',
-            'vehicleNumber': 'KA-02-5678'
-          },
-          'fromLocation': 'Hostel Block',
-          'toLocation': 'Airport',
-          'startKm': 2000,
-          'endKm': 2050,
-          'startTime': '14:00',
-          'endTime': '15:30',
-          'date': '2025-01-07',
-          'description': 'Airport pickup service',
-          'status': 'completed'
-        },
-        {
-          '_id': '3',
-          'user': {
-            '_id': 'user3',
-            'name': 'Sarah Driver',
-            'department': 'Transportation'
-          },
-          'vehicle': {
-            '_id': 'vehicle3',
-            'vehicleName': 'Car C3',
-            'vehicleNumber': 'KA-03-9012'
-          },
-          'fromLocation': 'Admin Block',
-          'toLocation': 'Railway Station',
-          'startKm': 3000,
-          'endKm': 3020,
-          'startTime': '16:00',
-          'endTime': '17:00',
-          'date': '2025-01-07',
-          'description': 'Evening railway station drop',
-          'status': 'active'
-        }
-      ];
-
-      return dummyTravels.map((json) => RouteModel.fromJson(json)).toList();
+      return travels
+          .map((travel) => RouteModel(
+                id: travel.id,
+                routeName: '${travel.fromLocation} to ${travel.toLocation}',
+                startLocation: travel.fromLocation,
+                endLocation: travel.toLocation,
+                vehicleId: travel.vehicle.id,
+                driverId: travel.user.id,
+                driverName: travel.user.name,
+                vehicleName:
+                    'Vehicle ${travel.vehicle.id}', // We'll need vehicle details from another API
+                description: travel.description,
+                status: _getTravelStatus(travel),
+                startKm: travel.startKm,
+                endKm: travel.endKm,
+                startTime: travel.startTime,
+                endTime: travel.endTime,
+                date: travel.date.toIso8601String(),
+                createdAt: travel.createdAt.toIso8601String(),
+                updatedAt: travel.updatedAt.toIso8601String(),
+              ))
+          .toList();
     } catch (e) {
+      log('Error in getTravels: $e');
       throw Exception('Error fetching travels: $e');
+    }
+  }
+
+  static String _getTravelStatus(TravelModel travel) {
+    // Determine status based on travel data
+    final now = DateTime.now();
+    final travelDate = travel.date;
+
+    if (travelDate.day == now.day &&
+        travelDate.month == now.month &&
+        travelDate.year == now.year) {
+      return 'active'; // Today's travel
+    } else if (travelDate.isBefore(now)) {
+      return 'completed'; // Past travel
+    } else {
+      return 'scheduled'; // Future travel
     }
   }
 
   static Future<bool> addTravel(Map<String, dynamic> travelData) async {
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // await HttpServiceUtils.postData(ApiUrls.addTravel(), travelData);
-
-      // Simulate successful addition with dummy data
-      await Future.delayed(
-          Duration(milliseconds: 800)); // Simulate network delay
-      print('Dummy: Travel added successfully with data: $travelData');
+      log('Adding travel with data: $travelData');
+      await HttpServiceUtils.postData(ApiUrls.addTravel(), travelData);
+      log('Travel added successfully');
       return true;
     } catch (e) {
+      log('Error adding travel: $e');
       throw Exception('Error adding travel: $e');
     }
   }
@@ -213,31 +161,24 @@ class TransportationService {
   static Future<bool> editTravel(
       String travelId, Map<String, dynamic> travelData) async {
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // await HttpServiceUtils.putData(ApiUrls.editTravel(travelId), travelData);
-
-      // Simulate successful edit with dummy data
-      await Future.delayed(
-          Duration(milliseconds: 600)); // Simulate network delay
-      print(
-          'Dummy: Travel $travelId edited successfully with data: $travelData');
+      log('Editing travel $travelId with data: $travelData');
+      await HttpServiceUtils.putData(ApiUrls.editTravel(travelId), travelData);
+      log('Travel edited successfully');
       return true;
     } catch (e) {
+      log('Error editing travel: $e');
       throw Exception('Error editing travel: $e');
     }
   }
 
   static Future<bool> deleteTravel(String travelId) async {
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // await HttpServiceUtils.deleteData(ApiUrls.deleteTravel(travelId));
-
-      // Simulate successful deletion with dummy data
-      await Future.delayed(
-          Duration(milliseconds: 400)); // Simulate network delay
-      print('Dummy: Travel $travelId deleted successfully');
+      log('Deleting travel: $travelId');
+      await HttpServiceUtils.deleteData(ApiUrls.deleteTravel(travelId));
+      log('Travel deleted successfully');
       return true;
     } catch (e) {
+      log('Error deleting travel: $e');
       throw Exception('Error deleting travel: $e');
     }
   }

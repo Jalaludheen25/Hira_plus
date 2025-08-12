@@ -32,7 +32,7 @@ class UserModel {
           ? json['department']['title']?.toString()
           : json['department']?.toString(),
       designation: json['designation']?.toString(),
-      role: json['isDriver'] == true ? 'driver' : 'user',
+      role: json['role']?.toString() ?? (json['isDriver'] == true ? 'driver' : 'user'),
       isVerified: json['isVerified'] as bool?,
       isDeptHead: json['isDeptHead'] as bool?,
       createdAt: json['createdAt']?.toString(),
