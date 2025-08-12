@@ -56,10 +56,23 @@ class _UsersListScreenState extends State<UsersListScreen> {
           initialIsVerified: user.isVerified == true,
           initialIsDeptHead: user.isDeptHead == true,
           initialRole: user.role,
+          initialStatus: user.status ?? 'active',
+          initialIsFreeFood: user.isFreeFood == true,
+          initialIsIntern: user.isIntern == true,
           onSave: (name, phoneNumber, department, designation, isVerified,
-              isDeptHead, role) {
-            provider.updateUser(user.id!, name, phoneNumber, department,
-                designation, isVerified, isDeptHead, role);
+              isDeptHead, role, status, isFreeFood, isIntern) {
+            provider.updateUser(
+                user.id!,
+                name,
+                phoneNumber,
+                department,
+                designation,
+                isVerified,
+                isDeptHead,
+                role,
+                status,
+                isFreeFood,
+                isIntern);
           },
         );
       },

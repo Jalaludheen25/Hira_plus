@@ -16,6 +16,9 @@ class UserEditBottomSheet extends StatefulWidget {
   final bool initialIsVerified;
   final bool initialIsDeptHead;
   final UserRole? initialRole;
+  final String? initialStatus;
+  final bool initialIsFreeFood;
+  final bool initialIsIntern;
   final Function(
       String name,
       String phoneNumber,
@@ -23,7 +26,10 @@ class UserEditBottomSheet extends StatefulWidget {
       String designation,
       bool isVerified,
       bool isDeptHead,
-      UserRole? role) onSave;
+      UserRole? role,
+      String status,
+      bool isFreeFood,
+      bool isIntern) onSave;
 
   const UserEditBottomSheet({
     Key? key,
@@ -35,6 +41,9 @@ class UserEditBottomSheet extends StatefulWidget {
     required this.initialIsVerified,
     required this.initialIsDeptHead,
     required this.initialRole,
+    this.initialStatus,
+    required this.initialIsFreeFood,
+    required this.initialIsIntern,
     required this.onSave,
   }) : super(key: key);
 
@@ -50,6 +59,11 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
   bool _isSaving = false;
   bool _isDeptHead = false;
   UserRole? _selectedRole;
+  String _selectedStatus = 'active';
+  bool _isFreeFood = false;
+  bool _isIntern = false;
+
+  final List<String> _statusOptions = ['active', 'inactive'];
 
   @override
   void initState() {
@@ -63,6 +77,9 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
         TextEditingController(text: widget.initialDesignation);
     _isDeptHead = widget.initialIsDeptHead;
     _selectedRole = widget.initialRole;
+    _selectedStatus = widget.initialStatus ?? 'active';
+    _isFreeFood = widget.initialIsFreeFood;
+    _isIntern = widget.initialIsIntern;
 
     // Load departments after the first frame to ensure context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -100,6 +117,9 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
         context.read<UsersProvider>().tempIsVerified,
         _isDeptHead,
         _selectedRole,
+        _selectedStatus,
+        _isFreeFood,
+        _isIntern,
       );
       if (result is Future) {
         await result;
@@ -193,6 +213,7 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
                   filled: true,
                   fillColor: ColorClass.neutral100,
                 ),
+                menuMaxHeight: 200, // Limit dropdown height
                 items: departments
                     .map((dept) => DropdownMenuItem<String>(
                           value: dept,
@@ -258,19 +279,172 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
               ),
             ),
           ),
-          const SizedBox(height: 24),
-          CheckboxListTile(
-            value: _isDeptHead,
-            onChanged: (val) {
+          const SizedBox(height: 16),
+
+          // Status Dropdown
+          DropdownButtonFormField<String>(
+            value: _selectedStatus,
+            decoration: InputDecoration(
+              labelText: 'Status',
+              labelStyle: TextStyleClass.poppinsRegular(
+                  fontSize: 14, color: ColorClass.neutral400),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              filled: true,
+              fillColor: ColorClass.neutral100,
+            ),
+            items: _statusOptions.map((status) {
+              return DropdownMenuItem(
+                value: status,
+                child: Text(
+                  status.toUpperCase(),
+                  style: TextStyleClass.poppinsRegular(
+                    fontSize: 14,
+                    color: ColorClass.textMain900,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (value) {
               setState(() {
-                _isDeptHead = val ?? false;
+                _selectedStatus = value!;
               });
             },
-            title: Text('Department Head',
-                style: TextStyleClass.poppinsRegular(fontSize: 16)),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
           ),
+          const SizedBox(height: 24),
+
+          // Additional Options Section
+          Text(
+            'Additional Options',
+            style: TextStyleClass.poppinsMedium(
+              fontSize: 16,
+              color: ColorClass.brandDarkGreen,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Department Head Switch
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: ColorClass.neutral200),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Department Head',
+                      style: TextStyleClass.poppinsMedium(fontSize: 14),
+                    ),
+                    Text(
+                      'Is this user a department head?',
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 12,
+                        color: ColorClass.neutral500,
+                      ),
+                    ),
+                  ],
+                ),
+                Switch(
+                  value: _isDeptHead,
+                  onChanged: (value) {
+                    setState(() {
+                      _isDeptHead = value;
+                    });
+                  },
+                  activeColor: ColorClass.brandDarkGreen,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Free Food Switch
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: ColorClass.neutral200),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Free Food',
+                      style: TextStyleClass.poppinsMedium(fontSize: 14),
+                    ),
+                    Text(
+                      'Does this user get free food?',
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 12,
+                        color: ColorClass.neutral500,
+                      ),
+                    ),
+                  ],
+                ),
+                Switch(
+                  value: _isFreeFood,
+                  onChanged: (value) {
+                    setState(() {
+                      _isFreeFood = value;
+                    });
+                  },
+                  activeColor: ColorClass.brandDarkGreen,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Intern Switch
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: ColorClass.neutral200),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Intern',
+                      style: TextStyleClass.poppinsMedium(fontSize: 14),
+                    ),
+                    Text(
+                      'Is this user an intern?',
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 12,
+                        color: ColorClass.neutral500,
+                      ),
+                    ),
+                  ],
+                ),
+                Switch(
+                  value: _isIntern,
+                  onChanged: (value) {
+                    setState(() {
+                      _isIntern = value;
+                    });
+                  },
+                  activeColor: ColorClass.brandDarkGreen,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
           ElevatedButton(
             onPressed: _isSaving ? null : _handleSave,
             style: ElevatedButton.styleFrom(

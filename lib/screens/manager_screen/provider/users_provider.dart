@@ -111,7 +111,10 @@ class UsersProvider extends ChangeNotifier {
       String designation,
       bool isVerified,
       bool isDeptHead,
-      UserRole? role) async {
+      UserRole? role,
+      String status,
+      bool isFreeFood,
+      bool isIntern) async {
     debugPrint('[UsersProvider] updateUser called for id: $id');
     try {
       // Create data matching the backend API format exactly
@@ -122,9 +125,9 @@ class UsersProvider extends ChangeNotifier {
         "designation": designation,
         "role": role?.toApiString() ?? 'member',
         "isDeptHead": isDeptHead,
-        "status": "active", // Required field
-        "isFreeFood": false, // Required field
-        "isIntern": false, // Required field
+        "status": status,
+        "isFreeFood": isFreeFood,
+        "isIntern": isIntern,
       };
 
       await HttpServiceUtils.putData('${ApiUrls.getUsers()}/$id', data, null);
