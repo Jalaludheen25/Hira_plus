@@ -26,6 +26,159 @@ class _TransportationScreenState extends State<TransportationScreen> {
     });
   }
 
+  void _showAddOptionsBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: ColorClass.neutral300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Add New',
+                  style: TextStyleClass.poppinsSemiBold(
+                    fontSize: 18,
+                    color: ColorClass.brandDarkGreen,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildBottomSheetOption(
+                  context,
+                  icon: LucideIcons.car,
+                  title: 'Add Vehicle',
+                  subtitle: 'Add a new vehicle to the fleet',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddVehicleScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildBottomSheetOption(
+                  context,
+                  icon: LucideIcons.user,
+                  title: 'Add Driver',
+                  subtitle: 'Add a new driver to the system',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DriverSelectionScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildBottomSheetOption(
+                  context,
+                  icon: LucideIcons.navigation,
+                  title: 'Add Route',
+                  subtitle: 'Create a new transportation route',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddRouteScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBottomSheetOption(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border.all(color: ColorClass.neutral200),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: ColorClass.brandLightGreen.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                color: ColorClass.brandDarkGreen,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyleClass.poppinsMedium(
+                      fontSize: 16,
+                      color: ColorClass.brandDarkGreen,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyleClass.poppinsRegular(
+                      fontSize: 14,
+                      color: ColorClass.neutral500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              LucideIcons.chevronRight,
+              color: ColorClass.neutral400,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,50 +194,6 @@ class _TransportationScreenState extends State<TransportationScreen> {
             color: ColorClass.white,
           ),
         ),
-        actions: [
-          PopupMenuButton<String>(
-            icon: Icon(LucideIcons.plus, color: Colors.white),
-            onSelected: (value) {
-              if (value == 'vehicle') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddVehicleScreen(),
-                  ),
-                );
-              } else if (value == 'driver') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const DriverSelectionScreen(),
-                  ),
-                );
-              }
-            },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'vehicle',
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.car, size: 16),
-                    SizedBox(width: 8),
-                    Text('Add Vehicle'),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'driver',
-                child: Row(
-                  children: [
-                    Icon(LucideIcons.user, size: 16),
-                    SizedBox(width: 8),
-                    Text('Add Driver'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
       body: Consumer<TransportationProvider>(
         builder: (context, provider, child) {
@@ -158,12 +267,7 @@ class _TransportationScreenState extends State<TransportationScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddRouteScreen(),
-            ),
-          );
+          _showAddOptionsBottomSheet(context);
         },
         backgroundColor: ColorClass.brandDarkGreen,
         child: Icon(LucideIcons.plus, color: Colors.white),
