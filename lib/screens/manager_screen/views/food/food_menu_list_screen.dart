@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../../constants/color_class.dart';
-import '../../../constants/textstyle_class.dart';
-import '../provider/menu_provider.dart';
-import '../models/menu_model.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import '../../provider/menu_provider.dart';
+import '../../models/food/menu_model.dart';
 import 'food_menu_add_screen.dart';
 import 'dart:async';
 

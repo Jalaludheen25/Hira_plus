@@ -1,6 +1,6 @@
 // part of the public API for manager_screen
 import 'package:flutter/material.dart';
-import 'package:hira_plus/screens/manager_screen/models/message_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/core/message_model.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 import 'dart:developer' as developer;
@@ -19,10 +19,13 @@ class MessagesProvider extends ChangeNotifier {
     _isLoading = true;
     _error = null;
     notifyListeners();
-    debugPrint('[MessagesProvider] Fetching messages from: ${ApiUrls.getMessages()}');
+    debugPrint(
+        '[MessagesProvider] Fetching messages from: ${ApiUrls.getMessages()}');
     try {
-      final response = await HttpServiceUtils.fetchData(ApiUrls.getMessages(), true);
-      debugPrint('[MessagesProvider] Fetched messages response: ${response.toString()}');
+      final response =
+          await HttpServiceUtils.fetchData(ApiUrls.getMessages(), true);
+      debugPrint(
+          '[MessagesProvider] Fetched messages response: ${response.toString()}');
       if (response is List) {
         _messages = response.map((e) => MessageModel.fromJson(e)).toList();
       } else {
@@ -39,25 +42,34 @@ class MessagesProvider extends ChangeNotifier {
   Future<MessageModel?> createMessage(String title, String description) async {
     _isLoading = true;
     notifyListeners();
-    developer.log('[MessagesProvider] Creating message', name: 'MessagesProvider',
-      error: null, stackTrace: StackTrace.current, 
+    developer.log(
+      '[MessagesProvider] Creating message',
+      name: 'MessagesProvider',
+      error: null,
+      stackTrace: StackTrace.current,
       time: DateTime.now(),
       sequenceNumber: 1,
       level: 800,
     );
-    developer.log('Title: $title, Description: $description', name: 'MessagesProvider.createMessage');
-    debugPrint('[MessagesProvider] Creating message at: ${ApiUrls.createMessage()}');
+    developer.log('Title: $title, Description: $description',
+        name: 'MessagesProvider.createMessage');
+    debugPrint(
+        '[MessagesProvider] Creating message at: ${ApiUrls.createMessage()}');
     try {
       final data = {'title': title, 'description': description};
       developer.log('POST data: $data', name: 'MessagesProvider.createMessage');
-      final response = await HttpServiceUtils.postData(ApiUrls.createMessage(), data);
-      developer.log('POST response: $response', name: 'MessagesProvider.createMessage');
-      debugPrint('[MessagesProvider] Created message response: ${response.toString()}');
-      
+      final response =
+          await HttpServiceUtils.postData(ApiUrls.createMessage(), data);
+      developer.log('POST response: $response',
+          name: 'MessagesProvider.createMessage');
+      debugPrint(
+          '[MessagesProvider] Created message response: ${response.toString()}');
+
       // The response is already a Map, no need to decode it again
       if (response is Map<String, dynamic> && response.containsKey('data')) {
         final message = MessageModel.fromJson(response['data']);
-        developer.log('Parsed MessageModel: ${message.toString()}', name: 'MessagesProvider.createMessage');
+        developer.log('Parsed MessageModel: ${message.toString()}',
+            name: 'MessagesProvider.createMessage');
         _isLoading = false;
         notifyListeners();
         return message;
@@ -65,7 +77,11 @@ class MessagesProvider extends ChangeNotifier {
         throw Exception('Invalid response format');
       }
     } catch (e, stack) {
-      developer.log('Error creating message', name: 'MessagesProvider.createMessage', error: e, stackTrace: stack, level: 1000);
+      developer.log('Error creating message',
+          name: 'MessagesProvider.createMessage',
+          error: e,
+          stackTrace: stack,
+          level: 1000);
       debugPrint('[MessagesProvider] Error creating message: ${e.toString()}');
       _error = e.toString();
       _isLoading = false;
@@ -77,23 +93,31 @@ class MessagesProvider extends ChangeNotifier {
   Future<bool> sendMessage(String id) async {
     _isLoading = true;
     notifyListeners();
-    developer.log('[MessagesProvider] Sending message', name: 'MessagesProvider',
-      error: null, stackTrace: StackTrace.current, 
+    developer.log(
+      '[MessagesProvider] Sending message',
+      name: 'MessagesProvider',
+      error: null,
+      stackTrace: StackTrace.current,
       time: DateTime.now(),
       sequenceNumber: 1,
       level: 800,
     );
     developer.log('Message ID: $id', name: 'MessagesProvider.sendMessage');
-    debugPrint('[MessagesProvider] Sending message at: ${ApiUrls.sendMessage(id)}');
+    debugPrint(
+        '[MessagesProvider] Sending message at: ${ApiUrls.sendMessage(id)}');
     try {
-      developer.log('POST to: ${ApiUrls.sendMessage(id)}', name: 'MessagesProvider.sendMessage');
-      final response = await HttpServiceUtils.postData(ApiUrls.sendMessage(id), {});
+      developer.log('POST to: ${ApiUrls.sendMessage(id)}',
+          name: 'MessagesProvider.sendMessage');
+      final response =
+          await HttpServiceUtils.postData(ApiUrls.sendMessage(id), {});
       final decoded = jsonDecode(response);
-      developer.log('Send message response: $decoded', name: 'MessagesProvider.sendMessage');
+      developer.log('Send message response: $decoded',
+          name: 'MessagesProvider.sendMessage');
       debugPrint('[MessagesProvider] Send message response: $decoded');
       // Update sentToUsers for the message
       final idx = _messages.indexWhere((m) => m.id == id);
-      developer.log('Index of message in list: $idx', name: 'MessagesProvider.sendMessage');
+      developer.log('Index of message in list: $idx',
+          name: 'MessagesProvider.sendMessage');
       if (idx != -1) {
         _messages[idx] = MessageModel(
           id: _messages[idx].id,
@@ -106,13 +130,18 @@ class MessagesProvider extends ChangeNotifier {
         // Move the sent message to the top
         final sentMsg = _messages.removeAt(idx);
         _messages.insert(0, sentMsg);
-        developer.log('Moved sent message to top', name: 'MessagesProvider.sendMessage');
+        developer.log('Moved sent message to top',
+            name: 'MessagesProvider.sendMessage');
       }
       _isLoading = false;
       notifyListeners();
       return true;
     } catch (e, stack) {
-      developer.log('Error sending message', name: 'MessagesProvider.sendMessage', error: e, stackTrace: stack, level: 1000);
+      developer.log('Error sending message',
+          name: 'MessagesProvider.sendMessage',
+          error: e,
+          stackTrace: stack,
+          level: 1000);
       debugPrint('[MessagesProvider] Error sending message: ${e.toString()}');
       _error = e.toString();
       _isLoading = false;
@@ -120,4 +149,4 @@ class MessagesProvider extends ChangeNotifier {
       return false;
     }
   }
-} 
+}

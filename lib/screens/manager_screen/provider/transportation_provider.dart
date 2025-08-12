@@ -1,8 +1,8 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:hira_plus/screens/manager_screen/models/vehicle_model.dart';
-import 'package:hira_plus/screens/manager_screen/models/route_model.dart';
-import 'package:hira_plus/screens/manager_screen/models/user_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/transportation/vehicle_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/transportation/route_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/user/user_model.dart';
 import 'package:hira_plus/screens/manager_screen/models/travel_model.dart';
 import 'package:hira_plus/screens/manager_screen/service/transportation_service.dart';
 import 'package:hira_plus/screens/manager_screen/service/users_service.dart';

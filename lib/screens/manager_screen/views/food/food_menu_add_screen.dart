@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../../constants/color_class.dart';
-import '../../../constants/textstyle_class.dart';
-import '../../../utils/navigation_helper.dart';
-import '../provider/menu_provider.dart';
-import '../models/menu_model.dart';
+import 'package:hira_plus/constants/color_class.dart';
+import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/utils/navigation_helper.dart';
+import '../../provider/menu_provider.dart';
+import '../../models/food/menu_model.dart';
 
 class FoodMenuAddScreen extends StatefulWidget {
   final MenuModel? editingMenu;

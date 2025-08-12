@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/menu_model.dart';
+import '../models/food/menu_model.dart';
 import '../../../constants/api_urls.dart';
 import '../../../utils/shared_utils.dart';
 import 'dart:developer';

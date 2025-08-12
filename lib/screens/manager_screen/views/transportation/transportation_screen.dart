@@ -5,9 +5,9 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/manager_screen/provider/transportation_provider.dart';
-import 'package:hira_plus/screens/manager_screen/view/transportation_screen/add_vehicle_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/transportation_screen/add_route_screen.dart';
-import 'package:hira_plus/screens/manager_screen/view/transportation_screen/driver_selection_screen.dart';
+import 'package:hira_plus/screens/manager_screen/views/transportation/add_vehicle_screen.dart';
+import 'package:hira_plus/screens/manager_screen/views/transportation/add_route_screen.dart';
+import 'package:hira_plus/screens/manager_screen/views/transportation/driver_selection_screen.dart';
 
 class TransportationScreen extends StatefulWidget {
   const TransportationScreen({Key? key}) : super(key: key);

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hira_plus/screens/manager_screen/models/meal_users_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/food/meal_users_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:intl/intl.dart';
@@ -42,7 +42,7 @@ class UsersByMealsProvider extends ChangeNotifier {
         fetchMealUsers('lunch'),
         fetchMealUsers('dinner'),
       ]);
-      
+
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -57,14 +57,13 @@ class UsersByMealsProvider extends ChangeNotifier {
   Future<void> fetchMealUsers(String mealType) async {
     try {
       final response = await HttpServiceUtils.fetchData(
-        ApiUrls.usersByMeal(_currentDate, mealType), true);
-      
-      final users = (response as List)
-          .map((e) => UsersByMealModel.fromJson(e))
-          .toList();
-      
+          ApiUrls.usersByMeal(_currentDate, mealType), true);
+
+      final users =
+          (response as List).map((e) => UsersByMealModel.fromJson(e)).toList();
+
       // Update appropriate meal list
-      switch(mealType.toLowerCase()) {
+      switch (mealType.toLowerCase()) {
         case 'breakfast':
           _breakfastUsers = users;
           break;
@@ -75,14 +74,12 @@ class UsersByMealsProvider extends ChangeNotifier {
           _dinnerUsers = users;
           break;
       }
-      
-      debugPrint('Fetched ${users.length} users for $mealType on $_currentDate');
+
+      debugPrint(
+          'Fetched ${users.length} users for $mealType on $_currentDate');
     } catch (e) {
       debugPrint('Error fetching $mealType users: $e');
       // Don't rethrow, we'll handle the error in fetchAllMeals
     }
   }
-
-
-  
-} 
+}

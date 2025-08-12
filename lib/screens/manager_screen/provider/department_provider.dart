@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
-import 'package:hira_plus/screens/manager_screen/models/department_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/core/department_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 
 class DepartmentProvider extends ChangeNotifier {
@@ -19,7 +19,8 @@ class DepartmentProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
     try {
-      final response = await HttpServiceUtils.fetchData(ApiUrls.getDepartments(), true);
+      final response =
+          await HttpServiceUtils.fetchData(ApiUrls.getDepartments(), true);
       final model = DepartmentModel.fromJson(response);
       _departments = model.departments;
       if (_departments.isNotEmpty && _selectedDepartment == null) {
@@ -43,4 +44,4 @@ class DepartmentProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
   }
-} 
+}

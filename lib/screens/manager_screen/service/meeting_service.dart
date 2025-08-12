@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
-import 'package:hira_plus/screens/manager_screen/models/meating_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/meeting/meeting_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 
 class MeetingService {

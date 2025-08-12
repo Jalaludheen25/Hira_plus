@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
 import 'package:hira_plus/screens/manager_screen/provider/manager_bulk_food_provider.dart';
-import 'package:hira_plus/screens/manager_screen/models/manager_guest_meal_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/food/manager_guest_meal_model.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -16,7 +16,8 @@ class ManagerBulkFoodListScreen extends StatefulWidget {
   const ManagerBulkFoodListScreen({Key? key}) : super(key: key);
 
   @override
-  State<ManagerBulkFoodListScreen> createState() => _ManagerBulkFoodListScreenState();
+  State<ManagerBulkFoodListScreen> createState() =>
+      _ManagerBulkFoodListScreenState();
 }
 
 class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
@@ -27,12 +28,14 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
   void initState() {
     super.initState();
     _logger.i('🏗️ [INIT] Initializing Manager Bulk Food List Screen');
-    developer.log('🏗️ Initializing Manager Bulk Food List Screen', name: 'ManagerBulkFoodListScreen');
-    
+    developer.log('🏗️ Initializing Manager Bulk Food List Screen',
+        name: 'ManagerBulkFoodListScreen');
+
     _provider = ManagerBulkFoodProvider();
     Future.microtask(() {
       _logger.i('🔄 [DATA] Fetching guest meals data');
-      developer.log('🔄 Fetching guest meals data', name: 'ManagerBulkFoodListScreen');
+      developer.log('🔄 Fetching guest meals data',
+          name: 'ManagerBulkFoodListScreen');
       _provider.fetchGuestMeals(context);
     });
   }
@@ -40,15 +43,17 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
   @override
   void dispose() {
     _logger.i('🧹 [DISPOSE] Disposing Manager Bulk Food List Screen');
-    developer.log('🧹 Disposing Manager Bulk Food List Screen', name: 'ManagerBulkFoodListScreen');
+    developer.log('🧹 Disposing Manager Bulk Food List Screen',
+        name: 'ManagerBulkFoodListScreen');
     _provider.dispose();
     super.dispose();
   }
 
   void _navigateToMarkScreen() {
     _logger.i('🧭 [NAVIGATION] Navigating to mark screen for new booking');
-    developer.log('🧭 Navigating to mark screen for new booking', name: 'ManagerBulkFoodListScreen');
-    
+    developer.log('🧭 Navigating to mark screen for new booking',
+        name: 'ManagerBulkFoodListScreen');
+
     navigateToWidget(
       context: context,
       route: ChangeNotifierProvider.value(
@@ -80,8 +85,10 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () {
-                  _logger.i('🔙 [NAVIGATION] Navigating back from bulk food list');
-                  developer.log('🔙 Navigating back from bulk food list', name: 'ManagerBulkFoodListScreen');
+                  _logger
+                      .i('🔙 [NAVIGATION] Navigating back from bulk food list');
+                  developer.log('🔙 Navigating back from bulk food list',
+                      name: 'ManagerBulkFoodListScreen');
                   navigateBack(context);
                 },
               ),
@@ -103,7 +110,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
   Widget _buildBody(ManagerBulkFoodProvider provider) {
     if (provider.isLoading) {
       _logger.d('🔄 [UI] Showing loading state');
-      developer.log('🔄 Showing loading state', name: 'ManagerBulkFoodListScreen');
+      developer.log('🔄 Showing loading state',
+          name: 'ManagerBulkFoodListScreen');
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -115,10 +123,11 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
         ),
       );
     }
-    
+
     if (provider.errorMessage.isNotEmpty) {
       _logger.e('❌ [ERROR] Error state: ${provider.errorMessage}');
-      developer.log('❌ Error state: ${provider.errorMessage}', name: 'ManagerBulkFoodListScreen');
+      developer.log('❌ Error state: ${provider.errorMessage}',
+          name: 'ManagerBulkFoodListScreen');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -144,7 +153,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
             ElevatedButton.icon(
               onPressed: () {
                 _logger.i('🔄 [ACTION] Retry button pressed');
-                developer.log('🔄 Retry button pressed', name: 'ManagerBulkFoodListScreen');
+                developer.log('🔄 Retry button pressed',
+                    name: 'ManagerBulkFoodListScreen');
                 provider.fetchGuestMeals(context);
               },
               icon: const Icon(LucideIcons.refreshCw),
@@ -158,10 +168,11 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
         ),
       );
     }
-    
+
     if (provider.guestMeals.isEmpty) {
       _logger.d('📭 [UI] Showing empty state');
-      developer.log('📭 Showing empty state', name: 'ManagerBulkFoodListScreen');
+      developer.log('📭 Showing empty state',
+          name: 'ManagerBulkFoodListScreen');
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -192,14 +203,18 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
         ),
       );
     }
-    
-    _logger.d('📋 [UI] Showing bookings list with ${provider.guestMeals.length} items');
-    developer.log('📋 Showing bookings list with ${provider.guestMeals.length} items', name: 'ManagerBulkFoodListScreen');
-    
+
+    _logger.d(
+        '📋 [UI] Showing bookings list with ${provider.guestMeals.length} items');
+    developer.log(
+        '📋 Showing bookings list with ${provider.guestMeals.length} items',
+        name: 'ManagerBulkFoodListScreen');
+
     return RefreshIndicator(
       onRefresh: () {
         _logger.i('🔄 [ACTION] Pull to refresh triggered');
-        developer.log('🔄 Pull to refresh triggered', name: 'ManagerBulkFoodListScreen');
+        developer.log('🔄 Pull to refresh triggered',
+            name: 'ManagerBulkFoodListScreen');
         return provider.fetchGuestMeals(context);
       },
       child: ListView.separated(
@@ -215,9 +230,10 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
   }
 
   Widget _buildBookingCard(ManagerGuestMealModel guestMeal) {
-    final formattedDate = DateFormat('EEEE, MMMM d, yyyy').format(guestMeal.date);
+    final formattedDate =
+        DateFormat('EEEE, MMMM d, yyyy').format(guestMeal.date);
     final totalMeals = guestMeal.totalMealCount;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: ColorClass.brandWhite,
@@ -279,7 +295,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: ColorClass.brandLightGreen.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -298,9 +315,11 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildMealInfo('Breakfast', guestMeal.breakfastCount, LucideIcons.sunMedium),
+                _buildMealInfo('Breakfast', guestMeal.breakfastCount,
+                    LucideIcons.sunMedium),
                 _buildMealInfo('Lunch', guestMeal.lunchCount, LucideIcons.sun),
-                _buildMealInfo('Dinner', guestMeal.dinnerCount, LucideIcons.moon),
+                _buildMealInfo(
+                    'Dinner', guestMeal.dinnerCount, LucideIcons.moon),
               ],
             ),
             const SizedBox(height: 16),
@@ -326,7 +345,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
                     ),
                   ),
                 ),
@@ -351,7 +371,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 8),
                     ),
                   ),
                 ),
@@ -402,7 +423,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
             label,
             style: TextStyleClass.poppinsRegular(
               fontSize: 10,
-              color: hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
+              color:
+                  hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
             ),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
@@ -412,7 +434,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
             count.toString(),
             style: TextStyleClass.poppinsBold(
               fontSize: 14,
-              color: hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
+              color:
+                  hasCount ? ColorClass.brandDarkGreen : ColorClass.neutral400,
             ),
             textAlign: TextAlign.center,
           ),
@@ -423,11 +446,12 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
 
   void _showDeleteDialog(ManagerGuestMealModel guestMeal) {
     _logger.i('🗑️ [ACTION] Delete dialog shown for booking: ${guestMeal.id}');
-    developer.log('🗑️ Delete dialog shown for booking: ${guestMeal.id}', name: 'ManagerBulkFoodListScreen');
-    
+    developer.log('🗑️ Delete dialog shown for booking: ${guestMeal.id}',
+        name: 'ManagerBulkFoodListScreen');
+
     // Store provider reference before showing dialog to avoid context issues
     final provider = _provider;
-    
+
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -450,7 +474,8 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
             TextButton(
               onPressed: () {
                 _logger.d('❌ [ACTION] Delete cancelled');
-                developer.log('❌ Delete cancelled', name: 'ManagerBulkFoodListScreen');
+                developer.log('❌ Delete cancelled',
+                    name: 'ManagerBulkFoodListScreen');
                 Navigator.of(dialogContext).pop();
               },
               child: Text(
@@ -464,19 +489,27 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
             TextButton(
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
-                
-                _logger.i('🗑️ [API] Attempting to delete booking with id: ${guestMeal.id}');
-                developer.log('🗑️ Attempting to delete booking with id: ${guestMeal.id}', name: 'ManagerBulkFoodListScreen');
-                
-                final success = await provider.deleteGuestMeal(context, guestMeal.id);
-                
-                _logger.i('📥 [API] Delete result for id ${guestMeal.id}: $success');
-                developer.log('📥 Delete result for id ${guestMeal.id}: $success', name: 'ManagerBulkFoodListScreen');
-                
+
+                _logger.i(
+                    '🗑️ [API] Attempting to delete booking with id: ${guestMeal.id}');
+                developer.log(
+                    '🗑️ Attempting to delete booking with id: ${guestMeal.id}',
+                    name: 'ManagerBulkFoodListScreen');
+
+                final success =
+                    await provider.deleteGuestMeal(context, guestMeal.id);
+
+                _logger.i(
+                    '📥 [API] Delete result for id ${guestMeal.id}: $success');
+                developer.log(
+                    '📥 Delete result for id ${guestMeal.id}: $success',
+                    name: 'ManagerBulkFoodListScreen');
+
                 if (success) {
                   _logger.i('✅ [SUCCESS] Booking deleted successfully');
-                  developer.log('✅ Booking deleted successfully', name: 'ManagerBulkFoodListScreen');
-                  
+                  developer.log('✅ Booking deleted successfully',
+                      name: 'ManagerBulkFoodListScreen');
+
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -487,8 +520,9 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
                   }
                 } else {
                   _logger.e('❌ [ERROR] Failed to delete booking');
-                  developer.log('❌ Failed to delete booking', name: 'ManagerBulkFoodListScreen');
-                  
+                  developer.log('❌ Failed to delete booking',
+                      name: 'ManagerBulkFoodListScreen');
+
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -515,8 +549,9 @@ class _ManagerBulkFoodListScreenState extends State<ManagerBulkFoodListScreen> {
 
   void _editBooking(ManagerGuestMealModel guestMeal) {
     _logger.i('✏️ [NAVIGATION] Navigating to edit booking: ${guestMeal.id}');
-    developer.log('✏️ Navigating to edit booking: ${guestMeal.id}', name: 'ManagerBulkFoodListScreen');
-    
+    developer.log('✏️ Navigating to edit booking: ${guestMeal.id}',
+        name: 'ManagerBulkFoodListScreen');
+
     navigateToWidget(
       context: context,
       route: ChangeNotifierProvider.value(

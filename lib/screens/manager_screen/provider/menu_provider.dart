@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/screens/manager_screen/service/menu_service.dart';
-import '../models/menu_model.dart';
+import '../models/food/menu_model.dart';
 
 class MenuProvider extends ChangeNotifier {
   final MenuService _menuService;

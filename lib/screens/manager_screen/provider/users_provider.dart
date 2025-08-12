@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/constants/user_role_enum.dart';
-import 'package:hira_plus/screens/manager_screen/models/users_list_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/user/users_list_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 
 class UsersProvider extends ChangeNotifier {

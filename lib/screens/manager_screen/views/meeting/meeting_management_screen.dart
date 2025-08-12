@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
-import 'package:hira_plus/screens/manager_screen/models/meating_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/meeting/meeting_model.dart';
 import 'package:hira_plus/screens/manager_screen/provider/meeting_provider.dart';
 import 'package:hira_plus/constants/api_urls.dart';
 import 'package:hira_plus/utils/service_utils.dart';

@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:hira_plus/screens/manager_screen/models/meating_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/meeting/meeting_model.dart';
 import 'package:hira_plus/screens/manager_screen/service/meeting_service.dart';
 
 class MeetingProvider extends ChangeNotifier {

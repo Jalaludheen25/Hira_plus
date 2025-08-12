@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'package:hira_plus/constants/api_urls.dart';
-import 'package:hira_plus/screens/manager_screen/models/vehicle_model.dart';
-import 'package:hira_plus/screens/manager_screen/models/route_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/transportation/vehicle_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/transportation/route_model.dart';
 import 'package:hira_plus/screens/manager_screen/models/travel_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 

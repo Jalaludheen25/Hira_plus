@@ -1,6 +1,6 @@
 import 'dart:developer';
 import 'package:hira_plus/constants/api_urls.dart';
-import 'package:hira_plus/screens/manager_screen/models/user_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/user/user_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 
 class UsersService {

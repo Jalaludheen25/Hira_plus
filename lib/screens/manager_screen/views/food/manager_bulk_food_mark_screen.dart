@@ -10,16 +10,18 @@ import 'package:intl/intl.dart';
 import 'package:hira_plus/screens/manager_screen/provider/manager_bulk_food_provider.dart';
 import 'dart:developer' as developer;
 import 'package:logger/logger.dart';
-import 'package:hira_plus/screens/manager_screen/models/manager_guest_meal_model.dart';
+import 'package:hira_plus/screens/manager_screen/models/food/manager_guest_meal_model.dart';
 import 'package:hira_plus/screens/manager_screen/provider/department_provider.dart';
 
 class ManagerBulkFoodMarkScreen extends StatefulWidget {
   final String? department;
   final ManagerGuestMealModel? editingMeal;
-  const ManagerBulkFoodMarkScreen({Key? key, this.department, this.editingMeal}) : super(key: key);
+  const ManagerBulkFoodMarkScreen({Key? key, this.department, this.editingMeal})
+      : super(key: key);
 
   @override
-  State<ManagerBulkFoodMarkScreen> createState() => _ManagerBulkFoodMarkScreenState();
+  State<ManagerBulkFoodMarkScreen> createState() =>
+      _ManagerBulkFoodMarkScreenState();
 }
 
 class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
@@ -38,9 +40,12 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
   void initState() {
     super.initState();
     _logger.i('🏗️ [INIT] Initializing Manager Bulk Food Mark Screen');
-    developer.log('🏗️ Initializing Manager Bulk Food Mark Screen', name: 'ManagerBulkFoodMarkScreen');
+    developer.log('🏗️ Initializing Manager Bulk Food Mark Screen',
+        name: 'ManagerBulkFoodMarkScreen');
     // Fetch departments via provider
-    Future.microtask(() => Provider.of<DepartmentProvider>(context, listen: false).fetchDepartments(context));
+    Future.microtask(() =>
+        Provider.of<DepartmentProvider>(context, listen: false)
+            .fetchDepartments(context));
     // If editing, pre-fill all fields
     if (widget.editingMeal != null) {
       final meal = widget.editingMeal!;
@@ -49,17 +54,23 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
       _selectedDate = meal.date;
       _departmentController.text = meal.department;
       // Set selected department in provider after fetch
-      Future.microtask(() => Provider.of<DepartmentProvider>(context, listen: false).selectDepartment(meal.department));
+      Future.microtask(() =>
+          Provider.of<DepartmentProvider>(context, listen: false)
+              .selectDepartment(meal.department));
       _breakfastController.text = meal.breakfastCount.toString();
       _lunchController.text = meal.lunchCount.toString();
       _dinnerController.text = meal.dinnerCount.toString();
       _logger.i('✏️ [EDIT] Pre-filling form for editing meal: ${meal.id}');
-      developer.log('✏️ Pre-filling form for editing meal: ${meal.id}', name: 'ManagerBulkFoodMarkScreen');
+      developer.log('✏️ Pre-filling form for editing meal: ${meal.id}',
+          name: 'ManagerBulkFoodMarkScreen');
     } else if (widget.department != null && widget.department!.isNotEmpty) {
       _departmentController.text = widget.department!;
-      Future.microtask(() => Provider.of<DepartmentProvider>(context, listen: false).selectDepartment(widget.department!));
+      Future.microtask(() =>
+          Provider.of<DepartmentProvider>(context, listen: false)
+              .selectDepartment(widget.department!));
       _logger.d('📝 [INIT] Pre-filled department: ${widget.department}');
-      developer.log('📝 Pre-filled department: ${widget.department}', name: 'ManagerBulkFoodMarkScreen');
+      developer.log('📝 Pre-filled department: ${widget.department}',
+          name: 'ManagerBulkFoodMarkScreen');
     }
     _departmentController.addListener(_checkForDuplicates);
   }
@@ -67,8 +78,9 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
   @override
   void dispose() {
     _logger.i('🧹 [DISPOSE] Disposing Manager Bulk Food Mark Screen');
-    developer.log('🧹 Disposing Manager Bulk Food Mark Screen', name: 'ManagerBulkFoodMarkScreen');
-    
+    developer.log('🧹 Disposing Manager Bulk Food Mark Screen',
+        name: 'ManagerBulkFoodMarkScreen');
+
     _breakfastController.dispose();
     _lunchController.dispose();
     _dinnerController.dispose();
@@ -77,23 +89,27 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
   }
 
   void _checkForDuplicates() {
-    final provider = Provider.of<ManagerBulkFoodProvider>(context, listen: false);
-    final hasExisting = provider.hasExistingBooking(_selectedDate, _departmentController.text.trim());
-    
+    final provider =
+        Provider.of<ManagerBulkFoodProvider>(context, listen: false);
+    final hasExisting = provider.hasExistingBooking(
+        _selectedDate, _departmentController.text.trim());
+
     if (hasExisting != _showDuplicateWarning) {
       setState(() {
         _showDuplicateWarning = hasExisting;
       });
-      
-      _logger.d('⚠️ [DUPLICATE] Duplicate warning state changed to: $hasExisting');
-      developer.log('⚠️ Duplicate warning state changed to: $hasExisting', name: 'ManagerBulkFoodMarkScreen');
+
+      _logger
+          .d('⚠️ [DUPLICATE] Duplicate warning state changed to: $hasExisting');
+      developer.log('⚠️ Duplicate warning state changed to: $hasExisting',
+          name: 'ManagerBulkFoodMarkScreen');
     }
   }
 
   Future<void> _selectDate() async {
     _logger.d('📅 [ACTION] Date picker opened');
     developer.log('📅 Date picker opened', name: 'ManagerBulkFoodMarkScreen');
-    
+
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -113,31 +129,39 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
         );
       },
     );
-    
+
     if (pickedDate != null && pickedDate != _selectedDate) {
       setState(() {
         _selectedDate = pickedDate;
       });
-      
-      _logger.i('📅 [ACTION] Date selected: ${DateFormat('yyyy-MM-dd').format(pickedDate)}');
-      developer.log('📅 Date selected: ${DateFormat('yyyy-MM-dd').format(pickedDate)}', name: 'ManagerBulkFoodMarkScreen');
-      
+
+      _logger.i(
+          '📅 [ACTION] Date selected: ${DateFormat('yyyy-MM-dd').format(pickedDate)}');
+      developer.log(
+          '📅 Date selected: ${DateFormat('yyyy-MM-dd').format(pickedDate)}',
+          name: 'ManagerBulkFoodMarkScreen');
+
       _checkForDuplicates(); // Check for duplicates when date changes
     }
   }
 
   void _showDuplicateBookingDialog() {
-    final provider = Provider.of<ManagerBulkFoodProvider>(context, listen: false);
-    final existingBooking = provider.getExistingBooking(_selectedDate, _departmentController.text.trim());
-    
+    final provider =
+        Provider.of<ManagerBulkFoodProvider>(context, listen: false);
+    final existingBooking = provider.getExistingBooking(
+        _selectedDate, _departmentController.text.trim());
+
     if (existingBooking == null) {
-      _logger.w('⚠️ [WARNING] Duplicate dialog called but no existing booking found');
-      developer.log('⚠️ Duplicate dialog called but no existing booking found', name: 'ManagerBulkFoodMarkScreen');
+      _logger.w(
+          '⚠️ [WARNING] Duplicate dialog called but no existing booking found');
+      developer.log('⚠️ Duplicate dialog called but no existing booking found',
+          name: 'ManagerBulkFoodMarkScreen');
       return;
     }
 
     _logger.i('📋 [ACTION] Showing duplicate booking dialog');
-    developer.log('📋 Showing duplicate booking dialog', name: 'ManagerBulkFoodMarkScreen');
+    developer.log('📋 Showing duplicate booking dialog',
+        name: 'ManagerBulkFoodMarkScreen');
 
     showDialog(
       context: context,
@@ -170,11 +194,13 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                 ),
                 child: Column(
                   children: [
-                    _buildMealInfoRow('Breakfast', existingBooking.breakfastCount),
+                    _buildMealInfoRow(
+                        'Breakfast', existingBooking.breakfastCount),
                     _buildMealInfoRow('Lunch', existingBooking.lunchCount),
                     _buildMealInfoRow('Dinner', existingBooking.dinnerCount),
                     const Divider(),
-                    _buildMealInfoRow('Total', existingBooking.totalMealCount, isTotal: true),
+                    _buildMealInfoRow('Total', existingBooking.totalMealCount,
+                        isTotal: true),
                   ],
                 ),
               ),
@@ -192,7 +218,8 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
             TextButton(
               onPressed: () {
                 _logger.d('❌ [ACTION] Duplicate dialog cancelled');
-                developer.log('❌ Duplicate dialog cancelled', name: 'ManagerBulkFoodMarkScreen');
+                developer.log('❌ Duplicate dialog cancelled',
+                    name: 'ManagerBulkFoodMarkScreen');
                 navigateBack(context);
               },
               child: Text(
@@ -207,7 +234,8 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
               onPressed: () {
                 navigateBack(context);
                 _logger.d('📅 [ACTION] User chose different date option');
-                developer.log('📅 User chose different date option', name: 'ManagerBulkFoodMarkScreen');
+                developer.log('📅 User chose different date option',
+                    name: 'ManagerBulkFoodMarkScreen');
                 _selectDate(); // Allow user to pick a different date
               },
               child: Text(
@@ -222,7 +250,8 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
               onPressed: () {
                 navigateBack(context);
                 _logger.d('🔄 [ACTION] User chose to update existing booking');
-                developer.log('🔄 User chose to update existing booking', name: 'ManagerBulkFoodMarkScreen');
+                developer.log('🔄 User chose to update existing booking',
+                    name: 'ManagerBulkFoodMarkScreen');
                 _showUpdateBookingDialog(existingBooking);
               },
               style: ElevatedButton.styleFrom(
@@ -253,14 +282,16 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
             label,
             style: TextStyleClass.poppinsRegular(
               fontSize: isTotal ? 14 : 13,
-              color: isTotal ? ColorClass.brandDarkGreen : ColorClass.neutral600,
+              color:
+                  isTotal ? ColorClass.brandDarkGreen : ColorClass.neutral600,
             ),
           ),
           Text(
             count.toString(),
             style: TextStyleClass.poppinsSemiBold(
               fontSize: isTotal ? 14 : 13,
-              color: isTotal ? ColorClass.brandDarkGreen : ColorClass.neutral600,
+              color:
+                  isTotal ? ColorClass.brandDarkGreen : ColorClass.neutral600,
             ),
           ),
         ],
@@ -275,13 +306,15 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
     _dinnerController.text = existingBooking.dinnerCount.toString();
 
     _logger.i('🔄 [ACTION] Form updated with existing booking data');
-    developer.log('🔄 Form updated with existing booking data', name: 'ManagerBulkFoodMarkScreen');
+    developer.log('🔄 Form updated with existing booking data',
+        name: 'ManagerBulkFoodMarkScreen');
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           'Form updated with existing booking data. Modify the values and submit to update.',
-          style: TextStyleClass.poppinsRegular(fontSize: 14, color: Colors.white),
+          style:
+              TextStyleClass.poppinsRegular(fontSize: 14, color: Colors.white),
         ),
         backgroundColor: ColorClass.brandDarkGreen,
         duration: const Duration(seconds: 3),
@@ -293,7 +326,8 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
     // Prevent multiple submissions
     if (_isSubmitting) {
       _logger.w('⚠️ [WARNING] Submission already in progress, ignoring');
-      developer.log('⚠️ Submission already in progress, ignoring', name: 'ManagerBulkFoodMarkScreen');
+      developer.log('⚠️ Submission already in progress, ignoring',
+          name: 'ManagerBulkFoodMarkScreen');
       return;
     }
 
@@ -304,30 +338,39 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
 
     _logger.i('🍽️ [SUBMIT] Submitting booking with values:');
     _logger.i('📅 Date: $_selectedDate');
-    _logger.i('🍽️ Meals - Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount');
+    _logger.i(
+        '🍽️ Meals - Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount');
     _logger.i('🏢 Department: $department');
-    
-    developer.log('🍽️ Submitting booking with values:', name: 'ManagerBulkFoodMarkScreen');
+
+    developer.log('🍽️ Submitting booking with values:',
+        name: 'ManagerBulkFoodMarkScreen');
     developer.log('📅 Date: $_selectedDate', name: 'ManagerBulkFoodMarkScreen');
-    developer.log('🍽️ Meals - Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount', name: 'ManagerBulkFoodMarkScreen');
-    developer.log('🏢 Department: $department', name: 'ManagerBulkFoodMarkScreen');
+    developer.log(
+        '🍽️ Meals - Breakfast: $breakfastCount, Lunch: $lunchCount, Dinner: $dinnerCount',
+        name: 'ManagerBulkFoodMarkScreen');
+    developer.log('🏢 Department: $department',
+        name: 'ManagerBulkFoodMarkScreen');
 
     // Validation
     if (breakfastCount == 0 && lunchCount == 0 && dinnerCount == 0) {
       _logger.w('⚠️ [VALIDATION] No meal counts provided');
-      developer.log('⚠️ No meal counts provided', name: 'ManagerBulkFoodMarkScreen');
-      AppUtils.showInSnackBarNormal('Please enter at least one meal count', context);
+      developer.log('⚠️ No meal counts provided',
+          name: 'ManagerBulkFoodMarkScreen');
+      AppUtils.showInSnackBarNormal(
+          'Please enter at least one meal count', context);
       return;
     }
 
     if (department.isEmpty) {
       _logger.w('⚠️ [VALIDATION] Department name is empty');
-      developer.log('⚠️ Department name is empty', name: 'ManagerBulkFoodMarkScreen');
+      developer.log('⚠️ Department name is empty',
+          name: 'ManagerBulkFoodMarkScreen');
       AppUtils.showInSnackBarNormal('Please enter department name', context);
       return;
     }
 
-    final provider = Provider.of<ManagerBulkFoodProvider>(context, listen: false);
+    final provider =
+        Provider.of<ManagerBulkFoodProvider>(context, listen: false);
 
     setState(() {
       _isSubmitting = true;
@@ -337,9 +380,11 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
       bool success = false;
       if (_isEditing && _editingId != null) {
         // Update existing booking
-        _logger.i('🔄 [API] Calling updateGuestMealBooking for id: $_editingId');
-        developer.log('🔄 Calling updateGuestMealBooking for id: $_editingId', name: 'ManagerBulkFoodMarkScreen');
-        
+        _logger
+            .i('🔄 [API] Calling updateGuestMealBooking for id: $_editingId');
+        developer.log('🔄 Calling updateGuestMealBooking for id: $_editingId',
+            name: 'ManagerBulkFoodMarkScreen');
+
         success = await provider.updateGuestMealBooking(
           context: context,
           id: _editingId!,
@@ -353,19 +398,22 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
       } else {
         // Check for duplicate booking and show dialog if exists
         if (provider.hasExistingBooking(_selectedDate, department)) {
-          _logger.w('⚠️ [DUPLICATE] Duplicate booking detected, showing dialog');
-          developer.log('⚠️ Duplicate booking detected, showing dialog', name: 'ManagerBulkFoodMarkScreen');
+          _logger
+              .w('⚠️ [DUPLICATE] Duplicate booking detected, showing dialog');
+          developer.log('⚠️ Duplicate booking detected, showing dialog',
+              name: 'ManagerBulkFoodMarkScreen');
           _showDuplicateBookingDialog();
           setState(() {
             _isSubmitting = false;
           });
           return;
         }
-        
+
         // Create new booking
         _logger.i('📤 [API] Calling submitBulkFoodBooking');
-        developer.log('📤 Calling submitBulkFoodBooking', name: 'ManagerBulkFoodMarkScreen');
-        
+        developer.log('📤 Calling submitBulkFoodBooking',
+            name: 'ManagerBulkFoodMarkScreen');
+
         success = await provider.submitBulkFoodBooking(
           context: context,
           date: _selectedDate,
@@ -378,36 +426,49 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
       }
 
       _logger.i('📥 [API] Submit/Update result: $success');
-      developer.log('📥 Submit/Update result: $success', name: 'ManagerBulkFoodMarkScreen');
+      developer.log('📥 Submit/Update result: $success',
+          name: 'ManagerBulkFoodMarkScreen');
 
       if (success) {
-        _logger.i('✅ [SUCCESS] Booking ${_isEditing ? "updated" : "submitted"} successfully');
-        developer.log('✅ Booking ${_isEditing ? "updated" : "submitted"} successfully', name: 'ManagerBulkFoodMarkScreen');
-        
-        AppUtils.showInSnackBarNormal(_isEditing ? 'Booking updated successfully!' : 'Booking submitted successfully!', context);
-        
+        _logger.i(
+            '✅ [SUCCESS] Booking ${_isEditing ? "updated" : "submitted"} successfully');
+        developer.log(
+            '✅ Booking ${_isEditing ? "updated" : "submitted"} successfully',
+            name: 'ManagerBulkFoodMarkScreen');
+
+        AppUtils.showInSnackBarNormal(
+            _isEditing
+                ? 'Booking updated successfully!'
+                : 'Booking submitted successfully!',
+            context);
+
         // Wait a moment before navigating back
         await Future.delayed(const Duration(milliseconds: 500));
         if (mounted) {
           navigateBack(context);
         }
       } else {
-        _logger.e('❌ [ERROR] Failed to ${_isEditing ? "update" : "submit"} booking');
-        developer.log('❌ Failed to ${_isEditing ? "update" : "submit"} booking', name: 'ManagerBulkFoodMarkScreen');
-        
+        _logger.e(
+            '❌ [ERROR] Failed to ${_isEditing ? "update" : "submit"} booking');
+        developer.log('❌ Failed to ${_isEditing ? "update" : "submit"} booking',
+            name: 'ManagerBulkFoodMarkScreen');
+
         // Show the error message from provider
-        final errorMessage = provider.errorMessage.isNotEmpty 
-            ? provider.errorMessage 
+        final errorMessage = provider.errorMessage.isNotEmpty
+            ? provider.errorMessage
             : 'Failed to ${_isEditing ? "update" : "submit"} booking. Please try again.';
         AppUtils.showInSnackBarNormal(errorMessage, context);
       }
     } catch (e, stackTrace) {
       _logger.e('❌ [EXCEPTION] Exception during submission: $e');
       _logger.e('📚 [STACKTRACE] Stack trace: $stackTrace');
-      developer.log('❌ Exception during submission: $e', name: 'ManagerBulkFoodMarkScreen');
-      developer.log('📚 Stack trace: $stackTrace', name: 'ManagerBulkFoodMarkScreen');
-      
-      AppUtils.showInSnackBarNormal('An error occurred. Please try again.', context);
+      developer.log('❌ Exception during submission: $e',
+          name: 'ManagerBulkFoodMarkScreen');
+      developer.log('📚 Stack trace: $stackTrace',
+          name: 'ManagerBulkFoodMarkScreen');
+
+      AppUtils.showInSnackBarNormal(
+          'An error occurred. Please try again.', context);
     } finally {
       if (mounted) {
         setState(() {
@@ -437,8 +498,10 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                _logger.i('🔙 [NAVIGATION] Navigating back from bulk food mark screen');
-                developer.log('🔙 Navigating back from bulk food mark screen', name: 'ManagerBulkFoodMarkScreen');
+                _logger.i(
+                    '🔙 [NAVIGATION] Navigating back from bulk food mark screen');
+                developer.log('🔙 Navigating back from bulk food mark screen',
+                    name: 'ManagerBulkFoodMarkScreen');
                 navigateBack(context);
               },
             ),
@@ -458,7 +521,9 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                       color: ColorClass.brandWhite,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandLightGreen,
+                        color: _showDuplicateWarning
+                            ? ColorClass.redBase
+                            : ColorClass.brandLightGreen,
                         width: 1.5,
                       ),
                     ),
@@ -466,29 +531,36 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                       children: [
                         Icon(
                           LucideIcons.calendar,
-                          color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandDarkGreen,
+                          color: _showDuplicateWarning
+                              ? ColorClass.redBase
+                              : ColorClass.brandDarkGreen,
                           size: 24,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            DateFormat('EEEE, MMMM d, yyyy').format(_selectedDate),
+                            DateFormat('EEEE, MMMM d, yyyy')
+                                .format(_selectedDate),
                             style: TextStyleClass.poppinsMedium(
                               fontSize: 16,
-                              color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandDarkGreen,
+                              color: _showDuplicateWarning
+                                  ? ColorClass.redBase
+                                  : ColorClass.brandDarkGreen,
                             ),
                           ),
                         ),
                         Icon(
                           LucideIcons.chevronDown,
-                          color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandDarkGreen,
+                          color: _showDuplicateWarning
+                              ? ColorClass.redBase
+                              : ColorClass.brandDarkGreen,
                           size: 20,
                         ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 // Show duplicate warning
                 if (_showDuplicateWarning)
                   Container(
@@ -497,7 +569,8 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                     decoration: BoxDecoration(
                       color: ColorClass.redLight,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: ColorClass.redBase.withOpacity(0.3)),
+                      border: Border.all(
+                          color: ColorClass.redBase.withOpacity(0.3)),
                     ),
                     child: Row(
                       children: [
@@ -529,9 +602,9 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                       ],
                     ),
                   ),
-                
+
                 // const SizedBox(height: 32),
-                
+
                 // _buildSectionTitle('Department Information'),
                 const SizedBox(height: 16),
                 Consumer<DepartmentProvider>(
@@ -559,25 +632,41 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                     if (deptProvider.error != null) {
                       return Text(
                         deptProvider.error!,
-                        style: TextStyleClass.poppinsRegular(fontSize: 14, color: ColorClass.redBase),
+                        style: TextStyleClass.poppinsRegular(
+                            fontSize: 14, color: ColorClass.redBase),
                       );
                     }
                     return DropdownButtonFormField<String>(
                       value: deptProvider.selectedDepartment,
                       decoration: InputDecoration(
                         labelText: 'Select Department',
-                        prefixIcon: Icon(LucideIcons.building, color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandDarkGreen),
+                        prefixIcon: Icon(LucideIcons.building,
+                            color: _showDuplicateWarning
+                                ? ColorClass.redBase
+                                : ColorClass.brandDarkGreen),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandLightGreen, width: 1.5),
+                          borderSide: BorderSide(
+                              color: _showDuplicateWarning
+                                  ? ColorClass.redBase
+                                  : ColorClass.brandLightGreen,
+                              width: 1.5),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandLightGreen, width: 1.5),
+                          borderSide: BorderSide(
+                              color: _showDuplicateWarning
+                                  ? ColorClass.redBase
+                                  : ColorClass.brandLightGreen,
+                              width: 1.5),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: _showDuplicateWarning ? ColorClass.redBase : ColorClass.brandDarkGreen, width: 2),
+                          borderSide: BorderSide(
+                              color: _showDuplicateWarning
+                                  ? ColorClass.redBase
+                                  : ColorClass.brandDarkGreen,
+                              width: 2),
                         ),
                         filled: true,
                         fillColor: ColorClass.brandWhite,
@@ -598,9 +687,9 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                     );
                   },
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 _buildSectionTitle('Meal Counts'),
                 const SizedBox(height: 16),
                 _buildMealCountField(
@@ -624,12 +713,16 @@ class _ManagerBulkFoodMarkScreenState extends State<ManagerBulkFoodMarkScreen> {
                   hint: 'Enter dinner count',
                 ),
                 const SizedBox(height: 32),
-                
+
                 SizedBox(
                   width: double.infinity,
                   child: AppUtils.agreeButton(
                     onTap: _submitBooking,
-                    title: _isEditing ? 'Update Booking' : (_showDuplicateWarning ? 'Update Existing Booking' : 'Submit Booking'),
+                    title: _isEditing
+                        ? 'Update Booking'
+                        : (_showDuplicateWarning
+                            ? 'Update Existing Booking'
+                            : 'Submit Booking'),
                     width: double.infinity,
                     isLoading: _isSubmitting || provider.isLoading,
                     isDisabled: _isSubmitting || provider.isLoading,

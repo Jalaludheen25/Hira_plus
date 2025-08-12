@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import '../provider/messages_provider.dart';
- 
+import '../../provider/messages_provider.dart';
 
 class ManagerMessagesScreen extends StatefulWidget {
   const ManagerMessagesScreen({Key? key}) : super(key: key);
@@ -34,7 +33,8 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Add Message', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Text('Add Message',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16),
               TextField(
                 controller: titleController,
@@ -49,19 +49,30 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
-                icon: const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white,size: 24,),
-                label: const Text('Send',style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: Colors.white),),
+                icon: const FaIcon(
+                  FontAwesomeIcons.whatsapp,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                label: const Text(
+                  'Send',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF25D366),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
                 onPressed: () async {
                   final title = titleController.text.trim();
-                  final desc = descController.text.trim(); 
+                  final desc = descController.text.trim();
                   if (title.isEmpty || desc.isEmpty) return;
                   final created = await provider.createMessage(title, desc);
-                  
+
                   if (created != null) {
                     await provider.sendMessage(created.id);
                   }
@@ -89,23 +100,28 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
             return Center(child: Text('Error: ${provider.error}'));
           }
           return Scaffold(
-            
             body: provider.messages.isEmpty
                 ? const Center(child: Text('No messages found.'))
                 : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16,vertical:  14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
                     itemCount: provider.messages.length,
                     separatorBuilder: (_, __) => const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final msg = provider.messages[index];
                       return Card(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         child: ListTile(
-                          title: Text(msg.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          title: Text(msg.title,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
                           subtitle: Text(msg.description),
                           trailing: msg.sentToUsers
-                              ? const Icon(Icons.check_circle, color: Colors.green)
-                              : const Icon(Icons.schedule, color: Colors.orange),
+                              ? const Icon(Icons.check_circle,
+                                  color: Colors.green)
+                              : const Icon(Icons.schedule,
+                                  color: Colors.orange),
                         ),
                       );
                     },
@@ -120,4 +136,4 @@ class _ManagerMessagesScreenState extends State<ManagerMessagesScreen> {
       ),
     );
   }
-} 
+}
