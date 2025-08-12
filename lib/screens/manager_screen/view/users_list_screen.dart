@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
+
 import 'package:hira_plus/screens/manager_screen/models/users_list_model.dart';
 import 'package:hira_plus/routes/app_routes.dart';
 import 'package:hira_plus/utils/navigation_helper.dart';
@@ -53,10 +54,11 @@ class _UsersListScreenState extends State<UsersListScreen> {
           initialDesignation: user.designation ?? '',
           initialIsVerified: user.isVerified == true,
           initialIsDeptHead: user.isDeptHead == true,
+          initialRole: user.role,
           onSave: (name, phoneNumber, department, designation, isVerified,
-              isDeptHead) {
+              isDeptHead, role) {
             provider.updateUser(user.id!, name, phoneNumber, department,
-                designation, isVerified, isDeptHead);
+                designation, isVerified, isDeptHead, role);
           },
         );
       },
@@ -287,24 +289,61 @@ class _UsersListScreenState extends State<UsersListScreen> {
                               style: TextStyleClass.poppinsRegular(
                                   fontSize: 14, color: ColorClass.neutral400),
                             ),
-                            if (user.isDeptHead == true)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2.0),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.verified,
-                                        color: ColorClass.brandDarkGreen,
-                                        size: 16),
-                                    SizedBox(width: 4),
-                                    Text(
-                                      'Head',
-                                      style: TextStyleClass.poppinsBold(
-                                          fontSize: 12,
-                                          color: ColorClass.brandDarkGreen),
+                            Row(
+                              children: [
+                                if (user.role != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.blue.withOpacity(0.3),
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              ),
+                                    child: Text(
+                                      user.role!.displayName,
+                                      style: TextStyleClass.poppinsRegular(
+                                        fontSize: 12,
+                                        color: Colors.blue[700],
+                                      ),
+                                    ),
+                                  ),
+                                  if (user.isDeptHead == true)
+                                    const SizedBox(width: 8),
+                                ],
+                                if (user.isDeptHead == true)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: ColorClass.brandDarkGreen
+                                          .withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: ColorClass.brandDarkGreen
+                                            .withOpacity(0.3),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(Icons.verified,
+                                            color: ColorClass.brandDarkGreen,
+                                            size: 12),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          'Head',
+                                          style: TextStyleClass.poppinsBold(
+                                              fontSize: 12,
+                                              color: ColorClass.brandDarkGreen),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                         trailing: Row(
@@ -340,33 +379,7 @@ class _UsersListScreenState extends State<UsersListScreen> {
           floatingActionButton: MediaQuery.of(context).viewInsets.bottom == 0
               ? FloatingActionButton(
                   onPressed: () {
-                    context.read<UsersProvider>().setTempIsVerified(false);
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(20)),
-                      ),
-                      builder: (context) => UserEditBottomSheet(
-                        title: 'Add User',
-                        initialName: '',
-                        initialPhoneNumber: '',
-                        initialDepartment: '',
-                        initialDesignation: '',
-                        initialIsVerified:
-                            context.read<UsersProvider>().tempIsVerified,
-                        initialIsDeptHead: false,
-                        onSave: (name, phoneNumber, department, designation,
-                            isVerified, isDeptHead) {
-                          provider.addUser(name, phoneNumber, department,
-                              designation, isVerified, isDeptHead);
-                          context
-                              .read<UsersProvider>()
-                              .setTempIsVerified(false);
-                        },
-                      ),
-                    );
+                    Navigator.pushNamed(context, Routes.addUser);
                   },
                   backgroundColor: ColorClass.brandDarkGreen,
                   child: const Icon(Icons.add, color: Colors.white),

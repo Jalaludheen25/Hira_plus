@@ -3,6 +3,7 @@
 //     final usersListModel = usersListModelFromJson(jsonString);
 
 import 'dart:convert';
+import 'package:hira_plus/constants/user_role_enum.dart';
 
 List<UsersListModel> usersListModelFromJson(String str) =>
     List<UsersListModel>.from(
@@ -21,6 +22,7 @@ class UsersListModel {
   bool? isVerified;
   DateTime? createdAt;
   bool? isDeptHead;
+  UserRole? role;
 
   UsersListModel({
     this.id,
@@ -32,6 +34,7 @@ class UsersListModel {
     this.isVerified,
     this.createdAt,
     this.isDeptHead,
+    this.role,
   });
 
   factory UsersListModel.fromJson(Map<String, dynamic> json) => UsersListModel(
@@ -49,6 +52,9 @@ class UsersListModel {
             ? null
             : DateTime.parse(json["createdAt"]),
         isDeptHead: json["isDeptHead"],
+        role: json["isDriver"] == true
+            ? UserRole.driver
+            : (json["role"] != null ? UserRole.fromString(json["role"]) : null),
       );
 
   Map<String, dynamic> toJson() => {
@@ -61,5 +67,6 @@ class UsersListModel {
         "isVerified": isVerified,
         "createdAt": createdAt?.toIso8601String(),
         "isDeptHead": isDeptHead,
+        "role": role?.value,
       };
 }

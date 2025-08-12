@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/color_class.dart';
 import 'package:hira_plus/constants/textstyle_class.dart';
+import 'package:hira_plus/constants/user_role_enum.dart';
 import 'package:hira_plus/screens/manager_screen/provider/users_provider.dart';
 import 'package:hira_plus/screens/manager_screen/provider/department_provider.dart';
 import 'package:provider/provider.dart';
@@ -14,8 +15,15 @@ class UserEditBottomSheet extends StatefulWidget {
   final String initialDesignation;
   final bool initialIsVerified;
   final bool initialIsDeptHead;
-  final Function(String name, String phoneNumber, String department,
-      String designation, bool isVerified, bool isDeptHead) onSave;
+  final UserRole? initialRole;
+  final Function(
+      String name,
+      String phoneNumber,
+      String department,
+      String designation,
+      bool isVerified,
+      bool isDeptHead,
+      UserRole? role) onSave;
 
   const UserEditBottomSheet({
     Key? key,
@@ -26,6 +34,7 @@ class UserEditBottomSheet extends StatefulWidget {
     required this.initialDesignation,
     required this.initialIsVerified,
     required this.initialIsDeptHead,
+    required this.initialRole,
     required this.onSave,
   }) : super(key: key);
 
@@ -40,6 +49,7 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
   late TextEditingController _designationController;
   bool _isSaving = false;
   bool _isDeptHead = false;
+  UserRole? _selectedRole;
 
   @override
   void initState() {
@@ -52,6 +62,7 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
     _designationController =
         TextEditingController(text: widget.initialDesignation);
     _isDeptHead = widget.initialIsDeptHead;
+    _selectedRole = widget.initialRole;
 
     // Load departments after the first frame to ensure context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -88,6 +99,7 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
         _designationController.text,
         context.read<UsersProvider>().tempIsVerified,
         _isDeptHead,
+        _selectedRole,
       );
       if (result is Future) {
         await result;
@@ -199,6 +211,49 @@ class _UserEditBottomSheetState extends State<UserEditBottomSheet> {
                   return null;
                 },
               );
+            },
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<UserRole?>(
+            value: _selectedRole,
+            decoration: InputDecoration(
+              labelText: 'User Role (Optional)',
+              labelStyle: TextStyleClass.poppinsRegular(
+                  fontSize: 14, color: ColorClass.neutral400),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              filled: true,
+              fillColor: ColorClass.neutral100,
+            ),
+            items: [
+              DropdownMenuItem<UserRole?>(
+                value: null,
+                child: Text(
+                  'No Role',
+                  style: TextStyleClass.poppinsRegular(
+                    fontSize: 14,
+                    color: ColorClass.neutral400,
+                  ),
+                ),
+              ),
+              ...UserRole.allRoles.map((role) => DropdownMenuItem<UserRole?>(
+                    value: role,
+                    child: Text(
+                      role.displayName,
+                      style: TextStyleClass.poppinsRegular(
+                        fontSize: 14,
+                        color: ColorClass.textMain900,
+                      ),
+                    ),
+                  )),
+            ],
+            onChanged: (UserRole? newRole) {
+              setState(() {
+                _selectedRole = newRole;
+              });
+              debugPrint(
+                  '[UserEditBottomSheet] Role changed to: ${newRole?.displayName ?? 'No Role'}');
             },
           ),
           const SizedBox(height: 16),

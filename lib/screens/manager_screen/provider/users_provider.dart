@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:hira_plus/constants/api_urls.dart';
+import 'package:hira_plus/constants/user_role_enum.dart';
 import 'package:hira_plus/screens/manager_screen/models/users_list_model.dart';
 import 'package:hira_plus/utils/service_utils.dart';
 
@@ -70,6 +72,9 @@ class UsersProvider extends ChangeNotifier {
       notifyListeners();
       debugPrint(
           '[UsersProvider] fetchUsers success, users count: ${_users.length}');
+
+      debugPrint(
+          '[UsersProvider] fetchUsers success, users count: ${_users.length}');
     } catch (e) {
       debugPrint('[UsersProvider] fetchUsers error: $e');
       // Do not set error, just keep loading
@@ -85,7 +90,8 @@ class UsersProvider extends ChangeNotifier {
             (user.name?.toLowerCase().contains(search) ?? false) ||
             (user.phoneNumber?.toLowerCase().contains(search) ?? false) ||
             (user.department?.toLowerCase().contains(search) ?? false) ||
-            (user.designation?.toLowerCase().contains(search) ?? false))
+            (user.designation?.toLowerCase().contains(search) ?? false) ||
+            (user.role?.displayName.toLowerCase().contains(search) ?? false))
         .toList();
 
     // Keep alphabetical sorting for search results
@@ -105,20 +111,23 @@ class UsersProvider extends ChangeNotifier {
       String department,
       String designation,
       bool isVerified,
-      bool isDeptHead) async {
+      bool isDeptHead,
+      UserRole? role) async {
     debugPrint('[UsersProvider] updateUser called for id: $id');
     try {
+      // Create data matching the backend API format exactly
       final data = {
-        "name": name,
         "phoneNumber": phoneNumber,
+        "name": name,
         "department": department,
         "designation": designation,
-        "isVerified": isVerified,
-        "isDeptHead": isDeptHead
+        "isDriver": role == UserRole.driver, // Backend uses isDriver boolean
+        "isDeptHead": isDeptHead,
+        "status": "active", // Required field
+        "isFreeFood": false, // Required field
+        "isIntern": false, // Required field
       };
-      debugPrint('[UsersProvider] updateUser data: $data');
-      debugPrint(
-          'Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
+
       await HttpServiceUtils.putData('${ApiUrls.getUsers()}/$id', data, null);
       await fetchUsers(); // Refresh the list
       debugPrint('[UsersProvider] updateUser success');
@@ -144,21 +153,28 @@ class UsersProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> addUser(String name, String phoneNumber, String department,
-      String designation, bool isVerified, bool isDeptHead) async {
-    debugPrint('[UsersProvider] addUser called');
+  Future<void> addUser(
+      String name,
+      String phoneNumber,
+      String department,
+      String designation,
+      bool isVerified,
+      bool isDeptHead,
+      UserRole? role) async {
     try {
+      // Create data matching the backend API format exactly
       final data = {
-        "name": name,
         "phoneNumber": phoneNumber,
+        "name": name,
         "department": department,
         "designation": designation,
-        "isVerified": isVerified,
-        "isDeptHead": isDeptHead
+        "isDriver": true, // Backend uses isDriver boolean
+        "isDeptHead": isDeptHead,
+        "status": "active", // Required field
+        "isFreeFood": false, // Required field
+        "isIntern": false, // Required field
       };
-      debugPrint('[UsersProvider] addUser data: $data');
-      debugPrint(
-          'Sending isVerified: $isVerified (${isVerified.runtimeType}), isDeptHead: $isDeptHead');
+
       await HttpServiceUtils.postData(ApiUrls.getUsers(), data, null);
       await fetchUsers(); // Refresh the list
       debugPrint('[UsersProvider] addUser success');
